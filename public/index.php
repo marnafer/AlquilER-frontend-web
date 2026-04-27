@@ -12,7 +12,114 @@ define('SRC_PATH', dirname(__DIR__) . '/src/');
 
 ini_set('display_errors', 1);
 
-// --- CONFIGURACIÓN ---
+// ============================================
+// FUNCIONES GLOBALES DE RESPUESTA
+// ============================================
+
+/**
+ * Enviar respuesta JSON exitosa
+ */
+function renderJson($data, $message = null, $statusCode = 200)
+{
+    // Limpiar output buffer
+    if (ob_get_length()) {
+        ob_clean();
+    }
+    
+    http_response_code($statusCode);
+    header('Content-Type: application/json; charset=utf-8');
+    header('X-Content-Type-Options: nosniff');
+    
+    $response = [
+        'success' => true,
+        'data' => $data,
+        'timestamp' => date('Y-m-d H:i:s')
+    ];
+    
+    if ($message !== null) {
+        $response['message'] = $message;
+    }
+    
+    // Usar JSON_UNESCAPED_SLASHES para evitar escapes de barras
+    $json = json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    
+    echo $json;
+    exit;
+}
+
+/**
+ * Enviar respuesta JSON de error
+ */
+function renderError($error, $statusCode = 400, $details = null)
+{
+    // Limpiar output buffer
+    if (ob_get_length()) {
+        ob_clean();
+    }
+    
+    http_response_code($statusCode);
+    header('Content-Type: application/json; charset=utf-8');
+    header('X-Content-Type-Options: nosniff');
+    
+    $response = [
+        'success' => false,
+        'error' => $error,
+        'timestamp' => date('Y-m-d H:i:s')
+    ];
+    
+    if ($details !== null) {
+        $response['details'] = $details;
+    }
+    
+    if (isset($GLOBALS['path'])) {
+        $response['path'] = $GLOBALS['path'];
+    }
+    
+    $json = json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    
+    echo $json;
+    exit;
+}
+
+/**
+ * Enviar respuesta JSON con paginación
+ */
+function renderPaginated($data, $total, $page = 1, $limit = 10, $message = null)
+{
+    // Limpiar output buffer
+    if (ob_get_length()) {
+        ob_clean();
+    }
+    
+    http_response_code(200);
+    header('Content-Type: application/json; charset=utf-8');
+    header('X-Content-Type-Options: nosniff');
+    
+    $response = [
+        'success' => true,
+        'data' => $data,
+        'pagination' => [
+            'total' => (int)$total,
+            'page' => (int)$page,
+            'limit' => (int)$limit,
+            'last_page' => (int)ceil($total / $limit)
+        ],
+        'timestamp' => date('Y-m-d H:i:s')
+    ];
+    
+    if ($message !== null) {
+        $response['message'] = $message;
+    }
+    
+    $json = json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    
+    echo $json;
+    exit;
+}
+
+// ============================================
+// CONFIGURACIÓN
+// ============================================
 
 $method = strtoupper(trim($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
@@ -32,7 +139,13 @@ if (strpos($path_bruto, '/public') === 0) {
 
 $path = '/' . trim((string)$path_bruto, "/");
 
-// --- DEBUG ---
+// Hacemos la variable $path global para que esté disponible en los routers
+$GLOBALS['path'] = $path;
+
+// ============================================
+// DEBUG
+// ============================================
+
 require_once dirname(__DIR__) . '/src/debug/Debugger.php';
 
 use App\Debug\Debugger;
@@ -45,36 +158,6 @@ if ($_SERVER['SERVER_NAME'] === 'localhost' || $_SERVER['SERVER_NAME'] === '127.
 Debugger::request();
 
 // ============================================
-// DETECCIÓN DE RUTAS
-// ============================================
-
-$method = strtoupper(trim($_SERVER['REQUEST_METHOD'] ?? 'GET'));
-$requestUri = $_SERVER['REQUEST_URI'] ?? '/';
-
-// 1. Extraemos el path puro
-$path_bruto = parse_url($requestUri, PHP_URL_PATH);
-
-// 2. DETECCIÓN DINÁMICA DE LA RAIZ DEL SCRIPT
-$scriptName = $_SERVER['SCRIPT_NAME'];
-$baseDir = str_replace('\\', '/', dirname(dirname($scriptName)));
-
-// 3. LIMPIEZA INTELIGENTE
-if ($baseDir !== '/' && strpos($path_bruto, $baseDir) === 0) {
-    $path_bruto = substr($path_bruto, strlen($baseDir));
-}
-
-// Quitamos el prefijo /public si está presente
-if (strpos($path_bruto, '/public') === 0) {
-    $path_bruto = substr($path_bruto, strlen('/public'));
-}
-
-// 4. NORMALIZACIÓN
-$path = '/' . trim((string)$path_bruto, "/");
-
-// Hacemos la variable $path global para que esté disponible en los routers
-$GLOBALS['path'] = $path;
-
-// ============================================
 // RUTAS DEL SISTEMA (respuestas rápidas)
 // ============================================
 
@@ -84,36 +167,45 @@ if ($path === '/health') {
         'status' => 'ok',
         'timestamp' => date('Y-m-d H:i:s'),
         'php' => phpversion()
-    ]);
+    ], 'API funcionando correctamente');
     exit;
 }
 
 if ($path === '/') {
+    // Endpoints sin escapes
+    $endpoints = [
+        '/health',
+        '/api/categorias',
+        '/api/provincias',
+        '/api/localidades',
+        '/api/usuarios',
+        '/api/propiedades',
+        '/api/servicios',
+        '/api/propiedades-servicios',
+        '/api/reservas',
+        '/api/resenas',
+        '/api/consultas',
+        '/api/favoritos',
+        '/api/logs-actividad',
+        '/api/roles',
+        '/api/propiedad-imagenes',
+        '/api/debug/stats',
+        '/api/debug/test-db'
+    ];
+    
     renderJson([
         'message' => 'API Alquiler Permanente funcionando',
-        'endpoints' => [
-            '/health',
-            '/api/categorias',
-            '/api/provincias',
-            '/api/localidades',
-            '/api/usuarios',
-            '/api/propiedades',
-            '/api/servicios',
-            '/api/propiedades-servicios',
-            '/api/reservas',
-            '/api/resenas',
-            '/api/consultas',
-            '/api/favoritos',
-            '/api/logs-actividad',
-            '/api/roles',
-            '/api/propiedad-imagenes',
-            '/api/debug/stats'
-        ]
-    ]);
+        'endpoints' => $endpoints
+    ], 'Bienvenido a la API');
+    exit;
 }
 
+// ============================================
+// RUTAS DE LA API
+// ============================================
+
 // --- PROPIEDADES ---
-elseif (strpos($path, '/api/propiedades') === 0) {
+if (strpos($path, '/api/propiedades') === 0) {
     require_once SRC_PATH . 'routes/propiedad_router.php';
     exit;
 }
@@ -171,81 +263,75 @@ elseif (strpos($path, '/api/servicios') === 0) {
     require_once SRC_PATH . 'routes/servicio_router.php';
     exit;
 }
-// 10. Módulo Propiedad Servicio 
-elseif (strpos($path, '/api/propiedades-servicios') !== false) {
+
+// --- PROPIEDAD SERVICIO ---
+elseif (strpos($path, '/api/propiedades-servicios') === 0) {
     $routerPath = SRC_PATH . 'routes/propiedadservicio_router.php';
     if (file_exists($routerPath)) {
         require_once $routerPath;
     } else {
-        renderError("Archivo de rutas no encontrado: propiedadservicio_router.php", 500, $path);
+        renderError("Archivo de rutas no encontrado: propiedadservicio_router.php", 500);
     }
+    exit;
 }
-// 11. Módulo Reservas
-elseif (strpos($path, '/api/reservas') !== false) {
+
+// --- RESERVAS ---
+elseif (strpos($path, '/api/reservas') === 0) {
     $routerPath = SRC_PATH . 'routes/reserva_router.php';
     if (file_exists($routerPath)) {
         require_once $routerPath;
     } else {
-        renderError("Archivo de rutas no encontrado: reserva_router.php", 500, $path);
+        renderError("Archivo de rutas no encontrado: reserva_router.php", 500);
     }
+    exit;
 }
-// 12. Módulo Reseñas
-elseif (strpos($path, '/api/resenas') !== false) {
+
+// --- RESEÑAS ---
+elseif (strpos($path, '/api/resenas') === 0) {
     $routerPath = SRC_PATH . 'routes/resena_router.php';
     if (file_exists($routerPath)) {
         require_once $routerPath;
     } else {
-        renderError("Archivo de rutas no encontrado: resena_router.php", 500, $path);
+        renderError("Archivo de rutas no encontrado: resena_router.php", 500);
     }
+    exit;
 }
-// 13. Módulo Consultas
-elseif (strpos($path, '/api/consultas') !== false) {
+
+// --- CONSULTAS ---
+elseif (strpos($path, '/api/consultas') === 0) {
     $routerPath = SRC_PATH . 'routes/consulta_router.php';
     if (file_exists($routerPath)) {
         require_once $routerPath;
     } else {
-        renderError("Archivo de rutas no encontrado: consulta_router.php", 500, $path);
+        renderError("Archivo de rutas no encontrado: consulta_router.php", 500);
     }
+    exit;
 }
-// 14. Módulo Roles
-elseif (strpos($path, '/api/roles') !== false) {
+
+// --- ROLES ---
+elseif (strpos($path, '/api/roles') === 0) {
     $routerPath = SRC_PATH . 'routes/rol_router.php';
     if (file_exists($routerPath)) {
         require_once $routerPath;
     } else {
-        renderError("Archivo de rutas no encontrado: rol_router.php", 500, $path);
+        renderError("Archivo de rutas no encontrado: rol_router.php", 500);
     }
+    exit;
 }
-// 15. Módulo Debug
-elseif (strpos($path, '/debug') !== false) {
+
+// --- DEBUG ---
+elseif (strpos($path, '/debug') === 0 || strpos($path, '/api/debug') === 0) {
     $routerPath = SRC_PATH . 'routes/debug_router.php';
     if (file_exists($routerPath)) {
         require_once $routerPath;
     } else {
-        renderError("Archivo de rutas no encontrado: debug_router.php", 500, $path);
+        renderError("Archivo de rutas no encontrado: debug_router.php", 500);
     }
+    exit;
 }
+
 // ============================================
 // RUTA NO ENCONTRADA (404)
 // ============================================
-else {
-    renderError("Ruta no encontrada", 404);
-    exit;
-}
 
-// --- HELPERS ---
-
-function renderJson(array $data, int $code = 200): void {
-    header("Content-Type: application/json; charset=utf-8");
-    http_response_code($code);
-    echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
-function renderError(string $message, int $code): void {
-    renderJson([
-        'success' => false,
-        'error' => $message,
-        'path' => $GLOBALS['path'] ?? null
-    ], $code);
-}
+renderError("Ruta no encontrada", 404);
