@@ -41,7 +41,7 @@ include SRC_PATH . 'views/partials/header.php';
                                 <td><?php echo ($p->disponible ? '<span class="badge bg-success">Sí</span>' : '<span class="badge bg-secondary">No</span>') ?></td>
                                 <td>
                                     <button class="btn btn-sm btn-outline-primary btn-ver" data-id="<?php echo htmlspecialchars($p->id) ?>">Ver</button>
-                                    <a href="/propiedades/nuevo?copiar=<?php echo htmlspecialchars($p->id) ?>" class="btn btn-sm btn-outline-secondary">Copiar</a>
+                                    <a href="/api/propiedades/nuevo?copiar=<?php echo htmlspecialchars($p->id) ?>" class="btn btn-sm btn-outline-secondary">Copiar</a>
                                     <button class="btn btn-sm btn-outline-danger btn-eliminar" data-id="<?php echo htmlspecialchars($p->id) ?>">Eliminar</button>
                                 </td>
                             </tr>

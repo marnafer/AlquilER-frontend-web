@@ -2,6 +2,9 @@
 
 namespace App\Controllers;
 
+require_once SRC_PATH . 'sanitizers/PropiedadSanitizer.php';
+require_once SRC_PATH . 'validators/PropiedadValidator.php';
+
 use App\Models\Propiedad;
 use App\Sanitizers\PropiedadSanitizer;
 use App\Validators\PropiedadValidator;
@@ -75,13 +78,6 @@ class PropiedadController {
         $inputData = json_decode($inputRaw, true) ?? $_POST;
 
         $datosLimpios = PropiedadSanitizer::sanitizarPropiedad($inputData);
-        $errores = PropiedadValidator::validarPropiedad($datosLimpios);
-
-        if (!empty($errores)) {
-            http_response_code(400);
-            echo json_encode(['status' => 'error', 'errors' => $errores], JSON_UNESCAPED_UNICODE);
-            return;
-        }
 
         try {
             $propiedad = Propiedad::create($datosLimpios);
@@ -115,13 +111,6 @@ class PropiedadController {
         $inputData = json_decode($inputRaw, true) ?? $_POST;
 
         $datosLimpios = PropiedadSanitizer::sanitizarPropiedad($inputData);
-        $errores = PropiedadValidator::validarPropiedad($datosLimpios);
-
-        if (!empty($errores)) {
-            http_response_code(400);
-            echo json_encode(['status' => 'error', 'errors' => $errores], JSON_UNESCAPED_UNICODE);
-            return;
-        }
 
         try {
             $propiedad->fill($datosLimpios);
