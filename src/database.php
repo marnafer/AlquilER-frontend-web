@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use Illuminate\Database\Capsule\Manager as Capsule;
 
@@ -12,8 +12,8 @@ $capsule->addConnection([
     'database'  => 'sistema_alquiler_db', // <-- Pon� el nombre exacto de tu DB aqu�
     'username'  => 'root',                // Usuario de XAMPP
     'password'  => '',                    // Contrase�a de XAMPP (suele estar vac�a)
-    'charset'   => 'utf8',
-    'collation' => 'utf8_unicode_ci',
+    'charset'   => 'utf8mb4',
+    'collation' => 'utf8mb4_unicode_ci',
     'prefix'    => '',
 ]);
 
@@ -23,3 +23,5 @@ $capsule->setAsGlobal();
 
 // Inicializamos Eloquent
 $capsule->bootEloquent();
+
+Capsule::connection()->getPdo()->exec("SET NAMES utf8mb4"); // Asegura que la conexi�n use UTF-8

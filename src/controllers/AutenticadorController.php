@@ -1,44 +1,101 @@
 <?php
+
 namespace App\Controllers;
 
 use App\Models\Usuario;
+use App\Helpers\JwtHelper;
+use App\Sanitizers\UsuarioSanitizer;
+use App\Validators\UsuarioValidator;
 
 class AutenticadorController {
-    
-    // Muestra el formulario de Login
-    public function loginVista() {
-        require_once SRC_PATH . 'views/autenticador_views/login.php';
-    }
 
-    // Procesa el formulario
+    // LOGIN
     public function login() {
-        $email = $_POST['email'] ?? '';
-        $password = $_POST['contrasena'] ?? '';
+        $data = json_decode(file_get_contents("php://input"), true) ?? [];
+
+        $email = $data['email'] ?? null;
+        $password = $data['password'] ?? null;
+
+        // 1. Validar que vengan los datos
+        if (!$email || !$password) {
+            renderJson([
+                'success' => false,
+                'error' => 'Datos incompletos'
+            ], 400);
+        }
+
+        // 2. Sanitizar email
+        $email = UsuarioSanitizer::sanitizarSoloEmail($data['email'] ?? null);
+
+        // 3. Validar formato de email
+        $validacionEmail = UsuarioValidator::validarEmailLoginUsuario($email);
+
+        if (!$validacionEmail['success']) {
+            renderJson($validacionEmail, 400);
+        }
 
         $usuario = Usuario::where('email', $email)->first();
 
-        if ($usuario && password_verify($password, $usuario->contrasena)) {
-            // Si es correcto, iniciamos sesión
-            if (session_status() === PHP_SESSION_NONE) session_start();
-            
-            $_SESSION['user_id']   = $usuario->id;
-            $_SESSION['user_rol']  = $usuario->rol_id;
-            $_SESSION['user_nome'] = $usuario->nombre;
-
-            header('Location: /sistema-alquiler/propiedades');
-            exit;
-        } else {
-            // Si falla, volvemos con error
-            header('Location: /sistema-alquiler/login?error=auth');
-            exit;
+        if (!$usuario || !password_verify($password, $usuario->contrasena)) {
+            renderJson([
+                'success' => false,
+                'error' => 'Credenciales invalidas'
+            ], 401);
         }
+
+        $token = JwtHelper::generarToken($usuario);
+
+        renderJson([
+            'success' => true,
+            'token' => $token
+        ]);
     }
 
-    // Cierra la sesión
+    // REGISTER
+    public function register() {
+        $data = json_decode(file_get_contents("php://input"), true) ?? [];
+
+        // 1. Sanitizar
+        $san = UsuarioSanitizer::sanitizarUsuario($data);
+
+        // 2. Validar
+        $val = UsuarioValidator::validarCrearUsuario($san);
+
+        if (!$val['success']) {
+            renderJson($val, 400);
+        }
+
+        // 3. ValidaciÃ³n de negocio (email Ãºnico)
+        if (Usuario::where('email', $san['email'])->exists()) {
+            renderJson([
+                'success' => false,
+                'error' => 'El usuario ya existe'
+            ], 409);
+        }
+
+        // 4. Crear usuario
+        Usuario::create([
+        'nombre' => $san['nombre'],
+        'apellido' => $san['apellido'],
+        'email' => $san['email'],
+        'telefono' => $san['telefono'],
+        'domicilio' => $san['domicilio'],
+        'contrasena' => password_hash($san['contrasena'], PASSWORD_BCRYPT),
+        'rol_id' => $san['rol_id'] ?? 1
+    ]);
+
+        // 5. Respuesta
+        renderJson([
+            'success' => true,
+            'message' => 'Usuario registrado'
+        ], 201);
+    }
+
+    // LOGOUT
     public function logout() {
-        if (session_status() === PHP_SESSION_NONE) session_start();
-        session_destroy();
-        header('Location: /sistema-alquiler/login');
-        exit;
+        renderJson([
+            'success' => true,
+            'message' => 'Logout (el cliente elimina el token)'
+        ], 200);
     }
 }

@@ -10,48 +10,14 @@ use App\Validators\PropiedadImagenValidator;
 class PropiedadImagenController
 {
     /**
-     * VISTA HTML: Galería/listado de imágenes (GET /propiedades/imagenes)
-     */
-    public function listarVistas()
-    {
-        try {
-            $imagenes = PropiedadImagen::orderBy('id', 'desc')->get();
-            require_once SRC_PATH . 'views/propiedad_imagen_views/imagenes_listar.php';
-        } catch (\Exception $e) {
-            renderError("Error al cargar la galería: " . $e->getMessage(), 500);
-        }
-    }
-
-    /**
-     * VISTA HTML: Mostrar detalle de imagen (GET /propiedades/imagenes/ver?id={id})
-     */
-    public function mostrarVista()
-    {
-        $id = PropiedadImagenSanitizer::sanitizeId($_GET['id'] ?? null);
-        if (!PropiedadImagenValidator::validateId($id)) {
-            renderError("ID inválido", 400);
-            return;
-        }
-
-        $imagen = PropiedadImagen::find($id);
-        if (!$imagen) {
-            renderError("Imagen no encontrada", 404);
-            return;
-        }
-
-        require_once SRC_PATH . 'views/propiedad_imagen_views/imagen_detalle.php';
-    }
-
-    /**
      * GET /api/propiedad-imagenes
-     * Opcional: ?propiedad_id=
+     * ?propiedad_id=
      */
     public function indexApi()
     {
-        header('Content-Type: application/json; charset=utf-8');
-
         try {
             $propiedadId = isset($_GET['propiedad_id']) ? (int) $_GET['propiedad_id'] : null;
+
             $query = PropiedadImagen::query();
 
             if ($propiedadId) {
@@ -60,10 +26,16 @@ class PropiedadImagenController
 
             $imagenes = $query->orderBy('id', 'desc')->get();
 
-            echo json_encode(['status' => 'success', 'data' => $imagenes], JSON_UNESCAPED_UNICODE);
+            return renderJson([
+                'success' => true,
+                'data' => $imagenes,
+                'total' => $imagenes->count()
+            ]);
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+            return renderJson([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -72,38 +44,40 @@ class PropiedadImagenController
      */
     public function mostrarApi($id)
     {
-        header('Content-Type: application/json; charset=utf-8');
+        $id = PropiedadImagenSanitizer::sanitizarId($id);
 
-        $id = PropiedadImagenSanitizer::sanitizeId($id);
-        if (!PropiedadImagenValidator::validateId($id)) {
-            http_response_code(400);
-            echo json_encode(['status' => 'error', 'message' => 'ID inválido']);
-            return;
+        $validacion = PropiedadImagenValidator::validarSoloId($id);
+        if (!$validacion['success']) {
+            return renderJson($validacion, 400);
         }
 
         try {
             $img = PropiedadImagen::find($id);
+
             if (!$img) {
-                http_response_code(404);
-                echo json_encode(['status' => 'error', 'message' => 'Imagen no encontrada']);
-                return;
+                return renderJson([
+                    'success' => false,
+                    'error' => 'Imagen no encontrada'
+                ], 404);
             }
-            echo json_encode(['status' => 'success', 'data' => $img], JSON_UNESCAPED_UNICODE);
+
+            return renderJson([
+                'success' => true,
+                'data' => $img
+            ]);
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+            return renderJson([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
     /**
      * POST /api/propiedad-imagenes
-     * Soporta multipart/form-data con campo 'imagen' o JSON { imagen_base64, propiedad_id, descripcion }
      */
     public function crear()
     {
-        header('Content-Type: application/json; charset=utf-8');
-
-        // Leer payload JSON (si viene) o usar $_POST/$_FILES
         $inputRaw = file_get_contents('php://input');
         $json = json_decode($inputRaw, true);
 
@@ -111,69 +85,77 @@ class PropiedadImagenController
         $file = $_FILES['imagen'] ?? null;
 
         $datos = PropiedadImagenSanitizer::sanitizarPropiedadImagen($payload);
-        $errores = PropiedadImagenValidator::validarPropiedadImagen($datos, $file);
 
-        if (!empty($errores)) {
-            http_response_code(400);
-            echo json_encode(['status' => 'error', 'errors' => $errores], JSON_UNESCAPED_UNICODE);
-            return;
+        $validacion = PropiedadImagenValidator::validarCrear($datos, $file);
+        if (!$validacion['success']) {
+            return renderJson($validacion, 400);
         }
 
         try {
-            // Preparar carpeta destino
             $publicDir = dirname(dirname(__DIR__)) . '/public';
             $uploadDir = $publicDir . '/uploads/propiedades';
+
             if (!is_dir($uploadDir)) {
                 mkdir($uploadDir, 0755, true);
             }
 
             $nombreArchivo = null;
 
-            // 1) Si se recibió archivo multipart
-            if ($file && isset($file['tmp_name']) && is_uploaded_file($file['tmp_name'])) {
+            // Archivo
+            if ($file && is_uploaded_file($file['tmp_name'])) {
                 $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
                 $nombreArchivo = time() . '_' . bin2hex(random_bytes(6)) . '.' . strtolower($ext);
+
                 $dest = $uploadDir . '/' . $nombreArchivo;
+
                 if (!move_uploaded_file($file['tmp_name'], $dest)) {
-                    throw new \Exception('No se pudo mover el archivo subido');
+                    throw new \Exception('Error al guardar archivo');
                 }
             }
-            // 2) Si se recibió base64 en JSON
+            // Base64
             elseif (!empty($datos['imagen_base64'])) {
-                $matches = [];
-                if (preg_match('/^data:(image\/[a-zA-Z]+);base64,(.+)$/', $datos['imagen_base64'], $matches)) {
-                    $mime = $matches[1];
-                    $base64 = $matches[2];
-                    $ext = explode('/', $mime)[1];
-                    $nombreArchivo = time() . '_' . bin2hex(random_bytes(6)) . '.' . strtolower($ext);
+                if (preg_match('/^data:(image\/[a-zA-Z]+);base64,(.+)$/', $datos['imagen_base64'], $m)) {
+                    $ext = explode('/', $m[1])[1];
+
+                    $nombreArchivo = time() . '_' . bin2hex(random_bytes(6)) . '.' . $ext;
                     $dest = $uploadDir . '/' . $nombreArchivo;
-                    $bin = base64_decode($base64);
-                    if ($bin === false || file_put_contents($dest, $bin) === false) {
-                        throw new \Exception('No se pudo escribir el archivo base64');
+
+                    $bin = base64_decode($m[2]);
+
+                    if (!$bin || file_put_contents($dest, $bin) === false) {
+                        throw new \Exception('Error al guardar imagen base64');
                     }
                 } else {
-                    throw new \Exception('Formato base64 inválido');
+                    return renderJson([
+                        'success' => false,
+                        'error' => 'Formato base64 inválido'
+                    ], 400);
                 }
             } else {
-                http_response_code(400);
-                echo json_encode(['status' => 'error', 'message' => 'No se proporcionó imagen'], JSON_UNESCAPED_UNICODE);
-                return;
+                return renderJson([
+                    'success' => false,
+                    'error' => 'Debe enviar una imagen'
+                ], 400);
             }
 
-            // Construir datos para BD
-            $rutaPublica = '/uploads/propiedades/' . $nombreArchivo;
             $registro = PropiedadImagen::create([
                 'propiedad_id' => $datos['propiedad_id'],
-                'ruta'         => $rutaPublica,
-                'nombre'       => $nombreArchivo,
-                'descripcion'  => $datos['descripcion'] ?? null
+                'ruta' => '/uploads/propiedades/' . $nombreArchivo,
+                'nombre' => $nombreArchivo,
+                'descripcion' => $datos['descripcion'] ?? null
             ]);
 
-            http_response_code(201);
-            echo json_encode(['status' => 'success', 'message' => 'Imagen guardada', 'data' => $registro], JSON_UNESCAPED_UNICODE);
+            return renderJson([
+                'success' => true,
+                'message' => 'Imagen creada correctamente',
+                'data' => $registro
+            ], 201);
+
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+            return renderJson([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -182,35 +164,45 @@ class PropiedadImagenController
      */
     public function eliminar($id)
     {
-        header('Content-Type: application/json; charset=utf-8');
-
         $id = PropiedadImagenSanitizer::sanitizarId($id);
-        if (!PropiedadImagenValidator::validarId($id)) {
-            http_response_code(400);
-            echo json_encode(['status' => 'error', 'message' => 'ID inválido']);
-            return;
+
+        $validacion = PropiedadImagenValidator::validarSoloId($id);
+        if (!$validacion['success']) {
+            return renderJson($validacion, 400);
         }
 
         try {
             $img = PropiedadImagen::find($id);
+
             if (!$img) {
-                http_response_code(404);
-                echo json_encode(['status' => 'error', 'message' => 'Imagen no encontrada']);
-                return;
+                return renderJson([
+                    'success' => false,
+                    'error' => 'Imagen no encontrada'
+                ], 404);
             }
 
-            // Borrar archivo físico si existe
+            // borrar archivo
             $publicPath = dirname(dirname(__DIR__)) . '/public';
+
             if (!empty($img->ruta)) {
-                $f = $publicPath . $img->ruta;
-                if (file_exists($f)) @unlink($f);
+                $file = $publicPath . $img->ruta;
+                if (file_exists($file)) {
+                    unlink($file);
+                }
             }
 
             $img->delete();
-            echo json_encode(['status' => 'success', 'message' => "Imagen #$id eliminada"]);
+
+            return renderJson([
+                'success' => true,
+                'message' => "Imagen eliminada correctamente"
+            ]);
+
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+            return renderJson([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 }

@@ -1,173 +1,83 @@
 <?php
-/**
- * Sanitizador para la entidad Usuario
- * SOLO sanitiza los datos, NO valida
- */
 
-/**
- * Sanitiza todos los datos de un usuario
- */
-function sanitizarUsuario($data) {
-    return [
-        'id' => sanitizarIdUsuario($data['id'] ?? null),
-        'nombre' => sanitizarNombre($data['nombre'] ?? null),
-        'apellido' => sanitizarApellido($data['apellido'] ?? null),
-        'email' => sanitizarEmail($data['email'] ?? null),
-        'telefono' => sanitizarTelefono($data['telefono'] ?? null),
-        'domicilio' => sanitizarDomicilio($data['domicilio'] ?? null),
-        'contrasena' => isset($data['contrasena']) ? $data['contrasena'] : null,
-        'rol_id' => sanitizarRolId($data['rol_id'] ?? null),
-        'deleted_at' => sanitizarFechaEliminacion($data['deleted_at'] ?? null)
-    ];
-}
+namespace App\Sanitizers;
 
-/**
- * Sanitizar ID de usuario
- */
-function sanitizarIdUsuario($id) {
-    if ($id === null || $id === '') {
-        return null;
+class UsuarioSanitizer
+{
+    public static function sanitizarUsuario($data) {
+        return [
+            'id' => self::sanitizarIdUsuario($data['id'] ?? null),
+            'nombre' => self::sanitizarNombre($data['nombre'] ?? null),
+            'apellido' => self::sanitizarApellido($data['apellido'] ?? null),
+            'email' => self::sanitizarEmail($data['email'] ?? null),
+            'telefono' => self::sanitizarTelefono($data['telefono'] ?? null),
+            'domicilio' => self::sanitizarDomicilio($data['domicilio'] ?? null),
+            'contrasena' => $data['contrasena'] ?? null,
+            'rol_id' => self::sanitizarRolId($data['rol_id'] ?? null),
+            'deleted_at' => self::sanitizarFechaEliminacion($data['deleted_at'] ?? null)
+        ];
     }
-    $idSanitizado = filter_var($id, FILTER_VALIDATE_INT);
-    return ($idSanitizado !== false && $idSanitizado > 0) ? $idSanitizado : null;
-}
 
-/**
- * Sanitizar nombre
- */
-function sanitizarNombre($nombre) {
-    if ($nombre === null || $nombre === '') {
-        return null;
+    public static function sanitizarIdUsuario($id) {
+        if ($id === null || $id === '') return null;
+        $id = filter_var($id, FILTER_VALIDATE_INT);
+        return ($id !== false && $id > 0) ? $id : null;
     }
-    
-    $nombre = trim($nombre);
-    $nombre = preg_replace('/\s+/', ' ', $nombre);
-    $nombre = ucwords(strtolower($nombre));
-    $nombre = preg_replace('/[^a-zA-ZáéíóúñÑÁÉÍÓÚ\s]/u', '', $nombre);
-    $nombre = htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8');
-    
-    if (strlen($nombre) > 50) {
-        $nombre = substr($nombre, 0, 50);
-    }
-    
-    return $nombre;
-}
 
-/**
- * Sanitizar apellido
- */
-function sanitizarApellido($apellido) {
-    if ($apellido === null || $apellido === '') {
-        return null;
+    public static function sanitizarNombre($nombre) {
+        if (!$nombre) return null;
+        $nombre = trim($nombre);
+        $nombre = preg_replace('/\s+/', ' ', $nombre);
+        $nombre = ucwords(strtolower($nombre));
+        $nombre = preg_replace('/[^a-zA-ZáéíóúñÑÁÉÍÓÚ\s]/u', '', $nombre);
+        return substr(htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8'), 0, 50);
     }
-    
-    $apellido = trim($apellido);
-    $apellido = preg_replace('/\s+/', ' ', $apellido);
-    $apellido = ucwords(strtolower($apellido));
-    $apellido = preg_replace('/[^a-zA-ZáéíóúñÑÁÉÍÓÚ\s]/u', '', $apellido);
-    $apellido = htmlspecialchars($apellido, ENT_QUOTES, 'UTF-8');
-    
-    if (strlen($apellido) > 50) {
-        $apellido = substr($apellido, 0, 50);
-    }
-    
-    return $apellido;
-}
 
-/**
- * Sanitizar email
- */
-function sanitizarEmail($email) {
-    if ($email === null || $email === '') {
-        return null;
+    public static function sanitizarApellido($apellido) {
+        if (!$apellido) return null;
+        $apellido = trim($apellido);
+        $apellido = preg_replace('/\s+/', ' ', $apellido);
+        $apellido = ucwords(strtolower($apellido));
+        $apellido = preg_replace('/[^a-zA-ZáéíóúñÑÁÉÍÓÚ\s]/u', '', $apellido);
+        return substr(htmlspecialchars($apellido, ENT_QUOTES, 'UTF-8'), 0, 50);
     }
-    
-    $email = trim($email);
-    $email = strtolower($email);
-    $email = filter_var($email, FILTER_SANITIZE_EMAIL);
-    $email = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
-    
-    if (strlen($email) > 100) {
-        $email = substr($email, 0, 100);
-    }
-    
-    return $email;
-}
 
-/**
- * Sanitizar teléfono
- */
-function sanitizarTelefono($telefono) {
-    if ($telefono === null || $telefono === '') {
-        return null;
+    public static function sanitizarEmail($email) {
+        if (!$email) return null;
+        $email = strtolower(trim($email));
+        $email = filter_var($email, FILTER_SANITIZE_EMAIL);
+        return substr(htmlspecialchars($email, ENT_QUOTES, 'UTF-8'), 0, 100);
     }
-    
-    // Eliminar todo excepto números, +, -, espacios y paréntesis
-    $telefono = preg_replace('/[^0-9+\-\s\(\)]/', '', $telefono);
-    $telefono = trim($telefono);
-    $telefono = htmlspecialchars($telefono, ENT_QUOTES, 'UTF-8');
-    
-    if (strlen($telefono) > 25) {
-        $telefono = substr($telefono, 0, 25);
-    }
-    
-    return $telefono;
-}
 
-/**
- * Sanitizar domicilio
- */
-function sanitizarDomicilio($domicilio) {
-    if ($domicilio === null || $domicilio === '') {
-        return null;
+    public static function sanitizarTelefono($telefono) {
+        if (!$telefono) return null;
+        $telefono = preg_replace('/[^0-9+\-\s\(\)]/', '', $telefono);
+        return substr(htmlspecialchars(trim($telefono), ENT_QUOTES, 'UTF-8'), 0, 25);
     }
-    
-    $domicilio = trim($domicilio);
-    $domicilio = preg_replace('/\s+/', ' ', $domicilio);
-    $domicilio = htmlspecialchars($domicilio, ENT_QUOTES, 'UTF-8');
-    
-    if (strlen($domicilio) > 100) {
-        $domicilio = substr($domicilio, 0, 100);
-    }
-    
-    return $domicilio;
-}
 
-/**
- * Sanitizar rol ID
- */
-function sanitizarRolId($rolId) {
-    if ($rolId === null || $rolId === '') {
-        return null;
+    public static function sanitizarDomicilio($domicilio) {
+        if (!$domicilio) return null;
+        $domicilio = preg_replace('/\s+/', ' ', trim($domicilio));
+        return substr(htmlspecialchars($domicilio, ENT_QUOTES, 'UTF-8'), 0, 100);
     }
-    $rolIdSanitizado = filter_var($rolId, FILTER_VALIDATE_INT);
-    return ($rolIdSanitizado !== false && $rolIdSanitizado > 0) ? $rolIdSanitizado : null;
-}
 
-/**
- * Sanitizar fecha de eliminación
- */
-function sanitizarFechaEliminacion($fecha) {
-    if ($fecha === null || $fecha === '') {
-        return null;
+    public static function sanitizarRolId($rolId) {
+        if ($rolId === null || $rolId === '') return null;
+        $rolId = filter_var($rolId, FILTER_VALIDATE_INT);
+        return ($rolId !== false && $rolId > 0) ? $rolId : null;
     }
-    $timestamp = strtotime($fecha);
-    return $timestamp ? date('Y-m-d H:i:s', $timestamp) : null;
-}
 
-/**
- * Sanitizar solo email (para login/búsqueda)
- */
-function sanitizarSoloEmail($email) {
-    return sanitizarEmail($email);
-}
-
-/**
- * Sanitizar solo contraseña
- */
-function sanitizarSoloContrasena($contrasena) {
-    if ($contrasena === null || $contrasena === '') {
-        return null;
+    public static function sanitizarFechaEliminacion($fecha) {
+        if (!$fecha) return null;
+        $timestamp = strtotime($fecha);
+        return $timestamp ? date('Y-m-d H:i:s', $timestamp) : null;
     }
-    return $contrasena;
+
+    public static function sanitizarSoloEmail($email) {
+        return self::sanitizarEmail($email);
+    }
+
+    public static function sanitizarSoloContrasena($contrasena) {
+        return $contrasena ?: null;
+    }
 }

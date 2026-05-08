@@ -1,46 +1,34 @@
 <?php
-/**
- * Controlador de Reservas
- */
 
 namespace App\Controllers;
 
-require_once SRC_PATH . 'sanitizers/ReservaSanitizer.php';
-require_once SRC_PATH . 'validators/ReservaValidator.php';
-
 use App\Models\Reserva;
+use App\Models\Propiedad;
+use App\Models\Usuario;
 use App\Sanitizers\ReservaSanitizer;
 use App\Validators\ReservaValidator;
-use Exception;
 
 class ReservaController
 {
-    private $model;
-
-    public function __construct()
-    {
-        $this->model = new Reserva();
-        header('Content-Type: application/json');
-    }
-
     /**
      * GET /api/reservas
      */
     public function index()
     {
         try {
-            $reservas = $this->model->getAll();
-            echo json_encode([
+            $reservas = Reserva::all();
+
+            return renderJson([
                 'success' => true,
                 'data' => $reservas,
-                'total' => count($reservas)
-            ], JSON_UNESCAPED_UNICODE);
-        } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+                'total' => $reservas->count()
+            ], 200);
+
+        } catch (\Exception $e) {
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -49,34 +37,34 @@ class ReservaController
      */
     public function show($id)
     {
+        // Sanitizar + validar ID
+        $idSan = ReservaSanitizer::sanitizarId($id);
+        $validacion = ReservaValidator::validarSoloId($idSan);
+
+        if (!$validacion['success']) {
+            return renderJson($validacion, 400);
+        }
+
         try {
-            $validacion = ReservaValidator::validarSoloId($id);
-            if (!$validacion['success']) {
-                http_response_code(400);
-                echo json_encode($validacion, JSON_UNESCAPED_UNICODE);
-                return;
-            }
+            $reserva = Reserva::find($idSan);
 
-            $reserva = $this->model->getById($id);
-
-            if ($reserva) {
-                echo json_encode([
-                    'success' => true,
-                    'data' => $reserva
-                ], JSON_UNESCAPED_UNICODE);
-            } else {
-                http_response_code(404);
-                echo json_encode([
+            if (!$reserva) {
+                return renderJson([
                     'success' => false,
                     'error' => 'Reserva no encontrada'
-                ], JSON_UNESCAPED_UNICODE);
+                ], 404);
             }
-        } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+
+            return renderJson([
+                'success' => true,
+                'data' => $reserva
+            ], 200);
+
+        } catch (\Exception $e) {
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -86,19 +74,19 @@ class ReservaController
     public function getByPropiedad($propiedadId)
     {
         try {
-            $reservas = $this->model->getByPropiedad($propiedadId);
-            echo json_encode([
+            $reservas = Reserva::where('propiedad_id', $propiedadId)->get();
+
+            return renderJson([
                 'success' => true,
                 'data' => $reservas,
-                'total' => count($reservas),
-                'propiedad_id' => $propiedadId
-            ], JSON_UNESCAPED_UNICODE);
-        } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+                'total' => $reservas->count()
+            ], 200);
+
+        } catch (\Exception $e) {
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -108,19 +96,19 @@ class ReservaController
     public function getByInquilino($inquilinoId)
     {
         try {
-            $reservas = $this->model->getByInquilino($inquilinoId);
-            echo json_encode([
+            $reservas = Reserva::where('inquilino_id', $inquilinoId)->get();
+
+            return renderJson([
                 'success' => true,
                 'data' => $reservas,
-                'total' => count($reservas),
-                'inquilino_id' => $inquilinoId
-            ], JSON_UNESCAPED_UNICODE);
-        } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+                'total' => $reservas->count()
+            ], 200);
+
+        } catch (\Exception $e) {
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -129,85 +117,75 @@ class ReservaController
      */
     public function store()
     {
-        $data = json_decode(file_get_contents('php://input'), true);
+        $raw = json_decode(file_get_contents('php://input'), true) ?? [];
 
-        if (!$data) {
-            http_response_code(400);
-            echo json_encode([
+        if (!is_array($raw)) {
+            return renderJson([
                 'success' => false,
-                'error' => 'Datos inválidos'
-            ], JSON_UNESCAPED_UNICODE);
-            return;
+                'error' => 'JSON inválido'
+            ], 400);
         }
 
-        // 1. SANITIZAR
-        $datosSanitizados = ReservaSanitizer::sanitizar($data);
+        // 1. Sanitizar
+        $san = ReservaSanitizer::sanitizar($raw);
 
-        // 2. VALIDAR
-        $errores = ReservaValidator::validarCrear($datosSanitizados);
+        // 2. Validar
+        $validacion = ReservaValidator::validarCrear($san);
 
-        if (!empty($errores)) {
-            http_response_code(400);
-            echo json_encode([
+        if (!$validacion['success']) {
+            return renderJson([
                 'success' => false,
-                'message' => 'Error de validación',
-                'errors' => $errores
-            ], JSON_UNESCAPED_UNICODE);
-            return;
+                'errors' => $validacion['errors']
+            ], 400);
         }
+
+        $data = $validacion['data'];
 
         try {
             // Verificar propiedad
-            if (!$this->model->propiedadExists($datosSanitizados['propiedad_id'])) {
-                http_response_code(404);
-                echo json_encode([
+            if (!Propiedad::find($data['propiedad_id'])) {
+                return renderJson([
                     'success' => false,
-                    'error' => 'Propiedad no existe o no está disponible'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                    'error' => 'Propiedad no existe'
+                ], 404);
             }
 
             // Verificar inquilino
-            if (!$this->model->inquilinoExists($datosSanitizados['inquilino_id'])) {
-                http_response_code(404);
-                echo json_encode([
+            if (!Usuario::find($data['inquilino_id'])) {
+                return renderJson([
                     'success' => false,
                     'error' => 'Inquilino no existe'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 404);
             }
 
             // Verificar disponibilidad
-            $disponible = $this->model->checkAvailability(
-                $datosSanitizados['propiedad_id'],
-                $datosSanitizados['fecha_desde'],
-                $datosSanitizados['fecha_hasta']
-            );
+            $existe = Reserva::where('propiedad_id', $data['propiedad_id'])
+                ->where(function ($q) use ($data) {
+                    $q->whereBetween('fecha_desde', [$data['fecha_desde'], $data['fecha_hasta']])
+                      ->orWhereBetween('fecha_hasta', [$data['fecha_desde'], $data['fecha_hasta']]);
+                })
+                ->exists();
 
-            if (!$disponible) {
-                http_response_code(409);
-                echo json_encode([
+            if ($existe) {
+                return renderJson([
                     'success' => false,
                     'error' => 'Propiedad no disponible en esas fechas'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 409);
             }
 
-            // Crear reserva
-            $id = $this->model->createReserva($datosSanitizados);
+            $reserva = Reserva::create($data);
 
-            http_response_code(201);
-            echo json_encode([
+            return renderJson([
                 'success' => true,
-                'message' => 'Reserva creada exitosamente',
-                'data' => ['id' => $id]
-            ], JSON_UNESCAPED_UNICODE);
-        } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+                'message' => 'Reserva creada',
+                'data' => $reserva
+            ], 201);
+
+        } catch (\Exception $e) {
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -216,57 +194,50 @@ class ReservaController
      */
     public function update($id)
     {
-        $data = json_decode(file_get_contents('php://input'), true);
+        $raw = json_decode(file_get_contents('php://input'), true) ?? [];
 
-        if (!$data) {
-            http_response_code(400);
-            echo json_encode([
+        if (!is_array($raw)) {
+            return renderJson([
                 'success' => false,
-                'error' => 'Datos inválidos'
-            ], JSON_UNESCAPED_UNICODE);
-            return;
+                'error' => 'JSON inválido'
+            ], 400);
         }
 
-        $data['id'] = $id;
+        $raw['id'] = $id;
 
-        // 1. SANITIZAR
-        $datosSanitizados = ReservaSanitizer::sanitizar($data);
+        $san = ReservaSanitizer::sanitizar($raw);
+        $validacion = ReservaValidator::validarActualizar($san);
 
-        // 2. VALIDAR
-        $errores = ReservaValidator::validarActualizar($datosSanitizados);
-
-        if (!empty($errores)) {
-            http_response_code(400);
-            echo json_encode([
+        if (!$validacion['success']) {
+            return renderJson([
                 'success' => false,
-                'message' => 'Error de validación',
-                'errors' => $errores
-            ], JSON_UNESCAPED_UNICODE);
-            return;
+                'errors' => $validacion['errors']
+            ], 400);
         }
 
         try {
-            if (!$this->model->exists($id)) {
-                http_response_code(404);
-                echo json_encode([
+            $reserva = Reserva::find($id);
+
+            if (!$reserva) {
+                return renderJson([
                     'success' => false,
                     'error' => 'Reserva no encontrada'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 404);
             }
 
-            $this->model->updateReserva($id, $datosSanitizados);
+            $reserva->update($validacion['data']);
 
-            echo json_encode([
+            return renderJson([
                 'success' => true,
-                'message' => 'Reserva actualizada exitosamente'
-            ], JSON_UNESCAPED_UNICODE);
-        } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+                'message' => 'Reserva actualizada',
+                'data' => $reserva
+            ], 200);
+
+        } catch (\Exception $e) {
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -275,58 +246,46 @@ class ReservaController
      */
     public function changeStatus($id)
     {
-        $data = json_decode(file_get_contents('php://input'), true);
+        $raw = json_decode(file_get_contents('php://input'), true) ?? [];
 
-        if (!$data || !isset($data['estado'])) {
-            http_response_code(400);
-            echo json_encode([
+        if (!isset($raw['estado'])) {
+            return renderJson([
                 'success' => false,
-                'error' => 'El estado es requerido'
-            ], JSON_UNESCAPED_UNICODE);
-            return;
+                'error' => 'Estado requerido'
+            ], 400);
         }
 
-        // Validar ID
-        $validacionId = ReservaValidator::validarSoloId($id);
-        if (!$validacionId['success']) {
-            http_response_code(400);
-            echo json_encode($validacionId, JSON_UNESCAPED_UNICODE);
-            return;
-        }
+        $estadoSan = ReservaSanitizer::sanitizarSoloEstado($raw['estado']);
+        $validacion = ReservaValidator::validarSoloEstado($estadoSan);
 
-        // Sanitizar y validar estado
-        $estadoSanitizado = ReservaSanitizer::sanitizarSoloEstado($data['estado']);
-        $validacionEstado = ReservaValidator::validarSoloEstado($estadoSanitizado);
-
-        if (!$validacionEstado['success']) {
-            http_response_code(400);
-            echo json_encode($validacionEstado, JSON_UNESCAPED_UNICODE);
-            return;
+        if (!$validacion['success']) {
+            return renderJson($validacion, 400);
         }
 
         try {
-            if (!$this->model->exists($id)) {
-                http_response_code(404);
-                echo json_encode([
+            $reserva = Reserva::find($id);
+
+            if (!$reserva) {
+                return renderJson([
                     'success' => false,
                     'error' => 'Reserva no encontrada'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 404);
             }
 
-            $this->model->changeStatus($id, $estadoSanitizado);
+            $reserva->estado = $estadoSan;
+            $reserva->save();
 
-            echo json_encode([
+            return renderJson([
                 'success' => true,
                 'message' => 'Estado actualizado',
-                'data' => ['id' => $id, 'estado' => $estadoSanitizado]
-            ], JSON_UNESCAPED_UNICODE);
-        } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+                'data' => $reserva
+            ], 200);
+
+        } catch (\Exception $e) {
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -335,41 +294,40 @@ class ReservaController
      */
     public function delete($id)
     {
-        $validacion = ReservaValidator::validarSoloId($id);
+        $idSan = ReservaSanitizer::sanitizarId($id);
+        $validacion = ReservaValidator::validarSoloId($idSan);
 
         if (!$validacion['success']) {
-            http_response_code(400);
-            echo json_encode($validacion, JSON_UNESCAPED_UNICODE);
-            return;
+            return renderJson($validacion, 400);
         }
 
         try {
-            if (!$this->model->exists($id)) {
-                http_response_code(404);
-                echo json_encode([
+            $reserva = Reserva::find($idSan);
+
+            if (!$reserva) {
+                return renderJson([
                     'success' => false,
                     'error' => 'Reserva no encontrada'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 404);
             }
 
-            $this->model->deleteReserva($id);
+            $reserva->delete();
 
-            echo json_encode([
+            return renderJson([
                 'success' => true,
-                'message' => 'Reserva eliminada exitosamente'
-            ], JSON_UNESCAPED_UNICODE);
-        } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+                'message' => 'Reserva eliminada'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
     /**
-     * GET /api/reservas/disponibilidad?propiedad_id=X&fecha_desde=Y&fecha_hasta=Z
+     * GET /api/reservas/disponibilidad
      */
     public function checkAvailability()
     {
@@ -377,52 +335,37 @@ class ReservaController
         $fechaDesde = $_GET['fecha_desde'] ?? null;
         $fechaHasta = $_GET['fecha_hasta'] ?? null;
 
-        if (!$propiedadId) {
-            http_response_code(400);
-            echo json_encode([
-                'success' => false,
-                'error' => 'propiedad_id es requerido'
-            ], JSON_UNESCAPED_UNICODE);
-            return;
-        }
-
-        // Sanitizar fechas
-        $fechasSanitizadas = ReservaSanitizer::sanitizarFechas([
+        $sanFechas = ReservaSanitizer::sanitizarFechas([
             'fecha_desde' => $fechaDesde,
             'fecha_hasta' => $fechaHasta
         ]);
 
-        // Validar fechas
-        $validacion = ReservaValidator::validarFechasDisponibilidad($fechasSanitizadas);
+        $validacion = ReservaValidator::validarFechasDisponibilidad($sanFechas);
 
         if (!$validacion['success']) {
-            http_response_code(400);
-            echo json_encode($validacion, JSON_UNESCAPED_UNICODE);
-            return;
+            return renderJson($validacion, 400);
         }
 
         try {
-            $disponible = $this->model->checkAvailability(
-                $propiedadId,
-                $fechasSanitizadas['fecha_desde'],
-                $fechasSanitizadas['fecha_hasta']
-            );
+            $existe = Reserva::where('propiedad_id', $propiedadId)
+            ->where(function ($query) use ($desde, $hasta) {
+                $query->where('fecha_desde', '<', $hasta)
+                      ->where('fecha_hasta', '>', $desde);
+            })
+            ->exists();
 
-            echo json_encode([
+            return renderJson([
                 'success' => true,
                 'data' => [
-                    'disponible' => $disponible,
-                    'propiedad_id' => $propiedadId,
-                    'fecha_desde' => $fechasSanitizadas['fecha_desde'],
-                    'fecha_hasta' => $fechasSanitizadas['fecha_hasta']
+                    'disponible' => !$existe
                 ]
-            ], JSON_UNESCAPED_UNICODE);
-        } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            ], 200);
+
+        } catch (\Exception $e) {
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 }

@@ -1,44 +1,32 @@
 <?php
-/**
- * Controlador de PropiedadServicio
- * TODAS las respuestas son en JSON
- */
 
 namespace App\Controllers;
 
-require_once SRC_PATH . 'sanitizers/PropiedadServicioSanitizer.php';
-require_once SRC_PATH . 'validators/PropiedadServicioValidator.php';
-
 use App\Models\PropiedadServicio;
+use App\Validators\PropiedadServicioValidator;
+use App\Sanitizers\PropiedadServicioSanitizer;
 use Exception;
 
-class PropiedadServicioController {
-    
-    private $model;
-    
-    public function __construct() {
-        $this->model = new PropiedadServicio();
-        header('Content-Type: application/json');
-    }
-    
+class PropiedadServicioController
+{
     /**
      * GET /api/propiedades-servicios
      */
     public function index()
     {
         try {
-            $relaciones = $this->model->getAll();
-            echo json_encode([
+            $relaciones = PropiedadServicio::all();
+
+            return renderJson([
                 'success' => true,
                 'data' => $relaciones,
-                'total' => count($relaciones)
-            ], JSON_UNESCAPED_UNICODE);
+                'total' => $relaciones->count()
+            ]);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -48,18 +36,17 @@ class PropiedadServicioController {
     public function getEstadisticas()
     {
         try {
-            $estadisticas = PropiedadServicio::getEstadisticas();
-            
-            echo json_encode([
+            $data = PropiedadServicio::getEstadisticas();
+
+            return renderJson([
                 'success' => true,
-                'data' => $estadisticas
-            ], JSON_UNESCAPED_UNICODE);
+                'data' => $data
+            ]);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -69,20 +56,19 @@ class PropiedadServicioController {
     public function getByPropiedad($propiedadId)
     {
         try {
-            $relaciones = PropiedadServicio::getByPropiedad($propiedadId);
-            
-            echo json_encode([
+            $relaciones = PropiedadServicio::where('propiedad_id', $propiedadId)->get();
+
+            return renderJson([
                 'success' => true,
                 'data' => $relaciones,
-                'total' => count($relaciones),
-                'propiedad_id' => $propiedadId
-            ], JSON_UNESCAPED_UNICODE);
+                'total' => $relaciones->count(),
+                'propiedad_id' => (int)$propiedadId
+            ]);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -92,20 +78,51 @@ class PropiedadServicioController {
     public function getByServicio($servicioId)
     {
         try {
-            $relaciones = PropiedadServicio::getByServicio($servicioId);
-            
-            echo json_encode([
+            $relaciones = PropiedadServicio::where('servicio_id', $servicioId)->get();
+
+            return renderJson([
                 'success' => true,
                 'data' => $relaciones,
-                'total' => count($relaciones),
-                'servicio_id' => $servicioId
-            ], JSON_UNESCAPED_UNICODE);
+                'total' => $relaciones->count(),
+                'servicio_id' => (int)$servicioId
+            ]);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
+        }
+    }
+
+    /**
+     * GET /api/propiedades-servicios/{id}
+     */
+    public function show($id)
+    {
+        $validacion = PropiedadServicioValidator::validarSoloId($id);
+        if (!$validacion['success']) {
+            return renderJson($validacion, 400);
+        }
+
+        try {
+            $relacion = PropiedadServicio::find($id);
+
+            if (!$relacion) {
+                return renderJson([
+                    'success' => false,
+                    'error' => 'Relación no encontrada'
+                ], 404);
+            }
+
+            return renderJson([
+                'success' => true,
+                'data' => $relacion
+            ]);
+        } catch (Exception $e) {
+            return renderJson([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -115,111 +132,89 @@ class PropiedadServicioController {
     public function store()
     {
         $data = json_decode(file_get_contents('php://input'), true);
-        
+
         if (!$data) {
-            http_response_code(400);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => 'Datos inválidos'
-            ], JSON_UNESCAPED_UNICODE);
-            return;
+            ], 400);
         }
-        
+
+        $data = PropiedadServicioSanitizer::sanitizar($data);
+        $validacion = PropiedadServicioValidator::validarCrear($data);
+
+        if (!$validacion['success']) {
+            return renderJson($validacion, 400);
+        }
+
         try {
-            // Verificar si ya existe la relación
-            if (PropiedadServicio::existsRelacion($data['propiedad_id'], $data['servicio_id'])) {
-                http_response_code(409);
-                echo json_encode([
+            if (PropiedadServicio::where('propiedad_id', $data['propiedad_id'])
+                ->where('servicio_id', $data['servicio_id'])
+                ->exists()) {
+
+                return renderJson([
                     'success' => false,
-                    'error' => 'Esta propiedad ya tiene asociado este servicio'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                    'error' => 'Esta propiedad ya tiene ese servicio'
+                ], 409);
             }
-            
-            $relacion = PropiedadServicio::createRelacion($data);
-            
-            http_response_code(201);
-            echo json_encode([
+
+            $relacion = PropiedadServicio::create($data);
+
+            return renderJson([
                 'success' => true,
-                'message' => 'Servicio asignado a la propiedad exitosamente',
-                'data' => [
-                    'id' => $relacion->id,
-                    'propiedad_id' => $data['propiedad_id'],
-                    'servicio_id' => $data['servicio_id']
-                ]
-            ], JSON_UNESCAPED_UNICODE);
+                'message' => 'Servicio asignado correctamente',
+                'data' => $relacion
+            ], 201);
+
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
     /**
      * POST /api/propiedades-servicios/sync/{propiedadId}
-     * Sincronizar servicios de una propiedad (reemplaza todos)
      */
-    public function sync($propiedadId) {
-        $data = json_decode(file_get_contents('php://input'), true);
-        
-        if (!$data || !isset($data['servicios_ids']) || !is_array($data['servicios_ids'])) {
-            http_response_code(400);
-            echo json_encode([
-                'success' => false,
-                'error' => 'Se requiere un array de IDs de servicios'
-            ], JSON_UNESCAPED_UNICODE);
-            return;
-        }
-        
-        try {
-            $count = PropiedadServicio::syncServiciosByPropiedad($propiedadId, $data['servicios_ids']);
-            
-            echo json_encode([
-                'success' => true,
-                'message' => "Servicios sincronizados exitosamente",
-                'data' => [
-                    'propiedad_id' => $propiedadId,
-                    'servicios_asignados' => $count,
-                    'servicios_ids' => $data['servicios_ids']
-                ]
-            ], JSON_UNESCAPED_UNICODE);
-        } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
-        }
-    }
-
-    /**
-     * GET /api/propiedades-servicios/{id}
-     */
-    public function show($id)
+    public function sync($propiedadId)
     {
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        if (!isset($data['servicios_ids']) || !is_array($data['servicios_ids'])) {
+            return renderJson([
+                'success' => false,
+                'error' => 'Debe enviar un array de servicios_ids'
+            ], 400);
+        }
+
         try {
-            $relacion = PropiedadServicio::getById($id);
-            
-            if ($relacion) {
-                echo json_encode([
-                    'success' => true,
-                    'data' => $relacion
-                ], JSON_UNESCAPED_UNICODE);
-            } else {
-                http_response_code(404);
-                echo json_encode([
-                    'success' => false,
-                    'error' => 'Relación no encontrada'
-                ], JSON_UNESCAPED_UNICODE);
+            // eliminar actuales
+            PropiedadServicio::where('propiedad_id', $propiedadId)->delete();
+
+            $insertados = [];
+
+            foreach ($data['servicios_ids'] as $servicioId) {
+                $insertados[] = PropiedadServicio::create([
+                    'propiedad_id' => $propiedadId,
+                    'servicio_id' => $servicioId
+                ]);
             }
+
+            return renderJson([
+                'success' => true,
+                'message' => 'Servicios sincronizados',
+                'data' => [
+                    'propiedad_id' => (int)$propiedadId,
+                    'total' => count($insertados)
+                ]
+            ]);
+
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -228,54 +223,58 @@ class PropiedadServicioController {
      */
     public function delete($id)
     {
+        $validacion = PropiedadServicioValidator::validarSoloId($id);
+        if (!$validacion['success']) {
+            return renderJson($validacion, 400);
+        }
+
         try {
-            if (!PropiedadServicio::exists($id)) {
-                http_response_code(404);
-                echo json_encode([
+            $relacion = PropiedadServicio::find($id);
+
+            if (!$relacion) {
+                return renderJson([
                     'success' => false,
                     'error' => 'Relación no encontrada'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 404);
             }
-            
-            PropiedadServicio::deleteRelacion($id);
-            
-            echo json_encode([
+
+            $relacion->delete();
+
+            return renderJson([
                 'success' => true,
-                'message' => 'Servicio desasignado de la propiedad exitosamente'
-            ], JSON_UNESCAPED_UNICODE);
+                'message' => 'Relación eliminada'
+            ]);
+
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
     /**
      * DELETE /api/propiedades-servicios/propiedad/{id}
-     * Eliminar todos los servicios de una propiedad
      */
     public function deleteByPropiedad($propiedadId)
     {
         try {
-            $count = $this->model->deleteByPropiedad($propiedadId);
-            
-            echo json_encode([
+            $count = PropiedadServicio::where('propiedad_id', $propiedadId)->delete();
+
+            return renderJson([
                 'success' => true,
-                'message' => "Se eliminaron {$count} servicios de la propiedad",
+                'message' => 'Servicios eliminados',
                 'data' => [
-                    'propiedad_id' => $propiedadId,
+                    'propiedad_id' => (int)$propiedadId,
                     'eliminados' => $count
                 ]
-            ], JSON_UNESCAPED_UNICODE);
+            ]);
+
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 }

@@ -25,7 +25,20 @@ class RolValidator
             $errores['nombre'] = $error;
         }
 
-        return $errores;
+        if (!empty($errores)) {
+            return [
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $errores,
+                'data' => null
+            ];
+        }
+
+        return [
+            'success' => true,
+            'message' => 'Validación exitosa',
+            'errors' => null,
+        ];
     }
 
     /**

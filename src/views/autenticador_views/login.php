@@ -1,5 +1,5 @@
 <?php
-$tituloPagina = "Iniciar Sesión";
+$tituloPagina = "Iniciar SesiÃ³n";
 include SRC_PATH . 'views/partials/header.php';
 ?>
 
@@ -13,27 +13,27 @@ include SRC_PATH . 'views/partials/header.php';
                 <div class="card-body p-4">
                     <?php if (isset($_GET['error']) && $_GET['error'] === 'auth'): ?>
                         <div class="alert alert-danger" role="alert">
-                            Usuario o contraseña incorrectos. Intente nuevamente.
+                            Usuario o contraseÃ±a incorrectos. Intente nuevamente.
                         </div>
                     <?php endif; ?>
 
                     <form method="POST" action="" id="formLogin" novalidate>
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Correo electrónico</label>
+                            <label class="form-label fw-bold">Correo electrÃ³nico</label>
                             <input type="email" name="email" class="form-control" placeholder="usuario@ejemplo.com" required>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Contraseña</label>
-                            <input type="password" name="contrasena" class="form-control" placeholder="Contraseña" required>
+                            <label class="form-label fw-bold">ContraseÃ±a</label>
+                            <input type="password" name="contrasena" class="form-control" placeholder="ContraseÃ±a" required>
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" value="1" id="remember" name="remember">
-                                <label class="form-check-label" for="remember">Recuérdame</label>
+                                <label class="form-check-label" for="remember">RecuÃ©rdame</label>
                             </div>
-                            <a href="#" class="small">¿Olvidaste tu contraseña?</a>
+                            <a href="#" class="small">Â¿Olvidaste tu contraseÃ±a?</a>
                         </div>
 
                         <div class="d-grid">
@@ -44,35 +44,93 @@ include SRC_PATH . 'views/partials/header.php';
             </div>
 
             <p class="text-center text-muted mt-3 small">
-                ¿No tienes cuenta? Contacta al administrador para crear un usuario.
+                Â¿No tienes cuenta?
+                <a href="<?= BASE_URL ?>/register">Registrate acÃ¡</a>
             </p>
         </div>
     </div>
 </div>
 
 <script>
-(function() {
-    // Pequeña validación cliente para mejorar UX
-    const form = document.getElementById('formLogin');
-    form.addEventListener('submit', function(e) {
-        const email = form.querySelector('[name="email"]').value.trim();
-        const pass = form.querySelector('[name="contrasena"]').value;
-        if (!email || !pass) {
-            e.preventDefault();
-            if (window.Swal) {
-                Swal.fire({ icon: 'warning', title: 'Faltan datos', text: 'Completa correo y contraseña.' });
-            } else {
-                alert('Completa correo y contraseña.');
-            }
-            return false;
-        }
-        // Permitir envío normal (servidor procesará la autenticación)
-    });
+const BASE = "http://localhost/sistema-alquiler/public";
+const form = document.getElementById('formLogin');
 
-    // Auto-focus en el primer campo
-    const first = form.querySelector('[name="email"]');
-    if (first) first.focus();
-})();
+// autofocus
+const first = form.querySelector('[name="email"]');
+if (first) first.focus();
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = form.querySelector('[name="email"]').value.trim();
+    const pass = form.querySelector('[name="contrasena"]').value;
+
+    if (!email || !pass) {
+        if (window.Swal) {
+            Swal.fire({ icon: 'warning', title: 'Faltan datos', text: 'Completa correo y contraseÃ±a.' });
+        } else {
+            alert('Completa correo y contraseÃ±a.');
+        }
+        return;
+    }
+
+    const btn = form.querySelector('button');
+    btn.disabled = true;
+    btn.textContent = "Ingresando...";
+
+    try {
+
+       const resp = await fetch(BASE + "/api/usuarios/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                email: email,
+                contrasena: pass
+            })
+        });
+
+        const raw = await resp.text();
+        console.log("RAW LOGIN:", raw);
+
+        let json;
+        try {
+            json = JSON.parse(raw);
+        } catch {
+            alert("Error del servidor (no JSON)");
+            return;
+        }
+
+        if (!resp.ok) {
+            if (window.Swal) {
+                Swal.fire({ icon: 'error', title: 'Error', text: json.error || 'Credenciales invÃ¡lidas' });
+            } else {
+                alert(json.error || 'Credenciales invÃ¡lidas');
+            }
+            return;
+        }
+
+        // âœ… guardar token
+        localStorage.setItem("token", json.token);
+
+        if (window.Swal) {
+            Swal.fire({ icon: 'success', title: 'Login exitoso' });
+        } else {
+            alert("Login exitoso");
+        }
+
+        // redirecciÃ³n
+        window.location.href = BASE + "/propiedades";
+
+    } catch (err) {
+        console.error("ERROR:", err);
+        alert("Error de conexiÃ³n");
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "Entrar";
+    }
+});
 </script>
 
 <?php include SRC_PATH . 'views/partials/footer.php'; ?>

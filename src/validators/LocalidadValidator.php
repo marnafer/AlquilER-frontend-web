@@ -3,37 +3,49 @@
 namespace App\Validators;
 
 use App\Models\Localidad;
+use App\Models\Provincia;
 
 class LocalidadValidator
 {
     /**
-     * Valida que el id sea un entero v醠ido (>0)
+     * Valida un ID recibido por URL o query string
      */
-    public static function validarId($id): bool
-    {
-        return is_numeric($id) && (int)$id > 0;
-    }
+    public static function validarId($id) {
 
-    /**
-     * Valida payload de localidad.
-     * Si $isUpdate = true permite ausencia de campos para soportar PATCH parcial.
-     * Retorna array asociativo de errores por campo.
-     */
+        if ($id === null) {
+            return [
+                'success' => false,
+                'error' => 'El ID es requerido'
+            ];
+        }
+
+        if (!is_int($id) || $id <= 0) {
+            return [
+                'success' => false,
+                'error' => 'El ID debe ser un entero positivo'
+            ];
+        }
+
+        return [
+            'success' => true,
+            'error' => null
+        ];
+    }
     public static function validarLocalidad(array $data, bool $isUpdate = false): array
     {
         $errores = [];
 
-        // Nombre (obligatorio salvo en update parcial)
+        // Nombre
         if (!$isUpdate || ($isUpdate && array_key_exists('nombre', $data))) {
             $nombre = $data['nombre'] ?? null;
+
             if (empty($nombre)) {
                 $errores['nombre'] = 'El nombre es obligatorio.';
             } elseif (mb_strlen($nombre) > 150) {
                 $errores['nombre'] = 'El nombre no puede superar 150 caracteres.';
             } else {
-                // Unicidad simple: evitar duplicados exactos al crear
                 if (!$isUpdate) {
-                    $existe = Localidad::where('nombre', $nombre)->first();
+                    $existe = \App\Models\Localidad::where('nombre', $nombre)->first();
                     if ($existe) {
                         $errores['nombre'] = 'Ya existe una localidad con ese nombre.';
                     }
@@ -41,18 +53,57 @@ class LocalidadValidator
             }
         }
 
-        // C骴igo postal (opcional pero con l韒ites)
+        // C贸digo postal
         if (array_key_exists('codigo_postal', $data) && $data['codigo_postal'] !== null) {
             $cp = $data['codigo_postal'];
+
             if (mb_strlen($cp) > 20) {
-                $errores['codigo_postal'] = 'El c骴igo postal es demasiado largo (m醲. 20 caracteres).';
+                $errores['codigo_postal'] = 'El c贸digo postal es demasiado largo.';
             }
-            // validaci髇 ligera: permitir n鷐eros, letras y guiones
+
             if (!preg_match('/^[A-Za-z0-9\-\s]{1,20}$/u', $cp)) {
-                $errores['codigo_postal'] = 'Formato de c骴igo postal inv醠ido.';
+                $errores['codigo_postal'] = 'Formato inv谩lido.';
             }
         }
 
-        return $errores;
+        // Provincia
+        if (!$isUpdate || ($isUpdate && array_key_exists('provincia_id', $data))) {
+            $provinciaId = $data['provincia_id'] ?? null;
+
+            if ($provinciaId === null) {
+                $errores['provincia_id'] = 'La provincia es obligatoria.';
+            } elseif (!filter_var($provinciaId, FILTER_VALIDATE_INT) || $provinciaId <= 0) {
+                $errores['provincia_id'] = 'ID de provincia inv谩lido.';
+            } else {
+                $existe = \App\Models\Provincia::find($provinciaId);
+                if (!$existe) {
+                    $errores['provincia_id'] = 'La provincia no existe.';
+                }
+            }
+        }
+
+        // Si hay errores
+        if (!empty($errores)) {
+            return [
+                'success' => false,
+                'message' => 'Error de validaci贸n',
+                'errors' => $errores,
+                'data' => null
+            ];
+        }
+
+        // Data limpia lista para DB
+        $dataLimpia = [
+            'nombre' => $data['nombre'],
+            'codigo_postal' => $data['codigo_postal'] ?? null,
+            'provincia_id' => (int) $data['provincia_id']
+        ];
+
+        return [
+            'success' => true,
+            'message' => 'Validaci贸n exitosa',
+            'errors' => null,
+            'data' => $dataLimpia
+        ];
     }
 }

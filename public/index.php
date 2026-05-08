@@ -5,11 +5,16 @@ declare(strict_types=1);
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/database.php';
 
+$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
+$dotenv->load();
+
 date_default_timezone_set('America/Argentina/Buenos_Aires');
 error_reporting(E_ALL);
 
 define('SRC_PATH', dirname(__DIR__) . '/src/');
 
+define('BASE_URL', rtrim(dirname($_SERVER['SCRIPT_NAME']), '/')); // Esto es útil para generar URLs relativas a la raíz del proyecto, 
+                                                                  // especialmente si no está en la raíz del servidor web.  
 ini_set('display_errors', 1);
 
 // ============================================
@@ -148,14 +153,14 @@ $GLOBALS['path'] = $path;
 
 require_once dirname(__DIR__) . '/src/debug/Debugger.php';
 
-use App\Debug\Debugger;
+//use App\Debug\Debugger;
 
-if ($_SERVER['SERVER_NAME'] === 'localhost' || $_SERVER['SERVER_NAME'] === '127.0.0.1') {
-    Debugger::setEnabled(true);
-    Debugger::enableErrorReporting();
-}
+//if ($_SERVER['SERVER_NAME'] === 'localhost' || $_SERVER['SERVER_NAME'] === '127.0.0.1') {
+//    Debugger::setEnabled(true);
+//    Debugger::enableErrorReporting();
+//}
 
-Debugger::request();
+// Debugger::request();
 
 // ============================================
 // RUTAS DEL SISTEMA (respuestas rápidas)
@@ -228,9 +233,15 @@ elseif (strpos($path, '/api/usuarios') === 0) {
     exit;
 }
 
-// --- LOGS ---
-elseif (strpos($path, '/api/logs') === 0 || strpos($path, '/api/logs-actividad') === 0) {
-    require_once SRC_PATH . 'routes/log_router.php';
+// --- LOGS ACTIVIDAD (más específico primero) ---
+elseif (strpos($path, '/api/logs-actividad') === 0) {
+    require_once SRC_PATH . 'routes/logactividad_router.php';
+    exit;
+}
+
+// --- LOGS (más general después) ---
+elseif (strpos($path, '/api/logs') === 0) {
+    require_once SRC_PATH . 'routes/logactividad_router.php';
     exit;
 }
 
@@ -255,6 +266,12 @@ elseif (strpos($path, '/api/categorias') === 0) {
 // --- PROVINCIAS ---
 elseif (strpos($path, '/api/provincias') === 0) {
     require_once SRC_PATH . 'routes/provincia_router.php';
+    exit;
+}
+
+// --- PROPIEDADES-SERVICIOS ---
+elseif (strpos($path, '/api/propiedades-servicios') === 0) {
+    require_once SRC_PATH . 'routes/propiedadservicio_router.php';
     exit;
 }
 

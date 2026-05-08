@@ -11,7 +11,7 @@ class LogActividadValidator
     {
         $errores = [];
 
-        // Validar ID (solo si se requiere)
+        // ID (solo si se requiere)
         if ($requerirId) {
             $error = self::validarId($data['id'] ?? null);
             if ($error) {
@@ -19,7 +19,7 @@ class LogActividadValidator
             }
         }
 
-        // Validar usuario_id (opcional)
+        // usuario_id (opcional)
         if (isset($data['usuario_id']) && !empty($data['usuario_id'])) {
             $error = self::validarUsuarioId($data['usuario_id']);
             if ($error) {
@@ -27,13 +27,13 @@ class LogActividadValidator
             }
         }
 
-        // Validar acción
+        // acción
         $error = self::validarAccion($data['accion'] ?? null);
         if ($error) {
             $errores['accion'] = $error;
         }
 
-        // Validar IP (opcional)
+        // IP (opcional)
         if (isset($data['ip_address']) && !empty($data['ip_address'])) {
             $error = self::validarIp($data['ip_address']);
             if ($error) {
@@ -41,7 +41,20 @@ class LogActividadValidator
             }
         }
 
-        return $errores;
+        // 🔥 FORMATO CORRECTO
+        if (count($errores) > 0) {
+            return [
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $errores
+            ];
+        }
+
+        return [
+            'success' => true,
+            'message' => 'Validación exitosa',
+            'errors' => null
+        ];
     }
 
     /**
@@ -65,12 +78,12 @@ class LogActividadValidator
     }
 
     /**
-     * Validar ID de usuario
+     * Validar usuario_id
      */
     public static function validarUsuarioId($id): ?string
     {
         if ($id === null || $id === '') {
-            return null; // Opcional
+            return null;
         }
 
         if (!is_numeric($id)) {
@@ -93,13 +106,13 @@ class LogActividadValidator
             return 'La acción es requerida';
         }
 
-        $accionLimpia = trim($accion);
+        $accion = trim($accion);
 
-        if (strlen($accionLimpia) < 3) {
+        if (strlen($accion) < 3) {
             return 'La acción debe tener al menos 3 caracteres';
         }
 
-        if (strlen($accionLimpia) > 255) {
+        if (strlen($accion) > 255) {
             return 'La acción no puede exceder los 255 caracteres';
         }
 
@@ -123,7 +136,7 @@ class LogActividadValidator
     }
 
     /**
-     * Validar para crear nuevo log
+     * Crear
      */
     public static function validarCrear(array $data): array
     {
@@ -131,7 +144,7 @@ class LogActividadValidator
     }
 
     /**
-     * Validar solo ID
+     * Solo ID
      */
     public static function validarSoloId($id): array
     {

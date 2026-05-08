@@ -1,13 +1,6 @@
 <?php
-/**
- * Controlador de Roles
- * TODAS las respuestas son en JSON
- */
 
 namespace App\Controllers;
-
-require_once SRC_PATH . 'sanitizers/RolSanitizer.php';
-require_once SRC_PATH . 'validators/RolValidator.php';
 
 use App\Models\Rol;
 use App\Sanitizers\RolSanitizer;
@@ -23,18 +16,17 @@ class RolController
     {
         try {
             $roles = Rol::getAll();
-            
-            echo json_encode([
+
+            return renderJson([
                 'success' => true,
                 'data' => $roles,
                 'total' => count($roles)
-            ], JSON_UNESCAPED_UNICODE);
+            ]);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -45,18 +37,17 @@ class RolController
     {
         try {
             $roles = Rol::getAllWithCount();
-            
-            echo json_encode([
+
+            return renderJson([
                 'success' => true,
                 'data' => $roles,
                 'total' => count($roles)
-            ], JSON_UNESCAPED_UNICODE);
+            ]);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -67,25 +58,23 @@ class RolController
     {
         try {
             $rol = Rol::getDefaultRol();
-            
-            if ($rol) {
-                echo json_encode([
-                    'success' => true,
-                    'data' => $rol
-                ], JSON_UNESCAPED_UNICODE);
-            } else {
-                http_response_code(404);
-                echo json_encode([
+
+            if (!$rol) {
+                return renderJson([
                     'success' => false,
                     'error' => 'No se encontró un rol por defecto'
-                ], JSON_UNESCAPED_UNICODE);
+                ], 404);
             }
+
+            return renderJson([
+                'success' => true,
+                'data' => $rol
+            ]);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -94,34 +83,31 @@ class RolController
      */
     public function show($id)
     {
+        $validacion = RolValidator::validarSoloId($id);
+
+        if (!$validacion['success']) {
+            return renderJson($validacion, 400);
+        }
+
         try {
-            $validacion = RolValidator::validarSoloId($id);
-            if (!$validacion['success']) {
-                http_response_code(400);
-                echo json_encode($validacion, JSON_UNESCAPED_UNICODE);
-                return;
-            }
-            
             $rol = Rol::getById($id);
-            
-            if ($rol) {
-                echo json_encode([
-                    'success' => true,
-                    'data' => $rol
-                ], JSON_UNESCAPED_UNICODE);
-            } else {
-                http_response_code(404);
-                echo json_encode([
+
+            if (!$rol) {
+                return renderJson([
                     'success' => false,
                     'error' => 'Rol no encontrado'
-                ], JSON_UNESCAPED_UNICODE);
+                ], 404);
             }
+
+            return renderJson([
+                'success' => true,
+                'data' => $rol
+            ]);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -131,57 +117,42 @@ class RolController
     public function store()
     {
         $data = json_decode(file_get_contents('php://input'), true);
-        
+
         if (!$data) {
-            http_response_code(400);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => 'Datos inválidos'
-            ], JSON_UNESCAPED_UNICODE);
-            return;
+            ], 400);
         }
-        
-        // 1. SANITIZAR
-        $datosSanitizados = RolSanitizer::sanitizar($data);
-        
-        // 2. VALIDAR
-        $errores = RolValidator::validarCrear($datosSanitizados);
-        
-        if (!empty($errores)) {
-            http_response_code(400);
-            echo json_encode([
-                'success' => false,
-                'message' => 'Error de validación',
-                'errors' => $errores
-            ], JSON_UNESCAPED_UNICODE);
-            return;
+
+        $datos = RolSanitizer::sanitizar($data);
+        $validacion = RolValidator::validarCrear($datos);
+
+        if (!$validacion['success']) {
+            return renderJson($validacion, 400);
         }
-        
+
         try {
-            // Verificar si ya existe un rol con el mismo nombre
-            if (Rol::existsByNombre($datosSanitizados['nombre'])) {
-                http_response_code(409);
-                echo json_encode([
+            if (Rol::existsByNombre($datos['nombre'])) {
+                return renderJson([
                     'success' => false,
                     'error' => 'Ya existe un rol con este nombre'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 409);
             }
-            
-            $id = Rol::createRol($datosSanitizados);
-            
-            http_response_code(201);
-            echo json_encode([
+
+            $id = Rol::createRol($datos);
+
+            return renderJson([
                 'success' => true,
                 'message' => 'Rol creado exitosamente',
                 'data' => ['id' => $id]
-            ], JSON_UNESCAPED_UNICODE);
+            ], 201);
+
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -191,66 +162,50 @@ class RolController
     public function update($id)
     {
         $data = json_decode(file_get_contents('php://input'), true);
-        
+
         if (!$data) {
-            http_response_code(400);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => 'Datos inválidos'
-            ], JSON_UNESCAPED_UNICODE);
-            return;
+            ], 400);
         }
-        
+
         $data['id'] = $id;
-        
-        // 1. SANITIZAR
-        $datosSanitizados = RolSanitizer::sanitizar($data);
-        
-        // 2. VALIDAR
-        $errores = RolValidator::validarActualizar($datosSanitizados);
-        
-        if (!empty($errores)) {
-            http_response_code(400);
-            echo json_encode([
-                'success' => false,
-                'message' => 'Error de validación',
-                'errors' => $errores
-            ], JSON_UNESCAPED_UNICODE);
-            return;
+
+        $datos = RolSanitizer::sanitizar($data);
+        $validacion = RolValidator::validarActualizar($datos);
+
+        if (!$validacion['success']) {
+            return renderJson($validacion, 400);
         }
-        
+
         try {
             if (!Rol::exists($id)) {
-                http_response_code(404);
-                echo json_encode([
+                return renderJson([
                     'success' => false,
                     'error' => 'Rol no encontrado'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 404);
             }
-            
-            // Verificar si ya existe otro rol con el mismo nombre
-            if (Rol::existsByNombre($datosSanitizados['nombre'], $id)) {
-                http_response_code(409);
-                echo json_encode([
+
+            if (Rol::existsByNombre($datos['nombre'], $id)) {
+                return renderJson([
                     'success' => false,
                     'error' => 'Ya existe otro rol con este nombre'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 409);
             }
-            
-            Rol::updateRol($id, $datosSanitizados);
-            
-            echo json_encode([
+
+            Rol::updateRol($id, $datos);
+
+            return renderJson([
                 'success' => true,
                 'message' => 'Rol actualizado exitosamente'
-            ], JSON_UNESCAPED_UNICODE);
+            ]);
+
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -260,47 +215,40 @@ class RolController
     public function delete($id)
     {
         $validacion = RolValidator::validarSoloId($id);
-        
+
         if (!$validacion['success']) {
-            http_response_code(400);
-            echo json_encode($validacion, JSON_UNESCAPED_UNICODE);
-            return;
+            return renderJson($validacion, 400);
         }
-        
+
         try {
             if (!Rol::exists($id)) {
-                http_response_code(404);
-                echo json_encode([
+                return renderJson([
                     'success' => false,
                     'error' => 'Rol no encontrado'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 404);
             }
-            
+
             $rol = Rol::find($id);
-            
-            // Verificar si tiene usuarios asociados
+
             if ($rol && $rol->hasUsuarios()) {
-                http_response_code(409);
-                echo json_encode([
+                return renderJson([
                     'success' => false,
                     'error' => 'No se puede eliminar el rol porque tiene usuarios asociados'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 409);
             }
-            
+
             Rol::deleteRol($id);
-            
-            echo json_encode([
+
+            return renderJson([
                 'success' => true,
                 'message' => 'Rol eliminado exitosamente'
-            ], JSON_UNESCAPED_UNICODE);
+            ]);
+
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 }

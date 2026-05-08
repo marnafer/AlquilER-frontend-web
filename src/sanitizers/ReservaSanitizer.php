@@ -108,18 +108,14 @@ class ReservaSanitizer
     /**
      * Sanitizar estado
      */
-    public static function sanitizarEstado($estado): string
+    public static function sanitizarEstado($estado): ?string
     {
-        $estadosValidos = ['pendiente', 'confirmada', 'cancelada', 'finalizada'];
-        
         if ($estado === null || $estado === '') {
-            return 'pendiente';
+            return null;
         }
-        
+
         $estado = strtolower(trim($estado));
-        $estado = htmlspecialchars($estado, ENT_QUOTES, 'UTF-8');
-        
-        return in_array($estado, $estadosValidos) ? $estado : 'pendiente';
+        return htmlspecialchars($estado, ENT_QUOTES, 'UTF-8');
     }
 
     /**

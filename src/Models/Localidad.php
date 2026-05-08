@@ -10,7 +10,7 @@ class Localidad extends Model
     protected $primaryKey = 'id';
     public $timestamps = false;
 
-    protected $fillable = ['nombre', 'codigo_postal'];
+    protected $fillable = ['nombre', 'codigo_postal', 'provincia_id'];
 
     public function provincia()
     {

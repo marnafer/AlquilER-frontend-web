@@ -80,4 +80,40 @@ class PropiedadImagenValidator
 
         return $errores;
     }
+
+    public static function validarSoloId($id): array
+    {
+        if (!self::validarId($id)) {
+            return [
+                'success' => false,
+                'message' => 'ID inválido',
+                'errors' => [
+                    'id' => 'El ID debe ser un número positivo'
+                ]
+            ];
+        }
+
+        return [
+            'success' => true,
+            'message' => 'ID válido',
+            'errors' => null
+        ];
+    }
+
+    public static function validarCrear(array $data, $file = null): array
+    {
+        $errores = self::validarPropiedadImagen($data, $file);
+        if (!empty($errores)) {
+            return [
+                'success' => false,
+                'message' => 'Validación fallida',
+                'errors' => $errores
+            ];
+        }
+        return [
+            'success' => true,
+            'message' => 'Validación exitosa',
+            'errors' => null
+        ];
+    }
 }

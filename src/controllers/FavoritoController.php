@@ -2,252 +2,211 @@
 
 namespace App\Controllers;
 
-require_once SRC_PATH . 'sanitizers/FavoritoSanitizer.php';
-require_once SRC_PATH . 'validators/FavoritoValidator.php';
-
 use App\Models\Favorito;
-use App\Models\Usuario; 
+use App\Models\Usuario;
 use App\Models\Propiedad;
 use App\Sanitizers\FavoritoSanitizer;
 use App\Validators\FavoritoValidator;
 use Exception;
 
+// Futuras implementaciones: Autenticacion + DELETE tipo : DELETE /favoritos/{usuario_id}/{propiedad_id} 
+
 class FavoritoController {
 
-    /**
-     * GET /api/favoritos
-     * Listar todos los favoritos (opcional)
-     */
     public function listarTodos() {
-        header('Content-Type: application/json; charset=utf-8');
-
         try {
             $favoritos = Favorito::with(['usuario', 'propiedad'])->get();
 
-            echo json_encode([
+            return renderJson([
                 'success' => true,
                 'data' => $favoritos,
                 'total' => $favoritos->count()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 200);
 
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
-    /**
-     * GET /api/usuarios/{id}/favoritos
-     * Listar favoritos por usuario
-     */
     public function listarFavoritos($usuario_id) {
-        header('Content-Type: application/json; charset=utf-8');
-
         try {
-            // Verificar que el usuario existe
             $usuario = Usuario::find($usuario_id);
+
             if (!$usuario) {
-                http_response_code(404);
-                echo json_encode([
+                return renderJson([
                     'success' => false,
                     'error' => 'Usuario no encontrado'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 404);
             }
 
             $favoritos = Favorito::where('usuario_id', $usuario_id)
                 ->with('propiedad')
                 ->get();
 
-            echo json_encode([
+            return renderJson([
                 'success' => true,
                 'data' => $favoritos,
                 'total' => $favoritos->count()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 200);
 
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
-    /**
-     * POST /api/favoritos
-     * Agregar favorito
-     */
     public function agregarFavorito() {
-        header('Content-Type: application/json; charset=utf-8');
 
-        // Soporte para JSON o $_POST tradicional
-        $inputRaw = file_get_contents("php://input");
-        $inputData = json_decode($inputRaw, true) ?? $_POST;
+        $raw = json_decode(file_get_contents("php://input"), true);
 
-        // 1. Sanitización
-        $datosLimpios = FavoritoSanitizer::sanitizarFavorito($inputData);
-        
-        // 2. Validación
+        if (!is_array($raw)) {
+            return renderJson([
+                'success' => false,
+                'error' => 'JSON inválido'
+            ], 400);
+        }
+
+        $datosLimpios = FavoritoSanitizer::sanitizarFavorito($raw);
         $errores = FavoritoValidator::validarFavorito($datosLimpios);
 
         if (!empty($errores)) {
-            http_response_code(400);
-            echo json_encode([
-                'success' => false, 
+            return renderJson([
+                'success' => false,
                 'errors' => $errores
-            ], JSON_UNESCAPED_UNICODE);
-            return;
+            ], 400);
         }
 
         try {
-            // Verificar que el usuario existe
             $usuario = Usuario::find($datosLimpios['usuario_id']);
             if (!$usuario) {
-                http_response_code(404);
-                echo json_encode([
+                return renderJson([
                     'success' => false,
                     'error' => 'Usuario no encontrado'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 404);
             }
 
-            // Verificar que la propiedad existe
             $propiedad = Propiedad::find($datosLimpios['propiedad_id']);
             if (!$propiedad) {
-                http_response_code(404);
-                echo json_encode([
+                return renderJson([
                     'success' => false,
                     'error' => 'Propiedad no encontrada'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 404);
             }
 
-            // Verificar si ya existe para evitar duplicados
             $existe = Favorito::where('usuario_id', $datosLimpios['usuario_id'])
-                              ->where('propiedad_id', $datosLimpios['propiedad_id'])
-                              ->first();
-            
+                ->where('propiedad_id', $datosLimpios['propiedad_id'])
+                ->first();
+
             if ($existe) {
-                http_response_code(409);
-                echo json_encode([
-                    'success' => false, 
+                return renderJson([
+                    'success' => false,
                     'error' => 'Ya está en favoritos'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 409);
             }
 
             $favorito = Favorito::create($datosLimpios);
-            
-            http_response_code(201);
-            echo json_encode([
+
+            return renderJson([
                 'success' => true,
                 'message' => 'Agregado a favoritos',
                 'data' => $favorito
-            ], JSON_UNESCAPED_UNICODE);
+            ], 201);
 
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
-    /**
-     * DELETE /api/favoritos
-     * Eliminar favorito (por usuario_id y propiedad_id)
-     */
     public function eliminarFavorito() {
-        header('Content-Type: application/json; charset=utf-8');
 
-        $data = json_decode(file_get_contents('php://input'), true) ?? [];
+        $raw = json_decode(file_get_contents('php://input'), true);
 
-        // 1. Sanitizar
-        $datosLimpios = FavoritoSanitizer::sanitizarFavorito($data);
+        if (!is_array($raw)) {
+            return renderJson([
+                'success' => false,
+                'error' => 'JSON inválido'
+            ], 400);
+        }
 
-        // 2. Validar existencia
+        $datosLimpios = FavoritoSanitizer::sanitizarFavorito($raw);
         $errores = FavoritoValidator::validarQuitarFavorito($datosLimpios);
 
         if (!empty($errores)) {
-            http_response_code(404);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'errors' => $errores
-            ], JSON_UNESCAPED_UNICODE);
-            return;
+            ], 400);
         }
 
         try {
-            // Verificar que existe el favorito
             $existe = Favorito::where('usuario_id', $datosLimpios['usuario_id'])
                 ->where('propiedad_id', $datosLimpios['propiedad_id'])
                 ->first();
 
             if (!$existe) {
-                http_response_code(404);
-                echo json_encode([
+                return renderJson([
                     'success' => false,
                     'error' => 'Favorito no encontrado'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 404);
             }
 
-            // Eliminar
-            Favorito::where('usuario_id', $datosLimpios['usuario_id'])
-                ->where('propiedad_id', $datosLimpios['propiedad_id'])
-                ->delete();
+            $existe->delete();
 
-            echo json_encode([
+            return renderJson([
                 'success' => true,
                 'message' => 'Favorito eliminado correctamente'
-            ], JSON_UNESCAPED_UNICODE);
+            ], 200);
 
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
-    /**
-     * DELETE /api/favoritos/{id}
-     * Eliminar favorito por ID
-     */
     public function eliminarFavoritoPorId($id) {
-        header('Content-Type: application/json; charset=utf-8');
 
         try {
-            $favorito = Favorito::find($id);
+            $idSan = FavoritoSanitizer::sanitizarId($id);
+            $validacion = FavoritoValidator::validarId($idSan);
+
+            if (!$validacion['success']) {
+                return renderJson([
+                    'success' => false,
+                    'error' => $validacion['error']
+                ], 400);
+            }
+
+            $favorito = Favorito::find($idSan);
 
             if (!$favorito) {
-                http_response_code(404);
-                echo json_encode([
+                return renderJson([
                     'success' => false,
                     'error' => 'Favorito no encontrado'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 404);
             }
 
             $favorito->delete();
 
-            echo json_encode([
+            return renderJson([
                 'success' => true,
                 'message' => 'Favorito eliminado exitosamente'
-            ], JSON_UNESCAPED_UNICODE);
+            ], 200);
 
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 }

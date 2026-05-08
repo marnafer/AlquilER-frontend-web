@@ -19,9 +19,16 @@ class LocalidadSanitizer
     public static function sanitizarLocalidad(array $data): array
     {
         return [
-            'nombre' => isset($data['nombre']) ? htmlspecialchars(trim((string)$data['nombre']), ENT_QUOTES, 'UTF-8') : null,
+            'nombre' => isset($data['nombre']) 
+                ? htmlspecialchars(trim((string)$data['nombre']), ENT_QUOTES, 'UTF-8') 
+                : null,
+
             'codigo_postal' => isset($data['codigo_postal']) && $data['codigo_postal'] !== '' 
                 ? htmlspecialchars(trim((string)$data['codigo_postal']), ENT_QUOTES, 'UTF-8') 
+                : null,
+
+            'provincia_id' => isset($data['provincia_id']) && $data['provincia_id'] !== ''
+                ? (int) $data['provincia_id']
                 : null,
         ];
     }

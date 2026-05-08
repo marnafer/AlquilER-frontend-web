@@ -1,7 +1,5 @@
 <?php
 
-require_once SRC_PATH . 'controllers/LogActividadController.php';
-
 use App\Controllers\LogActividadController;
 
 $controller = new LogActividadController();

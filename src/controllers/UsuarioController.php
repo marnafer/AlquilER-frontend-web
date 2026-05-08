@@ -1,378 +1,315 @@
 <?php
-/**
- * Controlador de Usuarios
- * Maneja API JSON y vistas HTML.
- */
 
 namespace App\Controllers;
 
-require_once SRC_PATH . 'sanitizers/UsuarioSanitizer.php';
-require_once SRC_PATH . 'validators/UsuarioValidator.php';
-
 use App\Models\Usuario;
+use App\Helpers\JwtHelper;
+use App\Middlewares\AutenticadorMiddleware;
+use App\Sanitizers\UsuarioSanitizer;
+use App\Validators\UsuarioValidator;
 
-class UsuarioController {
-    
-    private $model;
-    
-    public function __construct() {
-        $this->model = new Usuario();
-    }
-    
+class UsuarioController
+{
     /**
+     * SOLO ADMIN
      * GET /api/usuarios
      */
-    public function listarUsuariosApi() {
-        header('Content-Type: application/json; charset=utf-8');
+    public function listarUsuariosApi()
+    {
+        $user = AutenticadorMiddleware::verificar();
+
+        if ($user->rol_id != 3) {
+            renderJson([
+                'success' => false,
+                'error' => 'Solo administradores'
+            ], 403);
+        }
+
         try {
-            $usuarios = $this->model->obtenerTodos();
-            echo json_encode([
+            $usuarios = Usuario::all();
+
+            renderJson([
                 'success' => true,
                 'data' => $usuarios,
-                'total' => count($usuarios)
-            ], JSON_UNESCAPED_UNICODE);
+                'total' => $usuarios->count()
+            ], 200);
+
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
     /**
      * GET /api/usuarios/{id}
      */
-    public function mostrar($id) {
-        header('Content-Type: application/json; charset=utf-8');
+    public function mostrar($id)
+    {
+        $user = AutenticadorMiddleware::verificar();
+
+        $idSan = (int)$id;
+
+        if ($user->rol_id != 3 && $user->sub != $idSan) {
+            renderJson([
+                'success' => false,
+                'error' => 'No autorizado'
+            ], 403);
+        }
+
         try {
-            $validacion = validarSoloIdUsuario($id);
-            if (!$validacion['success']) {
-                http_response_code(400);
-                echo json_encode($validacion, JSON_UNESCAPED_UNICODE);
-                return;
-            }
-            
-            $usuario = $this->model->obtenerPorId($id);
-            
-            if ($usuario) {
-                echo json_encode([
-                    'success' => true,
-                    'data' => $usuario
-                ], JSON_UNESCAPED_UNICODE);
-            } else {
-                http_response_code(404);
-                echo json_encode([
+            $usuario = Usuario::find($idSan);
+
+            if (!$usuario) {
+                renderJson([
                     'success' => false,
                     'error' => 'Usuario no encontrado'
-                ], JSON_UNESCAPED_UNICODE);
+                ], 404);
             }
-        } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
-        }
-    }
 
-    /**
-     * GET /api/usuarios/rol/{rolId}
-     */
-    public function obtenerPorRol($rolId) {
-        header('Content-Type: application/json; charset=utf-8');
-        try {
-            $usuarios = $this->model->obtenerPorRol($rolId);
-            echo json_encode([
+            renderJson([
                 'success' => true,
-                'data' => $usuarios,
-                'total' => count($usuarios),
-                'rol_id' => $rolId
-            ], JSON_UNESCAPED_UNICODE);
+                'data' => $usuario
+            ], 200);
+
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
     /**
      * POST /api/usuarios
+     * REGISTRO
      */
-    public function guardar() {
-        header('Content-Type: application/json; charset=utf-8');
-        $data = json_decode(file_get_contents('php://input'), true);
-        
-        if (!$data) {
-            http_response_code(400);
-            echo json_encode([
+    public function registrar()
+    {
+        $raw = json_decode(file_get_contents('php://input'), true);
+
+        if (!$raw || !is_array($raw)) {
+            renderJson([
                 'success' => false,
                 'error' => 'Datos inválidos'
-            ], JSON_UNESCAPED_UNICODE);
-            return;
+            ], 400);
         }
-        
-        // Sanitizar
-        $datosSanitizados = sanitizarUsuario($data);
-        
-        // Validar
-        $validacion = validarCrearUsuario($datosSanitizados);
+
+        // 1. Sanitizar
+        $data = UsuarioSanitizer::sanitizarUsuario($raw);
+
+        // 2. Validar
+        $validacion = UsuarioValidator::validarCrearUsuario($data);
+
         if (!$validacion['success']) {
-            http_response_code(400);
-            echo json_encode($validacion, JSON_UNESCAPED_UNICODE);
-            return;
+            renderJson([
+                'success' => false,
+                'errors' => $validacion['errors']
+            ], 400);
         }
-        
+
+        // 3. Verificar email duplicado
+        $usuarioModel = new Usuario();
+
+        if ($usuarioModel->existePorEmail($data['email'])) {
+            renderJson([
+                'success' => false,
+                'error' => 'Email ya registrado'
+            ], 409);
+        }
+
         try {
-            // Verificar si ya existe el email
-            if ($this->model->existePorEmail($datosSanitizados['email'])) {
-                http_response_code(409);
-                echo json_encode([
-                    'success' => false,
-                    'error' => 'Ya existe un usuario con este email'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
-            }
-            
-            // Hashear contraseña
-            $datosSanitizados['contrasena'] = password_hash($datosSanitizados['contrasena'], PASSWORD_DEFAULT);
-            
-            $id = $this->model->crear($datosSanitizados);
-            unset($datosSanitizados['contrasena']);
-            $datosSanitizados['id'] = $id;
-            
-            http_response_code(201);
-            echo json_encode([
+            // 4. Hashear contraseña
+            $data['contrasena'] = password_hash($data['contrasena'], PASSWORD_DEFAULT);
+
+            // 5. Crear usuario
+            $usuario = Usuario::create($data);
+
+            renderJson([
                 'success' => true,
-                'message' => 'Usuario creado exitosamente',
-                'data' => $datosSanitizados
-            ], JSON_UNESCAPED_UNICODE);
+                'message' => 'Usuario creado correctamente',
+                'data' => [
+                    'id' => $usuario->id,
+                    'email' => $usuario->email
+                ]
+            ], 201);
+
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
+        }
+    }
+
+    /**
+     * POST /api/autenticador/login
+     */
+    public static function login()
+    {
+        $raw = json_decode(file_get_contents('php://input'), true);
+
+        $email = $raw['email'] ?? null;
+        $contrasena = $raw['contrasena'] ?? null;
+
+        if (!$email || !$contrasena) {
+            renderJson([
+                'success' => false,
+                'error' => 'Datos incompletos'
+            ], 400);
+        }
+
+        // Sanitizar email
+        $email = UsuarioSanitizer::sanitizarSoloEmail($email);
+
+        // Validar email
+        $validEmail = UsuarioValidator::validarEmailLoginUsuario($email);
+        if (!$validEmail['success']) {
+            renderJson($validEmail, 400);
+        }
+
+        // Validar contraseña
+        $validPass = UsuarioValidator::validarContrasenaUsuario($contrasena);
+        if (!$validPass['success']) {
+            renderJson($validPass, 400);
+        }
+
+        $usuarioModel = new Usuario();
+        $usuario = $usuarioModel->verificarCredenciales($email, $contrasena);
+
+        if (!$usuario) {
+            renderJson([
+                'success' => false,
+                'error' => 'Credenciales inválidas'
+            ], 401);
+        }
+
+        $token = JwtHelper::generarToken($usuario);
+
+        renderJson([
+            'success' => true,
+            'message' => 'Login exitoso',
+            'token' => $token,
+            'user' => [
+                'id' => $usuario->id,
+                'email' => $usuario->email,
+                'rol_id' => $usuario->rol_id
+            ]
+        ], 200);
+    }
+
+    /**
+     * LOGOUT
+     */
+    public function logout()
+    {
+        renderJson([
+            'success' => true,
+            'message' => 'Logout (el cliente elimina el token)'
+        ], 200);
+    }
+
+    /**
+     * DELETE /api/usuarios/{id}
+     */
+    public function eliminar($id)
+    {
+        $user = AutenticadorMiddleware::verificar();
+
+        if ($user->rol_id != 3) {
+            renderJson([
+                'success' => false,
+                'error' => 'Solo administradores'
+            ], 403);
+        }
+
+        try {
+            $usuario = Usuario::find((int)$id);
+
+            if (!$usuario) {
+                renderJson([
+                    'success' => false,
+                    'error' => 'Usuario no encontrado'
+                ], 404);
+            }
+
+            $usuario->delete();
+
+            renderJson([
+                'success' => true,
+                'message' => 'Usuario eliminado'
+            ], 200);
+
+        } catch (\Exception $e) {
+            renderJson([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
     /**
      * PUT /api/usuarios/{id}
      */
-    public function actualizar($id) {
-        header('Content-Type: application/json; charset=utf-8');
-        $data = json_decode(file_get_contents('php://input'), true);
-        
-        if (!$data) {
-            http_response_code(400);
-            echo json_encode([
+    public function actualizar($id)
+    {
+        $user = AutenticadorMiddleware::verificar();
+
+        $id = (int)$id;
+
+        if ($user->rol_id != 3 && $user->sub != $id) {
+            renderJson([
+                'success' => false,
+                'error' => 'No autorizado'
+            ], 403);
+        }
+
+        $raw = json_decode(file_get_contents('php://input'), true);
+
+        if (!is_array($raw)) {
+            renderJson([
                 'success' => false,
                 'error' => 'Datos inválidos'
-            ], JSON_UNESCAPED_UNICODE);
-            return;
+            ], 400);
         }
-        
-        $data['id'] = $id;
-        
-        // Verificar si se actualiza contraseña
-        $requerirContrasena = isset($data['contrasena']) && !empty($data['contrasena']);
-        
-        // Sanitizar
-        $datosSanitizados = sanitizarUsuario($data);
-        
-        // Validar
-        $validacion = validarActualizarUsuario($datosSanitizados, $requerirContrasena);
+
+        $data = UsuarioSanitizer::sanitizarUsuario($raw);
+        $validacion = UsuarioValidator::validarActualizarUsuario($data);
+
         if (!$validacion['success']) {
-            http_response_code(400);
-            echo json_encode($validacion, JSON_UNESCAPED_UNICODE);
-            return;
+            renderJson([
+                'success' => false,
+                'errors' => $validacion['errors']
+            ], 400);
         }
-        
+
         try {
-            if (!$this->model->existe($id)) {
-                http_response_code(404);
-                echo json_encode([
+            $usuario = Usuario::find($id);
+
+            if (!$usuario) {
+                renderJson([
                     'success' => false,
                     'error' => 'Usuario no encontrado'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 404);
             }
-            
-            // Verificar email único
-            if (isset($datosSanitizados['email']) && $this->model->existePorEmail($datosSanitizados['email'], $id)) {
-                http_response_code(409);
-                echo json_encode([
-                    'success' => false,
-                    'error' => 'Ya existe otro usuario con este email'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+
+            if (!empty($data['contrasena'])) {
+                $data['contrasena'] = password_hash($data['contrasena'], PASSWORD_DEFAULT);
             }
-            
-            // Hashear contraseña si se actualiza
-            if ($requerirContrasena) {
-                $datosSanitizados['contrasena'] = password_hash($datosSanitizados['contrasena'], PASSWORD_DEFAULT);
-            }
-            
-            $this->model->actualizar($id, $datosSanitizados);
-            
-            // Eliminar contraseña de la respuesta
-            unset($datosSanitizados['contrasena']);
-            
-            echo json_encode([
+
+            $usuario->update($data);
+
+            renderJson([
                 'success' => true,
-                'message' => 'Usuario actualizado exitosamente',
-                'data' => $datosSanitizados
-            ], JSON_UNESCAPED_UNICODE);
+                'message' => 'Usuario actualizado correctamente'
+            ], 200);
+
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
-    }
-
-    /**
-     * DELETE /api/usuarios/{id}
-     */
-    public function eliminar($id) {
-        header('Content-Type: application/json; charset=utf-8');
-        $validacion = validarSoloIdUsuario($id);
-        
-        if (!$validacion['success']) {
-            http_response_code(400);
-            echo json_encode($validacion, JSON_UNESCAPED_UNICODE);
-            return;
-        }
-        
-        try {
-            if (!$this->model->existe($id)) {
-                http_response_code(404);
-                echo json_encode([
-                    'success' => false,
-                    'error' => 'Usuario no encontrado'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
-            }
-            
-            $this->model->eliminar($id);
-            
-            echo json_encode([
-                'success' => true,
-                'message' => 'Usuario eliminado exitosamente'
-            ], JSON_UNESCAPED_UNICODE);
-        } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
-        }
-    }
-
-    /**
-     * POST /api/usuarios/login
-     */
-    public function login() {
-        header('Content-Type: application/json; charset=utf-8');
-        $data = json_decode(file_get_contents('php://input'), true);
-        
-        if (!$data || !isset($data['email']) || !isset($data['contrasena'])) {
-            http_response_code(400);
-            echo json_encode([
-                'success' => false,
-                'error' => 'Email y contraseña son requeridos'
-            ], JSON_UNESCAPED_UNICODE);
-            return;
-        }
-        
-        // Sanitizar email
-        $email = sanitizarSoloEmail($data['email']);
-        $contrasena = $data['contrasena'];
-        
-        // Validar email
-        $validacion = validarEmailLoginUsuario($email);
-        if (!$validacion['success']) {
-            http_response_code(400);
-            echo json_encode($validacion, JSON_UNESCAPED_UNICODE);
-            return;
-        }
-        
-        try {
-            $usuario = $this->model->verificarCredenciales($email, $contrasena);
-            
-            if ($usuario) {
-                echo json_encode([
-                    'success' => true,
-                    'message' => 'Login exitoso',
-                    'data' => $usuario
-                ], JSON_UNESCAPED_UNICODE);
-            } else {
-                http_response_code(401);
-                echo json_encode([
-                    'success' => false,
-                    'error' => 'Email o contraseña incorrectos'
-                ], JSON_UNESCAPED_UNICODE);
-            }
-        } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
-        }
-    }
-
-    /**
-     * POST /api/usuarios/restaurar/{id}
-     */
-    public function restaurar($id) {
-        header('Content-Type: application/json; charset=utf-8');
-        $validacion = validarSoloIdUsuario($id);
-        
-        if (!$validacion['success']) {
-            http_response_code(400);
-            echo json_encode($validacion, JSON_UNESCAPED_UNICODE);
-            return;
-        }
-        
-        try {
-            $this->model->restaurar($id);
-            
-            echo json_encode([
-                'success' => true,
-                'message' => 'Usuario restaurado exitosamente'
-            ], JSON_UNESCAPED_UNICODE);
-        } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
-        }
-    }
-
-    // Vistas HTML (en español para el router)
-    public function listarUsuarios() {
-        if (file_exists(SRC_PATH . 'views/usuarios_views/usuarios_listar.php')) {
-            $usuarios = $this->model->obtenerTodos();
-            require_once SRC_PATH . 'views/usuarios_views/usuarios_listar.php';
-            return;
-        }
-        $this->listarUsuariosApi();
-    }
-
-    public function mostrarFormulario() {
-        $datos = [];
-        $errores = [];
-        if (file_exists(SRC_PATH . 'views/usuarios_views/usuarios_registrar.php')) {
-            require_once SRC_PATH . 'views/usuarios_views/usuarios_registrar.php';
-            return;
-        }
-        header('Content-Type: application/json; charset=utf-8');
-        http_response_code(404);
-        echo json_encode(['success' => false, 'error' => 'Vista de registro no encontrada'], JSON_UNESCAPED_UNICODE);
     }
 }

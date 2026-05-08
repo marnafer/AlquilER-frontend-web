@@ -1,68 +1,98 @@
 <?php
-/**
- * Router RESTful del módulo de Consultas
- * TODAS las respuestas son JSON
- */
 
 require_once SRC_PATH . 'controllers/ConsultaController.php';
 
 use App\Controllers\ConsultaController;
 
 $controller = new ConsultaController();
+
 $method = $_SERVER['REQUEST_METHOD'];
 
-// 1. Ruta para consultas por propiedad: /api/consultas/propiedad/{id}
-if (preg_match('#^/api/consultas/propiedad/([0-9]+)$#', $path, $matches)) {
-    $propiedadId = $matches[1];
+switch (true) {
 
-    if ($method === 'GET') {
-        $controller->listarPorPropiedad($propiedadId);
-    } else {
-        http_response_code(405);
-        echo json_encode(["error" => "Método $method no permitido. Solo GET"]);
-    }
-    exit;
-}
+    /**
+     * /api/consultas/propiedad/{id}
+     */
+    case preg_match('#^/api/consultas/propiedad/([0-9]+)$#', $path, $matches):
+        $propiedadId = $matches[1];
 
-// 2. Ruta para consultas por inquilino: /api/consultas/inquilino/{id}
-if (preg_match('#^/api/consultas/inquilino/([0-9]+)$#', $path, $matches)) {
-    $inquilinoId = $matches[1];
+        if ($method === 'GET') {
+            $controller->listarPorPropiedad($propiedadId);
+        } else {
+            renderJson([
+                'success' => false,
+                'error' => "Método $method no permitido. Solo GET"
+            ], 405);
+        }
+        break;
 
-    if ($method === 'GET') {
-        $controller->listarPorInquilino($inquilinoId);
-    } else {
-        http_response_code(405);
-        echo json_encode(["error" => "Método $method no permitido. Solo GET"]);
-    }
-    exit;
-}
+    /**
+     * /api/consultas/inquilino/{id}
+     */
+    case preg_match('#^/api/consultas/inquilino/([0-9]+)$#', $path, $matches):
+        $inquilinoId = $matches[1];
 
-// 3. Ruta con ID: /api/consultas/{id}
-if (preg_match('#^/api/consultas/([0-9]+)$#', $path, $matches)) {
-    $consultaId = $matches[1];
+        if ($method === 'GET') {
+            $controller->listarPorInquilino($inquilinoId);
+        } else {
+            renderJson([
+                'success' => false,
+                'error' => "Método $method no permitido. Solo GET"
+            ], 405);
+        }
+        break;
 
-    if ($method === 'GET') {
-        $controller->obtener($consultaId);
-    } elseif ($method === 'PUT') {
-        $controller->actualizar($consultaId);
-    } elseif ($method === 'DELETE') {
-        $controller->eliminar($consultaId);
-    } else {
-        http_response_code(405);
-        echo json_encode(["error" => "Método $method no permitido"]);
-    }
-    exit;
-}
+    /**
+     * /api/consultas/{id}
+     */
+    case preg_match('#^/api/consultas/([0-9]+)$#', $path, $matches):
+        $consultaId = $matches[1];
 
-// 4. Ruta general: /api/consultas
-if ($path === '/api/consultas') {
-    if ($method === 'GET') {
-        $controller->listar();
-    } elseif ($method === 'POST') {
-        $controller->crear();
-    } else {
-        http_response_code(405);
-        echo json_encode(["error" => "Método $method no permitido"]);
-    }
-    exit;
+        switch ($method) {
+            case 'GET':
+                $controller->obtener($consultaId);
+                break;
+
+            case 'PUT':
+                $controller->actualizar($consultaId);
+                break;
+
+            case 'DELETE':
+                $controller->eliminar($consultaId);
+                break;
+
+            default:
+                renderJson([
+                    'success' => false,
+                    'error' => "Método $method no permitido"
+                ], 405);
+        }
+        break;
+
+    /**
+     * /api/consultas
+     */
+    case $path === '/api/consultas':
+        switch ($method) {
+            case 'GET':
+                $controller->listar();
+                break;
+
+            case 'POST':
+                $controller->crear();
+                break;
+
+            default:
+                renderJson([
+                    'success' => false,
+                    'error' => "Método $method no permitido"
+                ], 405);
+        }
+        break;
+
+    default:
+        renderJson([
+            'success' => false,
+            'error' => 'Ruta no encontrada'
+        ], 404);
 }

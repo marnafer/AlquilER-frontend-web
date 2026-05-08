@@ -21,7 +21,6 @@ class PropiedadSanitizer
             'capacidad' => self::sanitizarEntero($data['capacidad'] ?? null),
             'disponible' => self::sanitizarDisponible($data['disponible'] ?? null),
             'categoria_id' => self::sanitizarEntero($data['categoria_id'] ?? null),
-            'administrador_id' => self::sanitizarEntero($data['administrador_id'] ?? null),
             'localidad_id' => self::sanitizarEntero($data['localidad_id'] ?? null)
         ];
     }

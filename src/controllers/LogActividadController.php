@@ -1,13 +1,6 @@
 <?php
-/**
- * Controlador de LogActividad
- * TODAS las respuestas son en JSON
- */
 
 namespace App\Controllers;
-
-require_once SRC_PATH . 'sanitizers/LogActividadSanitizer.php';
-require_once SRC_PATH . 'validators/LogActividadValidator.php';
 
 use App\Models\LogActividad;
 use App\Sanitizers\LogActividadSanitizer;
@@ -23,18 +16,17 @@ class LogActividadController
     {
         try {
             $logs = LogActividad::getAll();
-            
-            echo json_encode([
+
+            return renderJson([
                 'success' => true,
                 'data' => $logs,
-                'total' => count($logs)
-            ], JSON_UNESCAPED_UNICODE);
+                'total' => $logs->count()
+            ]);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -43,34 +35,30 @@ class LogActividadController
      */
     public function show($id)
     {
+        $validacion = LogActividadValidator::validarSoloId($id);
+        if (!$validacion['success']) {
+            return renderJson($validacion, 400);
+        }
+
         try {
-            $validacion = LogActividadValidator::validarSoloId($id);
-            if (!$validacion['success']) {
-                http_response_code(400);
-                echo json_encode($validacion, JSON_UNESCAPED_UNICODE);
-                return;
-            }
+            $log = LogActividad::find($id);
 
-            $log = LogActividad::getById($id);
-
-            if ($log) {
-                echo json_encode([
-                    'success' => true,
-                    'data' => $log
-                ], JSON_UNESCAPED_UNICODE);
-            } else {
-                http_response_code(404);
-                echo json_encode([
+            if (!$log) {
+                return renderJson([
                     'success' => false,
                     'error' => 'Log no encontrado'
-                ], JSON_UNESCAPED_UNICODE);
+                ], 404);
             }
+
+            return renderJson([
+                'success' => true,
+                'data' => $log
+            ]);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -80,20 +68,19 @@ class LogActividadController
     public function getByUsuario($usuarioId)
     {
         try {
-            $logs = LogActividad::getByUsuario($usuarioId);
-            
-            echo json_encode([
+            $logs = LogActividad::where('usuario_id', $usuarioId)->get();
+
+            return renderJson([
                 'success' => true,
                 'data' => $logs,
-                'total' => count($logs),
-                'usuario_id' => $usuarioId
-            ], JSON_UNESCAPED_UNICODE);
+                'total' => $logs->count(),
+                'usuario_id' => (int)$usuarioId
+            ]);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -102,34 +89,34 @@ class LogActividadController
      */
     public function getByFecha()
     {
-        $fechaDesde = $_GET['desde'] ?? null;
-        $fechaHasta = $_GET['hasta'] ?? null;
+        $desde = $_GET['desde'] ?? null;
+        $hasta = $_GET['hasta'] ?? null;
 
-        if (!$fechaDesde || !$fechaHasta) {
-            http_response_code(400);
-            echo json_encode([
+        if (!$desde || !$hasta) {
+            return renderJson([
                 'success' => false,
                 'error' => 'Las fechas desde y hasta son requeridas'
-            ], JSON_UNESCAPED_UNICODE);
-            return;
+            ], 400);
         }
 
         try {
-            $logs = LogActividad::getByFechaRango($fechaDesde, $fechaHasta . ' 23:59:59');
-            
-            echo json_encode([
+            $logs = LogActividad::whereBetween('fecha', [
+                $desde,
+                $hasta . ' 23:59:59'
+            ])->get();
+
+            return renderJson([
                 'success' => true,
                 'data' => $logs,
-                'total' => count($logs),
-                'fecha_desde' => $fechaDesde,
-                'fecha_hasta' => $fechaHasta
-            ], JSON_UNESCAPED_UNICODE);
+                'total' => $logs->count(),
+                'fecha_desde' => $desde,
+                'fecha_hasta' => $hasta
+            ]);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -138,32 +125,29 @@ class LogActividadController
      */
     public function search()
     {
-        $busqueda = $_GET['q'] ?? null;
+        $q = $_GET['q'] ?? null;
 
-        if (!$busqueda) {
-            http_response_code(400);
-            echo json_encode([
+        if (!$q) {
+            return renderJson([
                 'success' => false,
                 'error' => 'El término de búsqueda es requerido'
-            ], JSON_UNESCAPED_UNICODE);
-            return;
+            ], 400);
         }
 
         try {
-            $logs = LogActividad::getByAccion($busqueda);
-            
-            echo json_encode([
+            $logs = LogActividad::where('accion', 'LIKE', "%$q%")->get();
+
+            return renderJson([
                 'success' => true,
                 'data' => $logs,
-                'total' => count($logs),
-                'busqueda' => $busqueda
-            ], JSON_UNESCAPED_UNICODE);
+                'total' => $logs->count(),
+                'busqueda' => $q
+            ]);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -173,18 +157,19 @@ class LogActividadController
     public function getEstadisticas()
     {
         try {
-            $estadisticas = LogActividad::getEstadisticas();
-            
-            echo json_encode([
+            $total = LogActividad::count();
+
+            return renderJson([
                 'success' => true,
-                'data' => $estadisticas
-            ], JSON_UNESCAPED_UNICODE);
+                'data' => [
+                    'total_logs' => $total
+                ]
+            ]);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -193,53 +178,42 @@ class LogActividadController
      */
     public function registrar()
     {
-        $data = json_decode(file_get_contents('php://input'), true);
+        $data = json_decode(file_get_contents('php://input'), true) ?? [];
 
-        if (!$data || !isset($data['accion'])) {
-            http_response_code(400);
-            echo json_encode([
+        if (!is_array($data)) {
+            return renderJson([
                 'success' => false,
-                'error' => 'La acción es requerida'
-            ], JSON_UNESCAPED_UNICODE);
-            return;
+                'error' => 'JSON inválido'
+            ], 400);
         }
 
-        // Sanitizar
-        $datosSanitizados = LogActividadSanitizer::sanitizar($data);
+        $san = LogActividadSanitizer::sanitizar($data);
+        $validacion = LogActividadValidator::validarCrear($san);
 
-        // Validar
-        $errores = LogActividadValidator::validarCrear($datosSanitizados);
-
-        if (!empty($errores)) {
-            http_response_code(400);
-            echo json_encode([
+        if (!$validacion['success']) {
+            return renderJson([
                 'success' => false,
-                'message' => 'Error de validación',
-                'errors' => $errores
-            ], JSON_UNESCAPED_UNICODE);
-            return;
+                'errors' => $validacion['errors']
+            ], 400);
         }
 
-        // Si no viene IP, obtener automáticamente
-        if (!isset($datosSanitizados['ip_address']) || !$datosSanitizados['ip_address']) {
-            $datosSanitizados['ip_address'] = LogActividadSanitizer::getClientIp();
+        if (empty($san['ip_address'])) {
+            $san['ip_address'] = LogActividadSanitizer::getClientIp();
         }
 
         try {
-            $id = LogActividad::createLog($datosSanitizados);
+            $log = LogActividad::create($san);
 
-            http_response_code(201);
-            echo json_encode([
+            return renderJson([
                 'success' => true,
-                'message' => 'Log registrado exitosamente',
-                'data' => ['id' => $id]
-            ], JSON_UNESCAPED_UNICODE);
+                'message' => 'Log registrado',
+                'data' => $log
+            ], 201);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -251,31 +225,30 @@ class LogActividadController
         $dias = $_GET['dias'] ?? 30;
 
         if (!is_numeric($dias) || $dias <= 0) {
-            http_response_code(400);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
-                'error' => 'El número de días debe ser un número positivo'
-            ], JSON_UNESCAPED_UNICODE);
-            return;
+                'error' => 'El número de días debe ser positivo'
+            ], 400);
         }
 
         try {
-            $eliminados = LogActividad::deleteOldLogs($dias);
-            
-            echo json_encode([
+            $fechaLimite = date('Y-m-d H:i:s', strtotime("-{$dias} days"));
+
+            $eliminados = LogActividad::where('fecha', '<', $fechaLimite)->delete();
+
+            return renderJson([
                 'success' => true,
-                'message' => "Se eliminaron {$eliminados} logs antiguos",
+                'message' => "Se eliminaron {$eliminados} logs",
                 'data' => [
                     'dias' => (int)$dias,
                     'eliminados' => $eliminados
                 ]
-            ], JSON_UNESCAPED_UNICODE);
+            ]);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -285,22 +258,21 @@ class LogActividadController
     public function limpiarPorUsuario($usuarioId)
     {
         try {
-            $eliminados = LogActividad::deleteByUsuario($usuarioId);
-            
-            echo json_encode([
+            $eliminados = LogActividad::where('usuario_id', $usuarioId)->delete();
+
+            return renderJson([
                 'success' => true,
-                'message' => "Se eliminaron {$eliminados} logs del usuario",
+                'message' => "Logs eliminados",
                 'data' => [
                     'usuario_id' => (int)$usuarioId,
                     'eliminados' => $eliminados
                 ]
-            ], JSON_UNESCAPED_UNICODE);
+            ]);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 
@@ -310,35 +282,31 @@ class LogActividadController
     public function delete($id)
     {
         $validacion = LogActividadValidator::validarSoloId($id);
-
         if (!$validacion['success']) {
-            http_response_code(400);
-            echo json_encode($validacion, JSON_UNESCAPED_UNICODE);
-            return;
+            return renderJson($validacion, 400);
         }
 
         try {
-            if (!LogActividad::exists($id)) {
-                http_response_code(404);
-                echo json_encode([
+            $log = LogActividad::find($id);
+
+            if (!$log) {
+                return renderJson([
                     'success' => false,
                     'error' => 'Log no encontrado'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 404);
             }
 
-            LogActividad::deleteLog($id);
+            $log->delete();
 
-            echo json_encode([
+            return renderJson([
                 'success' => true,
-                'message' => 'Log eliminado exitosamente'
-            ], JSON_UNESCAPED_UNICODE);
+                'message' => 'Log eliminado'
+            ]);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 }

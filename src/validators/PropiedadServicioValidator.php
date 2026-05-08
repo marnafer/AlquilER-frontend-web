@@ -31,7 +31,19 @@ class PropiedadServicioValidator
             $errores['servicio_id'] = $error;
         }
 
-        return $errores;
+        if (!empty($errores)) {
+        return [
+            'success' => false,
+            'message' => 'Error de validación',
+            'errors' => $errores
+        ];
+        }
+
+        return [
+            'success' => true,
+            'message' => 'Validación exitosa',
+            'errors' => null
+        ];
     }
 
     /**

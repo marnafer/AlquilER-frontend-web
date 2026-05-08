@@ -1,308 +1,290 @@
 <?php
-/**
- * Controlador de Servicios
- * TODAS las respuestas son en JSON
- */
 
 namespace App\Controllers;
 
-require_once SRC_PATH . 'sanitizers/ServicioSanitizer.php';
-require_once SRC_PATH . 'validators/ServicioValidator.php';
-
 use App\Models\Servicio;
+use App\Models\Propiedad;
+use App\Validators\ServicioValidator;
+use App\Sanitizers\ServicioSanitizer;
+use Exception;
 
-class ServicioController {
-    
-    private $model;
-    
-    public function __construct() {
-        $this->model = new Servicio();
-        header('Content-Type: application/json');
-    }
-    
+class ServicioController
+{
+
     /**
      * GET /api/servicios
      */
-    public function index() {
+    public function index()
+    {
         try {
-            $servicios = $this->model->getAll();
-            echo json_encode([
+            $servicios = Servicio::all();
+
+            return renderJson([
                 'success' => true,
                 'data' => $servicios,
-                'total' => count($servicios)
-            ], JSON_UNESCAPED_UNICODE);
-        } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+                'total' => $servicios->count()
+            ]);
+        } catch (Exception $e) {
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
-    
+
     /**
      * GET /api/servicios/con-propiedades
      */
-    public function indexWithCount() {
+    public function indexWithCount()
+    {
         try {
-            $servicios = $this->model->getAllWithCount();
-            echo json_encode([
+            $servicios = Servicio::withCount('propiedades')->get();
+
+            return renderJson([
                 'success' => true,
                 'data' => $servicios,
-                'total' => count($servicios)
-            ], JSON_UNESCAPED_UNICODE);
-        } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+                'total' => $servicios->count()
+            ]);
+        } catch (Exception $e) {
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
-    
+
     /**
      * GET /api/servicios/populares?limit=10
      */
-    public function getPopulares() {
-        $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
-        
+    public function getPopulares()
+    {
+        $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 10;
+
         if ($limit < 1 || $limit > 50) {
             $limit = 10;
         }
-        
+
         try {
-            $servicios = $this->model->getPopulares($limit);
-            echo json_encode([
+            $servicios = Servicio::withCount('propiedades')
+                ->orderByDesc('propiedades_count')
+                ->limit($limit)
+                ->get();
+
+            return renderJson([
                 'success' => true,
                 'data' => $servicios,
-                'total' => count($servicios),
+                'total' => $servicios->count(),
                 'limit' => $limit
-            ], JSON_UNESCAPED_UNICODE);
-        } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            ]);
+        } catch (Exception $e) {
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
-    
+
     /**
      * GET /api/servicios/propiedad/{id}
      */
-    public function getByPropiedad($propiedadId) {
+    public function getByPropiedad($propiedadId)
+    {
         try {
-            $servicios = $this->model->getByPropiedad($propiedadId);
-            echo json_encode([
+            $servicios = Servicio::whereHas('propiedades', function ($q) use ($propiedadId) {
+                $q->where('propiedad_id', $propiedadId);
+            })->get();
+
+            return renderJson([
                 'success' => true,
                 'data' => $servicios,
-                'total' => count($servicios),
-                'propiedad_id' => $propiedadId
-            ], JSON_UNESCAPED_UNICODE);
-        } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+                'total' => $servicios->count(),
+                'propiedad_id' => (int) $propiedadId
+            ]);
+        } catch (Exception $e) {
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
-    
+
     /**
      * GET /api/servicios/{id}
      */
-    public function show($id) {
+    public function show($id)
+    {
+        $validacion = ServicioValidator::validarSoloId($id);
+
+        if (!$validacion['success']) {
+            return renderJson($validacion, 400);
+        }
+
         try {
-            $validacion = validarSoloIdServicio($id);
-            if (!$validacion['success']) {
-                http_response_code(400);
-                echo json_encode($validacion, JSON_UNESCAPED_UNICODE);
-                return;
-            }
-            
-            $servicio = $this->model->getById($id);
-            
-            if ($servicio) {
-                echo json_encode([
-                    'success' => true,
-                    'data' => $servicio
-                ], JSON_UNESCAPED_UNICODE);
-            } else {
-                http_response_code(404);
-                echo json_encode([
+            $servicio = Servicio::find($id);
+
+            if (!$servicio) {
+                return renderJson([
                     'success' => false,
                     'error' => 'Servicio no encontrado'
-                ], JSON_UNESCAPED_UNICODE);
+                ], 404);
             }
-        } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+
+            return renderJson([
+                'success' => true,
+                'data' => $servicio
+            ]);
+        } catch (Exception $e) {
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
-    
+
     /**
      * POST /api/servicios
      */
-    public function store() {
-        $data = json_decode(file_get_contents('php://input'), true);
-        
-        if (!$data) {
-            http_response_code(400);
-            echo json_encode([
+    public function store()
+    {
+        $raw = json_decode(file_get_contents('php://input'), true) ?? [];
+
+        if (!is_array($raw)) {
+            return renderJson([
                 'success' => false,
-                'error' => 'Datos inválidos'
-            ], JSON_UNESCAPED_UNICODE);
-            return;
+                'error' => 'JSON inválido'
+            ], 400);
         }
-        
-        // Sanitizar
-        $datosSanitizados = sanitizarServicio($data);
-        
-        // Validar
-        $validacion = validarCrearServicio($datosSanitizados);
+
+        $san = ServicioSanitizer::sanitizar($raw);
+        $validacion = ServicioValidator::validarCrear($san);
+
         if (!$validacion['success']) {
-            http_response_code(400);
-            echo json_encode($validacion, JSON_UNESCAPED_UNICODE);
-            return;
+            return renderJson($validacion, 400);
         }
-        
+
         try {
-            // Verificar si ya existe un servicio con el mismo nombre
-            if ($this->model->existsByNombre($datosSanitizados['nombre'])) {
-                http_response_code(409);
-                echo json_encode([
+            if (Servicio::where('nombre', $san['nombre'])->exists()) {
+                return renderJson([
                     'success' => false,
                     'error' => 'Ya existe un servicio con este nombre'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 409);
             }
-            
-            $id = $this->model->create($datosSanitizados);
-            $datosSanitizados['id'] = $id;
-            
-            http_response_code(201);
-            echo json_encode([
+
+            $servicio = Servicio::create($san);
+
+            return renderJson([
                 'success' => true,
                 'message' => 'Servicio creado exitosamente',
-                'data' => $datosSanitizados
-            ], JSON_UNESCAPED_UNICODE);
-        } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+                'data' => $servicio
+            ], 201);
+
+        } catch (Exception $e) {
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
-    
+
     /**
      * PUT /api/servicios/{id}
      */
-    public function update($id) {
-        $data = json_decode(file_get_contents('php://input'), true);
-        
-        if (!$data) {
-            http_response_code(400);
-            echo json_encode([
+    public function update($id)
+    {
+        $raw = json_decode(file_get_contents('php://input'), true) ?? [];
+
+        if (!is_array($raw)) {
+            return renderJson([
                 'success' => false,
-                'error' => 'Datos inválidos'
-            ], JSON_UNESCAPED_UNICODE);
-            return;
+                'error' => 'JSON inválido'
+            ], 400);
         }
-        
-        $data['id'] = $id;
-        $datosSanitizados = sanitizarServicio($data);
-        
-        $validacion = validarActualizarServicio($datosSanitizados);
+
+        $raw['id'] = $id;
+
+        $san = ServicioSanitizer::sanitizar($raw);
+        $validacion = ServicioValidator::validarActualizar($san);
+
         if (!$validacion['success']) {
-            http_response_code(400);
-            echo json_encode($validacion, JSON_UNESCAPED_UNICODE);
-            return;
+            return renderJson($validacion, 400);
         }
-        
+
         try {
-            if (!$this->model->exists($id)) {
-                http_response_code(404);
-                echo json_encode([
+            $servicio = Servicio::find($id);
+
+            if (!$servicio) {
+                return renderJson([
                     'success' => false,
                     'error' => 'Servicio no encontrado'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 404);
             }
-            
-            // Verificar si ya existe otro servicio con el mismo nombre
-            if ($this->model->existsByNombre($datosSanitizados['nombre'], $id)) {
-                http_response_code(409);
-                echo json_encode([
+
+            if (Servicio::where('nombre', $san['nombre'])
+                ->where('id', '!=', $id)
+                ->exists()) {
+                return renderJson([
                     'success' => false,
                     'error' => 'Ya existe otro servicio con este nombre'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 409);
             }
-            
-            $this->model->update($id, $datosSanitizados);
-            
-            echo json_encode([
+
+            $servicio->update($san);
+
+            return renderJson([
                 'success' => true,
                 'message' => 'Servicio actualizado exitosamente',
-                'data' => $datosSanitizados
-            ], JSON_UNESCAPED_UNICODE);
-        } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+                'data' => $servicio
+            ]);
+
+        } catch (Exception $e) {
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
-    
+
     /**
      * DELETE /api/servicios/{id}
      */
-    public function delete($id) {
-        $validacion = validarSoloIdServicio($id);
-        
+    public function delete($id)
+    {
+        $validacion = ServicioValidator::validarSoloId($id);
+
         if (!$validacion['success']) {
-            http_response_code(400);
-            echo json_encode($validacion, JSON_UNESCAPED_UNICODE);
-            return;
+            return renderJson($validacion, 400);
         }
-        
+
         try {
-            if (!$this->model->exists($id)) {
-                http_response_code(404);
-                echo json_encode([
+            $servicio = Servicio::find($id);
+
+            if (!$servicio) {
+                return renderJson([
                     'success' => false,
                     'error' => 'Servicio no encontrado'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 404);
             }
-            
-            // Verificar si tiene propiedades asociadas
-            if ($this->model->hasPropiedades($id)) {
-                http_response_code(409);
-                echo json_encode([
+
+            // Verificar relación con propiedades
+            if ($servicio->propiedades()->exists()) {
+                return renderJson([
                     'success' => false,
-                    'error' => 'No se puede eliminar el servicio porque tiene propiedades asociadas'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                    'error' => 'No se puede eliminar porque tiene propiedades asociadas'
+                ], 409);
             }
-            
-            $this->model->delete($id);
-            
-            echo json_encode([
+
+            $servicio->delete();
+
+            return renderJson([
                 'success' => true,
                 'message' => 'Servicio eliminado exitosamente'
-            ], JSON_UNESCAPED_UNICODE);
-        } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            ]);
+
+        } catch (Exception $e) {
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 }

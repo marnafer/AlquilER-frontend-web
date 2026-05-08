@@ -8,138 +8,274 @@ require_once SRC_PATH . 'validators/PropiedadValidator.php';
 use App\Models\Propiedad;
 use App\Sanitizers\PropiedadSanitizer;
 use App\Validators\PropiedadValidator;
+use App\Middlewares\AutenticadorMiddleware;
 
 class PropiedadController {
 
     /**
-     * VISTA: Muestra el formulario de carga (HTML)
+     * VISTA: formulario HTML (solo propietarios)
      */
     public function mostrarFormulario() {
+
+        AutenticadorMiddleware::soloPropietario();
+
         header('Content-Type: text/html; charset=utf-8');
         require_once SRC_PATH . 'views/propiedades_views/propiedades_form.php';
         exit;
     }
 
     /**
-     * VISTA (opcional): listado HTML
+     * VISTA: listado HTML (opcional)
      */
     public function listarPropiedades() {
         try {
             $propiedades = Propiedad::all();
-            // Ajusta la ruta de la vista si tu estructura es distinta
+
             header('Content-Type: text/html; charset=utf-8');
             require_once SRC_PATH . 'views/propiedades_views/propiedades_listar.php';
+
         } catch (\Exception $e) {
             die("Error al listar propiedades: " . $e->getMessage());
         }
     }
 
     /**
-     * API: Listar todas las propiedades (GET /api/propiedades)
+     * API: listar propiedades (PÚBLICO)
      */
     public function indexApi() {
-        header('Content-Type: application/json; charset=utf-8');
+
         try {
-            $propiedades = Propiedad::all();
-            http_response_code(200);
-            echo json_encode(['status' => 'success', 'data' => $propiedades], JSON_UNESCAPED_UNICODE);
+            $propiedades = Propiedad::whereNull('deleted_at')->get();
+
+            renderJson([
+                'status' => 'success',
+                'data' => $propiedades
+            ], 200);
+
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+
+            renderJson([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
     /**
-     * API: Mostrar una propiedad (GET /api/propiedades/{id})
+     * API: ver propiedad (PÚBLICO)
      */
     public function mostrarApi($id) {
-        header('Content-Type: application/json; charset=utf-8');
+
         try {
             $propiedad = Propiedad::find($id);
+
             if (!$propiedad) {
-                http_response_code(404);
-                echo json_encode(['status' => 'error', 'message' => 'Propiedad no encontrada']);
-                return;
+                return renderJson([
+                    'status' => 'error',
+                    'message' => 'Propiedad no encontrada'
+                ], 404);
             }
-            echo json_encode(['status' => 'success', 'data' => $propiedad], JSON_UNESCAPED_UNICODE);
+
+            return renderJson([
+                'status' => 'success',
+                'data' => $propiedad
+            ], 200);
+
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+
+            return renderJson([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
     /**
-     * API: Crear propiedad (POST /api/propiedades)
+     * API: crear propiedad (SOLO PROPIETARIO)
      */
     public function crear() {
-        header('Content-Type: application/json; charset=utf-8');
+
+        $user = AutenticadorMiddleware::soloPropietario();
 
         $inputRaw = file_get_contents("php://input");
         $inputData = json_decode($inputRaw, true) ?? $_POST;
 
         $datosLimpios = PropiedadSanitizer::sanitizarPropiedad($inputData);
+<<<<<<< HEAD
+=======
+
+        unset($datosLimpios['id']); // no permitir ID en creación (autoincremental)
+
+        $errores = PropiedadValidator::validarPropiedad($datosLimpios);
+
+        if (!empty($errores)) {
+            return renderJson([
+                'status' => 'error',
+                'errors' => $errores
+            ], 400);
+        }
+>>>>>>> 4ad93a49aafe06e2454ad57b841b94bddc9cafc9
 
         try {
+            $datosLimpios['usuario_id'] = $user->sub;
+
             $propiedad = Propiedad::create($datosLimpios);
-            http_response_code(201);
-            echo json_encode([
+
+            return renderJson([
                 'status' => 'success',
                 'message' => 'Propiedad creada con éxito',
-                'data' => ['id' => $propiedad->id]
-            ], JSON_UNESCAPED_UNICODE);
+                'data' => [
+                    'id' => $propiedad->id
+                ]
+            ], 201);
+
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+
+            return renderJson([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
     /**
-     * API: Actualizar propiedad (PUT /api/propiedades/{id})
-     * Nota: espera payload completo; adaptar si se quiere soportar PATCH parcial.
+     * API: actualizar propiedad (SOLO PROPIETARIO + dueño)
      */
     public function actualizar($id) {
-        header('Content-Type: application/json; charset=utf-8');
+
+        $user = AutenticadorMiddleware::soloPropietario();
 
         $propiedad = Propiedad::find($id);
+
         if (!$propiedad) {
-            http_response_code(404);
-            echo json_encode(['status' => 'error', 'message' => 'Propiedad no encontrada']);
-            return;
+            return renderJson([
+                'status' => 'error',
+                'message' => 'Propiedad no encontrada'
+            ], 404);
+        }
+
+        // control de dueño
+        if ($propiedad->usuario_id != $user->sub) {
+            return renderJson([
+                'status' => 'error',
+                'message' => 'No tienes permiso para modificar esta propiedad'
+            ], 403);
         }
 
         $inputRaw = file_get_contents("php://input");
         $inputData = json_decode($inputRaw, true) ?? $_POST;
 
         $datosLimpios = PropiedadSanitizer::sanitizarPropiedad($inputData);
+<<<<<<< HEAD
+=======
+        $errores = PropiedadValidator::validarPropiedad($datosLimpios);
+
+        if (!empty($errores)) {
+            return renderJson([
+                'status' => 'error',
+                'errors' => $errores
+            ], 400);
+        }
+>>>>>>> 4ad93a49aafe06e2454ad57b841b94bddc9cafc9
 
         try {
             $propiedad->fill($datosLimpios);
             $propiedad->save();
 
-            echo json_encode(['status' => 'success', 'message' => 'Propiedad actualizada', 'data' => ['id' => $propiedad->id]], JSON_UNESCAPED_UNICODE);
+            return renderJson([
+                'status' => 'success',
+                'message' => 'Propiedad actualizada',
+                'data' => [
+                    'id' => $propiedad->id
+                ]
+            ], 200);
+
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+
+            return renderJson([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
     /**
-     * API: Eliminar propiedad (DELETE /api/propiedades/{id})
+     * API: eliminar propiedad (SOLO PROPIETARIO + dueño)
      */
     public function eliminar($id) {
-        header('Content-Type: application/json; charset=utf-8');
+
+        $user = AutenticadorMiddleware::soloPropietario();
+
         try {
             $propiedad = Propiedad::find($id);
-            if (!$propiedad) {
-                http_response_code(404);
-                echo json_encode(['status' => 'error', 'message' => 'Propiedad no encontrada']);
-                return;
+
+            if (!$propiedad || $propiedad->deleted_at !== null) { // Checkear soft delete si ya fue eliminada
+                return renderJson([
+                    'status' => 'error',
+                    'message' => 'Propiedad no encontrada'
+                ], 404);
             }
+
+            // control de dueño
+            if ($propiedad->usuario_id != $user->sub) {
+                return renderJson([
+                    'status' => 'error',
+                    'message' => 'No tienes permiso para eliminar esta propiedad'
+                ], 403);
+            }
+
             $propiedad->delete();
-            echo json_encode(['status' => 'success', 'message' => "Propiedad #$id eliminada"]);
+
+            return renderJson([
+                'status' => 'success',
+                'message' => "Propiedad #$id eliminada correctamente"
+            ], 200);
+
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+
+            return renderJson([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
+
+    /**
+     * API: restaurar propiedad (SOLO PROPIETARIO + dueño)
+     */
+     public function restaurar($id) {
+        $user = AutenticadorMiddleware::soloPropietario();
+        try {
+            $propiedad = Propiedad::withTrashed()->find($id);
+            if (!$propiedad) {
+                return renderJson([
+                    'status' => 'error',
+                    'message' => 'Propiedad no encontrada'
+                ], 404);
+            }
+            // control de dueño
+            if ($propiedad->usuario_id != $user->sub) {
+                return renderJson([
+                    'status' => 'error',
+                    'message' => 'No tienes permiso para restaurar esta propiedad'
+                ], 403);
+            }
+            if ($propiedad->deleted_at === null) {
+                return renderJson([
+                    'status' => 'error',
+                    'message' => 'La propiedad no está eliminada'
+                ], 400);
+            }
+            $propiedad->restore();
+            return renderJson([
+                'status' => 'success',
+                'message' => "Propiedad #$id restaurada correctamente"
+            ], 200);
+        } catch (\Exception $e) {
+            return renderJson([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+     }    
 }

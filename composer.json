@@ -1,6 +1,5 @@
 {
   "name": "marnafer/sistema-alquiler",
-  "description": "Sistema de gestión de alquileres",
   "autoload": {
     "psr-4": {
       "App\\": "src/"
@@ -8,7 +7,7 @@
   },
   "authors": [
     {
-      "name": "Marnafer",
+      "name": "marnafer",
       "email": "marianofernandez98@outlook.com"
     }
   ],

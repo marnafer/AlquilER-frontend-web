@@ -1,77 +1,77 @@
 <?php
 
+namespace App\Validators;
+
 // Importamos los modelos para verificar la existencia en la DB
 use App\Models\Categoria;
 use App\Models\Localidad;
 use App\Models\Usuario;
 
-/**
- * Validador robusto para la tabla PROPIEDADES
- * @param array $data Datos ya sanitizados
- * @return array Lista de errores (vacía si todo está ok)
- */
+class PropiedadValidator {
 
-function validarPropiedad(array $data): array {
-    $errores = [];
+    /**
+     * Validador robusto para la tabla PROPIEDADES
+     * @param array $data Datos ya sanitizados
+     * @return array Lista de errores (vacÃ­a si todo estÃ¡ ok)
+     */
+    public static function validarPropiedad(array $data): array {
 
-    // 1. VALIDACIÓN DE TEXTOS (Límites de VARCHAR en SQL)
-    if (empty($data['titulo'])) {
-        $errores['titulo'] = "El título es obligatorio.";
-    } elseif (strlen($data['titulo']) > 150) {
-        $errores['titulo'] = "El título no puede superar los 150 caracteres.";
-    }
+        $errores = [];
 
-    if (empty($data['direccion'])) {
-        $errores['direccion'] = "La dirección exacta es obligatoria.";
-    } elseif (strlen($data['direccion']) > 125) {
-        $errores['direccion'] = "La dirección es demasiado larga (máximo 125 caracteres).";
-    }
-
-    // 2. VALIDACIÓN DE NÚMEROS Y TIPOS (Lógica de Negocio)
-    if (!is_numeric($data['precio']) || $data['precio'] <= 0) {
-        $errores['precio'] = "El precio debe ser un número positivo válido.";
-    }
-
-    if (!is_numeric($data['expensas']) || $data['expensas'] < 0) {
-    $errores['expensas'] = "Las expensas deben ser un número (0 o más).";
-}
-
-    // Validamos cantidades (TINYINT UNSIGNED en la DB)
-    $campos_numericos = [
-        'cantidad_ambientes'   => 'ambientes',
-        'cantidad_dormitorios' => 'dormitorios',
-        'cantidad_banos'       => 'baños'
-    ];
-
-    foreach ($campos_numericos as $campo => $nombre) {
-        if ($data[$campo] < 1) {
-            $errores[$campo] = "La cantidad de $nombre debe ser al menos 1.";
+        // 1. VALIDACIÃ“N DE TEXTOS
+        if (empty($data['titulo'])) {
+            $errores['titulo'] = "El tÃ­tulo es obligatorio.";
+        } elseif (strlen($data['titulo']) > 150) {
+            $errores['titulo'] = "El tÃ­tulo no puede superar los 150 caracteres.";
         }
-    }
 
-    // Capacidad (Opcional, pero si está, debe ser lógica)
-    if ($data['capacidad'] !== null && $data['capacidad'] <= 0) {
-        $errores['capacidad'] = "Si se define la capacidad, debe ser mayor a 0.";
-    }
+        if (empty($data['direccion'])) {
+            $errores['direccion'] = "La direcciÃ³n exacta es obligatoria.";
+        } elseif (strlen($data['direccion']) > 125) {
+            $errores['direccion'] = "La direcciÃ³n es demasiado larga (mÃ¡ximo 125 caracteres).";
+        }
 
-    // 3. INTEGRIDAD REFERENCIAL (Uso de Eloquent)
-    // Verificamos que los IDs existan realmente en las tablas relacionadas
-    if (!Categoria::find($data['categoria_id'])) {
-        $errores['categoria_id'] = "La categoría seleccionada no existe en el sistema.";
-    }
+        // 2. VALIDACIÃ“N DE NÃšMEROS
+        if (!is_numeric($data['precio']) || $data['precio'] <= 0) {
+            $errores['precio'] = "El precio debe ser un nÃºmero positivo vÃ¡lido.";
+        }
 
-    if (!Localidad::find($data['localidad_id'])) {
-        $errores['localidad_id'] = "La localidad seleccionada no es válida.";
-    }
+        if (!is_numeric($data['expensas']) || $data['expensas'] < 0) {
+            $errores['expensas'] = "Las expensas deben ser un nÃºmero (0 o mÃ¡s).";
+        }
 
-    if (!Usuario::find($data['administrador_id'])) {
-        $errores['administrador_id'] = "El administrador asignado no es un usuario registrado.";
-    }
+        // Cantidades
+        $campos_numericos = [
+            'cantidad_ambientes'   => 'ambientes',
+            'cantidad_dormitorios' => 'dormitorios',
+            'cantidad_banos'       => 'baÃ±os'
+        ];
 
-    // 4. VALIDACIÓN DE ESTADO
-    if (!in_array($data['disponible'], [0, 1])) {
-        $errores['disponible'] = "El estado de disponibilidad no es válido.";
-    }
+        foreach ($campos_numericos as $campo => $nombre) {
+            if (!isset($data[$campo]) || $data[$campo] < 1) {
+                $errores[$campo] = "La cantidad de $nombre debe ser al menos 1.";
+            }
+        }
 
-    return $errores;
+        // Capacidad (opcional)
+        if (isset($data['capacidad']) && $data['capacidad'] !== null && $data['capacidad'] <= 0) {
+            $errores['capacidad'] = "Si se define la capacidad, debe ser mayor a 0.";
+        }
+
+        // 3. INTEGRIDAD REFERENCIAL
+        if (!Categoria::find($data['categoria_id'])) {
+            $errores['categoria_id'] = "La categorÃ­a seleccionada no existe en el sistema.";
+        }
+
+        if (!Localidad::find($data['localidad_id'])) {
+            $errores['localidad_id'] = "La localidad seleccionada no es vÃ¡lida.";
+        }
+
+        // 4. DISPONIBILIDAD
+        if (!in_array($data['disponible'], [0, 1])) {
+            $errores['disponible'] = "El estado de disponibilidad no es vÃ¡lido.";
+        }
+
+        return $errores;
+    }
 }

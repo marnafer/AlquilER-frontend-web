@@ -3,8 +3,6 @@
  * Router RESTful del módulo de PropiedadServicio
  */
 
-require_once SRC_PATH . 'controllers/PropiedadServicioController.php';
-
 use App\Controllers\PropiedadServicioController;
 
 $controller = new PropiedadServicioController();
@@ -60,8 +58,19 @@ if (preg_match('#^/api/propiedades-servicios/sync/([0-9]+)$#', $path, $matches))
     exit;
 }
 
+// 5. GET: propiedad-servicio por ID y DELETE: propiedad-servicio por ID
+if (preg_match('#^/api/propiedades-servicios/([0-9]+)$#', $path, $matches)) {
+    if ($method === 'GET') {
+        $controller->show($matches[1]);
+    } elseif ($method === 'DELETE') {
+        $controller->delete($matches[1]);
+    } else {
+        renderError("Método no permitido. Use GET o DELETE", 405);
+    }
+    exit;
+}
 
-// 5. --- API: PropiedadServicio General (/api/propiedades-servicios) ---
+// 6. --- API: PropiedadServicio General (/api/propiedades-servicios) ---
 if (trim($path) === '/api/propiedades-servicios') {
     if ($method === 'GET') {
         $controller->index();
@@ -72,5 +81,7 @@ if (trim($path) === '/api/propiedades-servicios') {
         echo json_encode(['error' => "Método $method no permitido"]);
     }
     exit;
+
+
 }
 

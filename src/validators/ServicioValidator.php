@@ -1,128 +1,132 @@
 <?php
-/**
- * Validador para la entidad Servicio
- * SOLO valida los datos, NO sanitiza
- */
 
-/**
- * Validar todos los datos de un servicio
- */
-function validarServicio($data, $requerirId = false) {
-    $errores = [];
-    
-    // Validar ID (solo si se requiere)
-    if ($requerirId) {
-        $resultado = validarIdRequeridoServicio($data['id'] ?? null, 'servicio');
-        if (!$resultado['valido']) {
-            $errores['id'] = $resultado['error'];
+namespace App\Validators;
+
+class ServicioValidator
+{
+    /**
+     * Validar todos los datos de un servicio
+     */
+    public static function validar(array $data, bool $requerirId = false): array
+    {
+        $errores = [];
+
+        // ID (solo en update)
+        if ($requerirId) {
+            $resultado = self::validarId($data['id'] ?? null);
+            if (!$resultado['valido']) {
+                $errores['id'] = $resultado['error'];
+            }
         }
-    }
-    
-    // Validar nombre
-    $resultado = validarNombreServicio($data['nombre'] ?? null);
-    if (!$resultado['valido']) {
-        $errores['nombre'] = $resultado['error'];
-    }
-    
-    // Retornar resultado
-    if (count($errores) > 0) {
+
+        // Nombre
+        $resultado = self::validarNombre($data['nombre'] ?? null);
+        if (!$resultado['valido']) {
+            $errores['nombre'] = $resultado['error'];
+        }
+
+        if (!empty($errores)) {
+            return [
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $errores
+            ];
+        }
+
         return [
-            'success' => false,
-            'message' => 'Error de validación',
-            'errors' => $errores
+            'success' => true,
+            'message' => 'Validación exitosa',
+            'errors' => null,
+            'data' => $data
         ];
     }
-    
-    return [
-        'success' => true,
-        'message' => 'Validación exitosa',
-        'errors' => null
-    ];
-}
 
-/**
- * Validar ID requerido
- */
-function validarIdRequeridoServicio($id, $campo = '') {
-    if ($id === null || $id === '') {
-        $mensaje = $campo ? "El ID de $campo es requerido" : "El ID es requerido";
-        return ['valido' => false, 'error' => $mensaje];
-    }
-    
-    if (!is_numeric($id)) {
-        $mensaje = $campo ? "El ID de $campo debe ser un número" : "El ID debe ser un número";
-        return ['valido' => false, 'error' => $mensaje];
-    }
-    
-    if ($id <= 0) {
-        $mensaje = $campo ? "El ID de $campo debe ser positivo" : "El ID debe ser positivo";
-        return ['valido' => false, 'error' => $mensaje];
-    }
-    
-    return ['valido' => true, 'error' => null];
-}
+    /**
+     * Validar ID
+     */
+    public static function validarId($id): array
+    {
+        if ($id === null || $id === '') {
+            return ['valido' => false, 'error' => 'El ID es requerido'];
+        }
 
-/**
- * Validar nombre de servicio
- */
-function validarNombreServicio($nombre) {
-    if ($nombre === null || $nombre === '') {
-        return ['valido' => false, 'error' => 'El nombre del servicio es requerido'];
-    }
-    
-    $nombreLimpio = trim($nombre);
-    $longitud = strlen($nombreLimpio);
-    
-    if ($longitud < 3) {
-        return ['valido' => false, 'error' => 'El nombre debe tener al menos 3 caracteres'];
-    }
-    
-    if ($longitud > 50) {
-        return ['valido' => false, 'error' => 'El nombre no puede exceder los 50 caracteres'];
-    }
-    
-    if (is_numeric($nombreLimpio)) {
-        return ['valido' => false, 'error' => 'El nombre no puede ser solo números'];
-    }
-    
-    if (!preg_match('/^[a-zA-ZáéíóúñÑÁÉÍÓÚ0-9\s]+$/u', $nombreLimpio)) {
-        return ['valido' => false, 'error' => 'El nombre solo puede contener letras, números y espacios'];
-    }
-    
-    return ['valido' => true, 'error' => null];
-}
+        if (!is_numeric($id)) {
+            return ['valido' => false, 'error' => 'El ID debe ser un número'];
+        }
 
-/**
- * Validar para crear nuevo servicio
- */
-function validarCrearServicio($data) {
-    return validarServicio($data, false);
-}
+        if ($id <= 0) {
+            return ['valido' => false, 'error' => 'El ID debe ser positivo'];
+        }
 
-/**
- * Validar para actualizar servicio existente
- */
-function validarActualizarServicio($data) {
-    return validarServicio($data, true);
-}
+        return ['valido' => true, 'error' => null];
+    }
 
-/**
- * Validar solo ID
- */
-function validarSoloIdServicio($id) {
-    $resultado = validarIdRequeridoServicio($id, 'servicio');
-    
-    if (!$resultado['valido']) {
+    /**
+     * Validar nombre
+     */
+    public static function validarNombre($nombre): array
+    {
+        if ($nombre === null || $nombre === '') {
+            return ['valido' => false, 'error' => 'El nombre del servicio es requerido'];
+        }
+
+        $nombre = trim($nombre);
+        $longitud = strlen($nombre);
+
+        if ($longitud < 3) {
+            return ['valido' => false, 'error' => 'El nombre debe tener al menos 3 caracteres'];
+        }
+
+        if ($longitud > 50) {
+            return ['valido' => false, 'error' => 'El nombre no puede exceder los 50 caracteres'];
+        }
+
+        if (is_numeric($nombre)) {
+            return ['valido' => false, 'error' => 'El nombre no puede ser solo números'];
+        }
+
+        if (!preg_match('/^[a-zA-ZáéíóúñÑÁÉÍÓÚ0-9\s]+$/u', $nombre)) {
+            return ['valido' => false, 'error' => 'El nombre solo puede contener letras, números y espacios'];
+        }
+
+        return ['valido' => true, 'error' => null];
+    }
+
+    /**
+     * Crear
+     */
+    public static function validarCrear(array $data): array
+    {
+        return self::validar($data, false);
+    }
+
+    /**
+     * Actualizar
+     */
+    public static function validarActualizar(array $data): array
+    {
+        return self::validar($data, true);
+    }
+
+    /**
+     * Solo ID
+     */
+    public static function validarSoloId($id): array
+    {
+        $resultado = self::validarId($id);
+
+        if (!$resultado['valido']) {
+            return [
+                'success' => false,
+                'message' => 'ID inválido',
+                'errors' => ['id' => $resultado['error']]
+            ];
+        }
+
         return [
-            'success' => false,
-            'message' => 'ID inválido',
-            'errors' => ['id' => $resultado['error']]
+            'success' => true,
+            'message' => 'ID válido',
+            'errors' => null
         ];
     }
-    
-    return [
-        'success' => true,
-        'message' => 'ID válido',
-        'errors' => null
-    ];
 }

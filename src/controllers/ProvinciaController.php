@@ -1,260 +1,245 @@
 <?php
-/**
- * Controlador de Provincias
- * TODAS las respuestas son en JSON
- */
 
 namespace App\Controllers;
 
-require_once SRC_PATH . 'sanitizers/ProvinciaSanitizer.php';
-require_once SRC_PATH . 'validators/ProvinciaValidator.php';
-
 use App\Models\Provincia;
+use App\Validators\ProvinciaValidator;
+use App\Sanitizers\ProvinciaSanitizer;
 
 class ProvinciaController {
-    
-    private $model;
-    
-    public function __construct() {
-        $this->model = new Provincia();
-        header('Content-Type: application/json');
-    }
-    
+
     /**
      * GET /api/provincias
      */
     public function index() {
         try {
-            $provincias = $this->model->getAll();
-            echo json_encode([
+            $provincias = Provincia::all();
+
+            return renderJson([
                 'success' => true,
                 'data' => $provincias,
-                'total' => count($provincias)
-            ], JSON_UNESCAPED_UNICODE);
+                'total' => $provincias->count()
+            ], 200);
+
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
-    
+
     /**
      * GET /api/provincias/con-localidades
      */
     public function indexWithCount() {
         try {
-            $provincias = $this->model->getAllWithCount();
-            echo json_encode([
+            $provincias = Provincia::withCount('localidades')->get();
+
+            return renderJson([
                 'success' => true,
                 'data' => $provincias,
-                'total' => count($provincias)
-            ], JSON_UNESCAPED_UNICODE);
+                'total' => $provincias->count()
+            ], 200);
+
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
-    
+
     /**
      * GET /api/provincias/{id}
      */
     public function show($id) {
+
+        $idSan = ProvinciaSanitizer::sanitizarIdProvincia($id);
+        $validacion = ProvinciaValidator::validarSoloIdProvincia($idSan);
+
+        if (!$validacion['success']) {
+            return renderJson($validacion, 400);
+        }
+
         try {
-            $validacion = validarSoloIdProvincia($id);
-            if (!$validacion['success']) {
-                http_response_code(400);
-                echo json_encode($validacion, JSON_UNESCAPED_UNICODE);
-                return;
-            }
-            
-            $provincia = $this->model->getById($id);
-            
-            if ($provincia) {
-                echo json_encode([
-                    'success' => true,
-                    'data' => $provincia
-                ], JSON_UNESCAPED_UNICODE);
-            } else {
-                http_response_code(404);
-                echo json_encode([
+            $provincia = Provincia::find($idSan);
+
+            if (!$provincia) {
+                return renderJson([
                     'success' => false,
                     'error' => 'Provincia no encontrada'
-                ], JSON_UNESCAPED_UNICODE);
+                ], 404);
             }
+
+            return renderJson([
+                'success' => true,
+                'data' => $provincia
+            ], 200);
+
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
-    
+
     /**
      * POST /api/provincias
      */
     public function store() {
-        $data = json_decode(file_get_contents('php://input'), true);
-        
-        if (!$data) {
-            http_response_code(400);
-            echo json_encode([
+
+        $raw = json_decode(file_get_contents('php://input'), true);
+
+        if (!is_array($raw)) {
+            return renderJson([
                 'success' => false,
-                'error' => 'Datos inválidos'
-            ], JSON_UNESCAPED_UNICODE);
-            return;
+                'error' => 'JSON inválido'
+            ], 400);
         }
-        
-        // Sanitizar
-        $datosSanitizados = sanitizarProvincia($data);
-        
-        // Validar
-        $validacion = validarCrearProvincia($datosSanitizados);
+
+        // 1. Sanitizar
+        $san = ProvinciaSanitizer::sanitizarProvincia($raw);
+
+        // 2. Validar
+        $validacion = ProvinciaValidator::validarCrearProvincia($san);
+
         if (!$validacion['success']) {
-            http_response_code(400);
-            echo json_encode($validacion, JSON_UNESCAPED_UNICODE);
-            return;
+            return renderJson($validacion, 400);
         }
-        
+
         try {
-            // Verificar si ya existe una provincia con el mismo nombre
-            if ($this->model->existsByNombre($datosSanitizados['nombre'])) {
-                http_response_code(409);
-                echo json_encode([
+
+            if (Provincia::where('nombre', $san['nombre'])->exists()) {
+                return renderJson([
                     'success' => false,
                     'error' => 'Ya existe una provincia con este nombre'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 409);
             }
-            
-            $id = $this->model->create($datosSanitizados);
-            $datosSanitizados['id'] = $id;
-            
-            http_response_code(201);
-            echo json_encode([
+
+            $provincia = Provincia::create($san);
+
+            return renderJson([
                 'success' => true,
                 'message' => 'Provincia creada exitosamente',
-                'data' => $datosSanitizados
-            ], JSON_UNESCAPED_UNICODE);
+                'data' => $provincia
+            ], 201);
+
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
-    
+
     /**
      * PUT /api/provincias/{id}
      */
     public function update($id) {
-        $data = json_decode(file_get_contents('php://input'), true);
-        
-        if (!$data) {
-            http_response_code(400);
-            echo json_encode([
+
+        $raw = json_decode(file_get_contents('php://input'), true);
+
+        if (!is_array($raw)) {
+            return renderJson([
                 'success' => false,
-                'error' => 'Datos inválidos'
-            ], JSON_UNESCAPED_UNICODE);
-            return;
+                'error' => 'JSON inválido'
+            ], 400);
         }
-        
-        $data['id'] = $id;
-        $datosSanitizados = sanitizarProvincia($data);
-        
-        $validacion = validarActualizarProvincia($datosSanitizados);
+
+        $raw['id'] = $id;
+
+        // 1. Sanitizar
+        $san = ProvinciaSanitizer::sanitizarProvincia($raw);
+
+        // 2. Validar
+        $validacion = ProvinciaValidator::validarActualizarProvincia($san);
+
         if (!$validacion['success']) {
-            http_response_code(400);
-            echo json_encode($validacion, JSON_UNESCAPED_UNICODE);
-            return;
+            return renderJson($validacion, 400);
         }
-        
+
         try {
-            if (!$this->model->exists($id)) {
-                http_response_code(404);
-                echo json_encode([
+
+            $provincia = Provincia::find($san['id']);
+
+            if (!$provincia) {
+                return renderJson([
                     'success' => false,
                     'error' => 'Provincia no encontrada'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 404);
             }
-            
-            // Verificar si ya existe otra provincia con el mismo nombre
-            if ($this->model->existsByNombre($datosSanitizados['nombre'], $id)) {
-                http_response_code(409);
-                echo json_encode([
+
+            if (Provincia::where('nombre', $san['nombre'])
+                ->where('id', '!=', $san['id'])
+                ->exists()) {
+
+                return renderJson([
                     'success' => false,
                     'error' => 'Ya existe otra provincia con este nombre'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 409);
             }
-            
-            $this->model->update($id, $datosSanitizados);
-            
-            echo json_encode([
+
+            $provincia->update($san);
+
+            return renderJson([
                 'success' => true,
                 'message' => 'Provincia actualizada exitosamente',
-                'data' => $datosSanitizados
-            ], JSON_UNESCAPED_UNICODE);
+                'data' => $provincia
+            ], 200);
+
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
-    
+
     /**
      * DELETE /api/provincias/{id}
      */
     public function delete($id) {
-        $validacion = validarSoloIdProvincia($id);
-        
+
+        $idSan = ProvinciaSanitizer::sanitizarIdProvincia($id);
+        $validacion = ProvinciaValidator::validarSoloIdProvincia($idSan);
+
         if (!$validacion['success']) {
-            http_response_code(400);
-            echo json_encode($validacion, JSON_UNESCAPED_UNICODE);
-            return;
+            return renderJson($validacion, 400);
         }
-        
+
         try {
-            if (!$this->model->exists($id)) {
-                http_response_code(404);
-                echo json_encode([
+
+            $provincia = Provincia::find($idSan);
+
+            if (!$provincia) {
+                return renderJson([
                     'success' => false,
                     'error' => 'Provincia no encontrada'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 404);
             }
-            
-            // Verificar si tiene localidades asociadas
-            if ($this->model->hasLocalidades($id)) {
-                http_response_code(409);
-                echo json_encode([
+
+            // relación Eloquent: provincias -> localidades
+            if ($provincia->localidades()->exists()) {
+                return renderJson([
                     'success' => false,
                     'error' => 'No se puede eliminar la provincia porque tiene localidades asociadas'
-                ], JSON_UNESCAPED_UNICODE);
-                return;
+                ], 409);
             }
-            
-            $this->model->delete($id);
-            
-            echo json_encode([
+
+            $provincia->delete();
+
+            return renderJson([
                 'success' => true,
                 'message' => 'Provincia eliminada exitosamente'
-            ], JSON_UNESCAPED_UNICODE);
+            ], 200);
+
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode([
+            return renderJson([
                 'success' => false,
                 'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            ], 500);
         }
     }
 }

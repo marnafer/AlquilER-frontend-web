@@ -1,208 +1,268 @@
 <?php 
-$tituloPagina = "Publicar Inmueble";
+$tituloPagina="Crear Propiedad";
 include SRC_PATH . 'views/partials/header.php'; 
 ?>
 
-<h1>Publicar Inmueble</h1>
+<div class="container mt-4">
 
-<?php if (!empty($errores)): ?>
-    <div class="errores">
-        <p>Hubo problemas con los datos ingresados:</p>
-        <ul>
-            <?php foreach ($errores as $error): ?>
-                <li><?= htmlspecialchars($error) ?></li>
-            <?php endforeach; ?>
-        </ul>
-    </div>
-<?php endif; ?>
+<h3>Crear Propiedad</h3>
 
-<form action="/propiedades" method="POST" id="form-propiedad" onsubmit="return validarFormulario()">
+<form id="form-propiedad">
 
-    <p class="seccion">Datos Principales</p>
-    <div class="grid">
-        <div class="campo full">
-            <label>Título del Anuncio <span class="req">*</span></label>
-            <input type="text" name="titulo" maxlength="150" placeholder="Ej: Departamento 2 ambientes luminoso con balcón" 
-                   value="<?= htmlspecialchars($datos['titulo'] ?? '') ?>">
-            <span class="hint">Máximo 150 caracteres.</span>
-            <span class="msg-error" id="error-titulo"></span>
-        </div>
+<!-- ================= PRINCIPALES ================= -->
+<p class="seccion">Datos Principales</p>
 
-        <div class="campo full">
-            <label>Descripción <span class="opc">(Opcional)</span></label>
-            <textarea name="descripcion" rows="4" placeholder="Detalles sobre el contrato, requisitos o estado del inmueble..."><?= htmlspecialchars($datos['descripcion'] ?? '') ?></textarea>
-            <span class="msg-error" id="error-descripcion"></span>
-        </div>
+<div class="grid">
 
-        <div class="campo full">
-            <label>Dirección <span class="req">*</span></label>
-            <input type="text" name="direccion" maxlength="125" placeholder="Calle, número, piso y departamento" 
-                   value="<?= htmlspecialchars($datos['direccion'] ?? '') ?>">
-            <span class="msg-error" id="error-direccion"></span>
-        </div>
+    <div class="campo full">
+        <label>Título *</label>
+        <input type="text" name="titulo">
+        <span class="msg-error" id="error-titulo"></span>
     </div>
 
-    <p class="seccion">Ubicación y Gestión</p>
-    <div class="grid">
-        <div class="campo">
-            <label>Localidad <span class="req">*</span></label>
-            <select name="localidad_id">
-                <option value="">— Seleccionar —</option>
-                <?php foreach ($localidades as $loc): ?>
-                    <option value="<?= $loc->id ?>" <?= ($datos['localidad_id'] ?? '') == $loc->id ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($loc->nombre) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-            <span class="msg-error" id="error-localidad_id"></span>
-        </div>
-
-        <div class="campo">
-            <label>Administrador/Dueño <span class="req">*</span></label>
-            <select name="administrador_id">
-                <option value="">— Seleccionar —</option>
-                <?php foreach ($usuarios as $user): ?>
-                    <option value="<?= $user->id ?>" <?= ($datos['administrador_id'] ?? '') == $user->id ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($user->apellido . ", " . $user->nombre) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-            <span class="msg-error" id="error-administrador_id"></span>
-        </div>
+    <div class="campo full">
+        <label>Descripción</label>
+        <textarea name="descripcion"></textarea>
     </div>
 
-    <p class="seccion">Costos Mensuales</p>
-    <div class="grid">
-        <div class="campo">
-            <label>Alquiler Mensual (ARS) <span class="req">*</span></label>
-            <input type="number" name="precio" min="1" step="0.01" placeholder="Monto del alquiler" 
-                   value="<?= htmlspecialchars($datos['precio'] ?? '') ?>">
-            <span class="msg-error" id="error-precio"></span>
-        </div>
+</div>
 
-        <div class="campo">
-            <label>Expensas (ARS) <span class="opc">(Si aplica)</span></label>
-            <input type="number" name="expensas" min="0" step="0.01" placeholder="Cargar 0 si no abona" 
-                   value="<?= htmlspecialchars($datos['expensas'] ?? '0') ?>">
-            <span class="msg-error" id="error-expensas"></span>
-        </div>
+<!-- ================= UBICACIÓN ================= -->
+<p class="seccion">Ubicación</p>
+
+<div class="grid">
+
+    <div class="campo">
+        <label>Dirección *</label>
+        <input type="text" name="direccion">
+        <span class="msg-error" id="error-direccion"></span>
     </div>
 
-    <p class="seccion">Características del Inmueble</p>
-    <div class="grid">
-        <div class="campo">
-            <label>Categoría <span class="req">*</span></label>
-            <select name="categoria_id">
-                <option value="">— Seleccionar —</option>
-                <?php foreach ($categorias as $cat): ?>
-                    <option value="<?= $cat->id ?>" <?= ($datos['categoria_id'] ?? '') == $cat->id ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($cat->nombre) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-            <span class="msg-error" id="error-categoria_id"></span>
-        </div>
-
-        <div class="campo">
-            <label>Capacidad <span class="opc">(Personas)</span></label>
-            <input type="number" name="capacidad" min="1" placeholder="Ej: 4" 
-                   value="<?= htmlspecialchars($datos['capacidad'] ?? '') ?>">
-        </div>
-
-        <div class="campo">
-            <label>Ambientes <span class="req">*</span></label>
-            <input type="number" name="cantidad_ambientes" min="1" value="<?= htmlspecialchars($datos['cantidad_ambientes'] ?? '') ?>">
-            <span class="msg-error" id="error-cantidad_ambientes"></span>
-        </div>
-
-        <div class="campo">
-            <label>Dormitorios <span class="req">*</span></label>
-            <input type="number" name="cantidad_dormitorios" min="0" value="<?= htmlspecialchars($datos['cantidad_dormitorios'] ?? '') ?>">
-            <span class="msg-error" id="error-cantidad_dormitorios"></span>
-        </div>
-
-        <div class="campo">
-            <label>Baños <span class="req">*</span></label>
-            <input type="number" name="cantidad_banos" min="1" value="<?= htmlspecialchars($datos['cantidad_banos'] ?? '') ?>">
-            <span class="msg-error" id="error-cantidad_banos"></span>
-        </div>
-
-        <div class="campo">
-            <label>Disponibilidad Inicial <span class="req">*</span></label>
-            <select name="disponible">
-                <option value="1" <?= ($datos['disponible'] ?? '1') == '1' ? 'selected' : '' ?>>Disponible inmediatamente</option>
-                <option value="0" <?= ($datos['disponible'] ?? '') == '0' ? 'selected' : '' ?>>No disponible / Reservado</option>
-            </select>
-        </div>
+    <div class="campo">
+        <label>Localidad *</label>
+        <select name="localidad_id">
+            <option value="">— Seleccionar —</option>
+            <option value="1">Crespo</option>
+        </select>
+        <span class="msg-error" id="error-localidad_id"></span>
     </div>
 
-    <div class="footer">
-        <button type="submit">Guardar Propiedad</button>
+</div>
+
+<!-- ================= COSTOS ================= -->
+<p class="seccion">Costos</p>
+
+<div class="grid">
+
+    <div class="campo">
+        <label>Precio *</label>
+        <input type="number" name="precio" min="1" step="0.01">
+        <span class="msg-error" id="error-precio"></span>
     </div>
+
+    <div class="campo">
+        <label>Expensas</label>
+        <input type="number" name="expensas" value="0" min="0" step="0.01">
+        <span class="msg-error" id="error-expensas"></span>
+    </div>
+
+</div>
+
+<!-- ================= CARACTERÍSTICAS ================= -->
+<p class="seccion">Características</p>
+
+<div class="grid">
+
+    <div class="campo">
+        <label>Categoría *</label>
+        <select name="categoria_id">
+            <option value="">— Seleccionar —</option>
+            <option value="1">Departamento</option>
+            <option value="2">Casa</option>
+        </select>
+        <span class="msg-error" id="error-categoria_id"></span>
+    </div>
+
+    <div class="campo">
+        <label>Ambientes *</label>
+        <input type="number" name="cantidad_ambientes" min="1">
+        <span class="msg-error" id="error-cantidad_ambientes"></span>
+    </div>
+
+    <div class="campo">
+        <label>Dormitorios *</label>
+        <input type="number" name="cantidad_dormitorios" min="1">
+        <span class="msg-error" id="error-cantidad_dormitorios"></span>
+    </div>
+
+    <div class="campo">
+        <label>Baños *</label>
+        <input type="number" name="cantidad_banos" min="1">
+        <span class="msg-error" id="error-cantidad_banos"></span>
+    </div>
+
+</div>
+
+<button type="submit" id="btn-submit">Guardar Propiedad</button>
 
 </form>
+</div>
 
 <script>
-// Auxiliares para mostrar errores visuales
-function setError(campo, mensaje) {
-    const el = document.querySelector('[name="' + campo + '"]');
-    if (el) {
-        const wrapper = el.closest('.campo');
-        const span = document.getElementById('error-' + campo);
-        wrapper.classList.add('campo-error');
-        if (span) span.textContent = mensaje;
+document.addEventListener("DOMContentLoaded", () => {
+
+    const form = document.getElementById("form-propiedad");
+
+    const required = [
+        "titulo",
+        "direccion",
+        "localidad_id",
+        "precio",
+        "categoria_id",
+        "cantidad_ambientes",
+        "cantidad_dormitorios",
+        "cantidad_banos"
+    ];
+
+    function setError(field, msg) {
+        const el = document.getElementById("error-" + field);
+        if (!el) return;
+        el.innerText = msg;
+        el.style.display = "block";
+        el.style.color = "#dc3545";
+        el.style.fontWeight = "bold";
+    }
+
+    function clearError(field) {
+        const el = document.getElementById("error-" + field);
+        if (!el) return;
+        el.innerText = "";
+    }
+
+    function validateField(name, value) {
+
+    let error = "";
+
+    value = (value ?? "").toString().trim();
+    const num = Number(value);
+
+    // ================= OBLIGATORIOS =================
+    const required = [
+        "titulo",
+        "direccion",
+        "localidad_id",
+        "precio",
+        "categoria_id",
+        "cantidad_ambientes",
+        "cantidad_dormitorios",
+        "cantidad_banos"
+    ];
+
+    if (required.includes(name) && value === "") {
+        error = "Campo obligatorio";
+    }
+
+    // ================= NUMÉRICOS BASE =================
+    if (name === "precio") {
+        if (value === "" || num <= 0) error = "Precio inválido";
+    }
+
+    if (name === "cantidad_ambientes") {
+        if (value === "" || num < 1) error = "Mínimo 1 ambiente";
+    }
+
+    if (name === "cantidad_dormitorios") {
+        if (value === "" || num < 1) error = "Mínimo 1 dormitorio";
+    }
+
+    if (name === "cantidad_banos") {
+        if (value === "" || num < 1) error = "Mínimo 1 baño";
+    }
+
+    if (name === "expensas") {
+        if (value !== "" && num < 0) error = "Expensas inválidas";
+    }
+
+    // ================= REGLAS DE NEGOCIO (IMPORTANTE) =================
+    const ambientes = Number(document.querySelector("[name='cantidad_ambientes']").value || 0);
+    const dormitorios = Number(document.querySelector("[name='cantidad_dormitorios']").value || 0);
+    const banos = Number(document.querySelector("[name='cantidad_banos']").value || 0);
+
+    // Solo validar coherencia si hay datos cargados
+    if (ambientes > 0) {
+
+        if (dormitorios > ambientes) {
+            setError("cantidad_dormitorios", "No puede superar los ambientes");
+            return false;
+        }
+
+        if (banos > ambientes) {
+            setError("cantidad_banos", "No puede superar los ambientes");
+            return false;
+        }
+    }
+
+    // ================= RESULTADO =================
+    if (error) {
+        setError(name, error);
+        return false;
+    } else {
+        clearError(name);
+        return true;
     }
 }
 
-function clearErrors() {
-    document.querySelectorAll('.campo-error').forEach(el => el.classList.remove('campo-error'));
-    document.querySelectorAll('.msg-error').forEach(el => el.textContent = '');
-}
+    // TIEMPO REAL REAL (input + change + blur)
+    form.querySelectorAll("input, select, textarea").forEach(el => {
 
-function valStr(name) {
-    const el = document.querySelector('[name="' + name + '"]');
-    return el ? el.value.trim() : '';
-}
+        ["input", "change", "blur"].forEach(evt => {
+            el.addEventListener(evt, () => {
+                validateField(el.name, el.value);
+            });
+        });
 
-function valNum(name) {
-    const v = valStr(name);
-    return v === '' ? null : Number(v);
-}
+    });
 
-// Validación robusta antes del envío
-function validarFormulario() {
-    clearErrors();
-    let ok = true;
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-    // Título y Dirección
-    if (valStr('titulo').length < 5) { setError('titulo', 'El título debe tener al menos 5 caracteres'); ok = false; }
-    if (valStr('direccion').length < 5) { setError('direccion', 'Ingrese una dirección válida'); ok = false; }
+        const data = Object.fromEntries(new FormData(form));
 
-    // Precios y Expensas
-    if (valNum('precio') <= 0) { setError('precio', 'El alquiler debe ser mayor a 0'); ok = false; }
-    if (valNum('expensas') < 0) { setError('expensas', 'Las expensas no pueden ser negativas'); ok = false; }
+        let ok = true;
 
-    // Selectores obligatorios
-    if (!valStr('localidad_id')) { setError('localidad_id', 'Seleccione una localidad'); ok = false; }
-    if (!valStr('administrador_id')) { setError('administrador_id', 'Asigne un dueño/admin'); ok = false; }
-    if (!valStr('categoria_id')) { setError('categoria_id', 'Seleccione una categoría'); ok = false; }
+        for (const k in data) {
+            if (!validateField(k, data[k])) ok = false;
+        }
 
-    // Lógica de ambientes (No pueden haber más dormitorios que ambientes totales)
-    const amb = valNum('cantidad_ambientes');
-    const dorm = valNum('cantidad_dormitorios');
-    if (amb < 1) { setError('cantidad_ambientes', 'Mínimo 1 ambiente'); ok = false; }
-    if (dorm > amb) { setError('cantidad_dormitorios', 'No puede superar el total de ambientes'); ok = false; }
+        if (!ok) return;
 
-    if (!ok) {
-        const firstErr = document.querySelector('.campo-error');
-        if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
+        try {
+            const resp = await fetch(BASE_URL + "/api/propiedades", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+                body: JSON.stringify(data)
+            });
 
-    return ok;
-}
+            const json = await resp.json();
+
+            if (!resp.ok) {
+                alert(json.message || "Error al guardar");
+                return;
+            }
+
+            alert("Propiedad creada correctamente");
+            window.location.reload();
+
+        } catch (err) {
+            console.error(err);
+            alert("Error de conexión");
+        }
+    });
+
+});
 </script>
 
-<?php 
-include SRC_PATH . 'views/partials/footer.php'; 
-?>
-
+<?php include SRC_PATH . 'views/partials/footer.php'; ?>
