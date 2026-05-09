@@ -101,8 +101,6 @@ class PropiedadController {
         $inputData = json_decode($inputRaw, true) ?? $_POST;
 
         $datosLimpios = PropiedadSanitizer::sanitizarPropiedad($inputData);
-<<<<<<< HEAD
-=======
 
         unset($datosLimpios['id']); // no permitir ID en creación (autoincremental)
 
@@ -114,7 +112,6 @@ class PropiedadController {
                 'errors' => $errores
             ], 400);
         }
->>>>>>> 4ad93a49aafe06e2454ad57b841b94bddc9cafc9
 
         try {
             $datosLimpios['usuario_id'] = $user->sub;
@@ -166,8 +163,6 @@ class PropiedadController {
         $inputData = json_decode($inputRaw, true) ?? $_POST;
 
         $datosLimpios = PropiedadSanitizer::sanitizarPropiedad($inputData);
-<<<<<<< HEAD
-=======
         $errores = PropiedadValidator::validarPropiedad($datosLimpios);
 
         if (!empty($errores)) {
@@ -176,7 +171,6 @@ class PropiedadController {
                 'errors' => $errores
             ], 400);
         }
->>>>>>> 4ad93a49aafe06e2454ad57b841b94bddc9cafc9
 
         try {
             $propiedad->fill($datosLimpios);
