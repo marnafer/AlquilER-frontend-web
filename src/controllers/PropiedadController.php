@@ -2,6 +2,9 @@
 
 namespace App\Controllers;
 
+require_once SRC_PATH . 'sanitizers/PropiedadSanitizer.php';
+require_once SRC_PATH . 'validators/PropiedadValidator.php';
+
 use App\Models\Propiedad;
 use App\Sanitizers\PropiedadSanitizer;
 use App\Validators\PropiedadValidator;

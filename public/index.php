@@ -17,7 +17,114 @@ define('BASE_URL', rtrim(dirname($_SERVER['SCRIPT_NAME']), '/')); // Esto es út
                                                                   // especialmente si no está en la raíz del servidor web.  
 ini_set('display_errors', 1);
 
-// --- CONFIGURACIÓN ---
+// ============================================
+// FUNCIONES GLOBALES DE RESPUESTA
+// ============================================
+
+/**
+ * Enviar respuesta JSON exitosa
+ */
+function renderJson($data, $message = null, $statusCode = 200)
+{
+    // Limpiar output buffer
+    if (ob_get_length()) {
+        ob_clean();
+    }
+    
+    http_response_code($statusCode);
+    header('Content-Type: application/json; charset=utf-8');
+    header('X-Content-Type-Options: nosniff');
+    
+    $response = [
+        'success' => true,
+        'data' => $data,
+        'timestamp' => date('Y-m-d H:i:s')
+    ];
+    
+    if ($message !== null) {
+        $response['message'] = $message;
+    }
+    
+    // Usar JSON_UNESCAPED_SLASHES para evitar escapes de barras
+    $json = json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    
+    echo $json;
+    exit;
+}
+
+/**
+ * Enviar respuesta JSON de error
+ */
+function renderError($error, $statusCode = 400, $details = null)
+{
+    // Limpiar output buffer
+    if (ob_get_length()) {
+        ob_clean();
+    }
+    
+    http_response_code($statusCode);
+    header('Content-Type: application/json; charset=utf-8');
+    header('X-Content-Type-Options: nosniff');
+    
+    $response = [
+        'success' => false,
+        'error' => $error,
+        'timestamp' => date('Y-m-d H:i:s')
+    ];
+    
+    if ($details !== null) {
+        $response['details'] = $details;
+    }
+    
+    if (isset($GLOBALS['path'])) {
+        $response['path'] = $GLOBALS['path'];
+    }
+    
+    $json = json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    
+    echo $json;
+    exit;
+}
+
+/**
+ * Enviar respuesta JSON con paginación
+ */
+function renderPaginated($data, $total, $page = 1, $limit = 10, $message = null)
+{
+    // Limpiar output buffer
+    if (ob_get_length()) {
+        ob_clean();
+    }
+    
+    http_response_code(200);
+    header('Content-Type: application/json; charset=utf-8');
+    header('X-Content-Type-Options: nosniff');
+    
+    $response = [
+        'success' => true,
+        'data' => $data,
+        'pagination' => [
+            'total' => (int)$total,
+            'page' => (int)$page,
+            'limit' => (int)$limit,
+            'last_page' => (int)ceil($total / $limit)
+        ],
+        'timestamp' => date('Y-m-d H:i:s')
+    ];
+    
+    if ($message !== null) {
+        $response['message'] = $message;
+    }
+    
+    $json = json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    
+    echo $json;
+    exit;
+}
+
+// ============================================
+// CONFIGURACIÓN
+// ============================================
 
 $method = strtoupper(trim($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
@@ -37,8 +144,14 @@ if (strpos($path_bruto, '/public') === 0) {
 
 $path = '/' . trim((string)$path_bruto, "/");
 
-// --- DEBUG ---
-//require_once dirname(__DIR__) . '/src/debug/Debugger.php';
+// Hacemos la variable $path global para que esté disponible en los routers
+$GLOBALS['path'] = $path;
+
+// ============================================
+// DEBUG
+// ============================================
+
+require_once dirname(__DIR__) . '/src/debug/Debugger.php';
 
 //use App\Debug\Debugger;
 
@@ -50,36 +163,6 @@ $path = '/' . trim((string)$path_bruto, "/");
 // Debugger::request();
 
 // ============================================
-// DETECCIÓN DE RUTAS
-// ============================================
-
-$method = strtoupper(trim($_SERVER['REQUEST_METHOD'] ?? 'GET'));
-$requestUri = $_SERVER['REQUEST_URI'] ?? '/';
-
-// 1. Extraemos el path puro
-$path_bruto = parse_url($requestUri, PHP_URL_PATH);
-
-// 2. DETECCIÓN DINÁMICA DE LA RAIZ DEL SCRIPT
-$scriptName = $_SERVER['SCRIPT_NAME'];
-$baseDir = str_replace('\\', '/', dirname(dirname($scriptName)));
-
-// 3. LIMPIEZA INTELIGENTE
-if ($baseDir !== '/' && strpos($path_bruto, $baseDir) === 0) {
-    $path_bruto = substr($path_bruto, strlen($baseDir));
-}
-
-// Quitamos el prefijo /public si está presente
-if (strpos($path_bruto, '/public') === 0) {
-    $path_bruto = substr($path_bruto, strlen('/public'));
-}
-
-// 4. NORMALIZACIÓN
-$path = '/' . trim((string)$path_bruto, "/");
-
-// Hacemos la variable $path global para que esté disponible en los routers
-$GLOBALS['path'] = $path;
-
-// ============================================
 // RUTAS DEL SISTEMA (respuestas rápidas)
 // ============================================
 
@@ -89,33 +172,47 @@ if ($path === '/health') {
         'status' => 'ok',
         'timestamp' => date('Y-m-d H:i:s'),
         'php' => phpversion()
-    ]);
+    ], 'API funcionando correctamente');
     exit;
 }
 
 if ($path === '/') {
+    // Endpoints sin escapes
+    $endpoints = [
+        '/health',
+        '/api/categorias',
+        '/api/provincias',
+        '/api/localidades',
+        '/api/usuarios',
+        '/api/propiedades',
+        '/api/servicios',
+        '/api/propiedades-servicios',
+        '/api/reservas',
+        '/api/resenas',
+        '/api/consultas',
+        '/api/favoritos',
+        '/api/logs-actividad',
+        '/api/roles',
+        '/api/propiedad-imagenes',
+        '/api/debug/stats',
+        '/api/debug/test-db'
+    ];
+    
     renderJson([
         'message' => 'API Alquiler Permanente funcionando',
-        'endpoints' => [
-            '/health',
-            '/api/categorias',
-            '/api/provincias',
-            '/api/localidades',
-            '/api/usuarios',
-            '/api/propiedades',
-            '/api/servicios',
-            '/api/propiedades-servicios',
-            '/api/reservas',
-            '/api/resenas',
-            '/api/consultas',
-            '/api/favoritos',
-            '/api/logs-actividad',
-            '/api/roles',
-            '/api/propiedad-imagenes',
-            '/api/debug/stats',
-            '/api/login'
-        ]
-    ]);
+        'endpoints' => $endpoints
+    ], 'Bienvenido a la API');
+    exit;
+}
+
+// ============================================
+// RUTAS DE LA API
+// ============================================
+
+// --- PROPIEDADES ---
+if (strpos($path, '/api/propiedades') === 0) {
+    require_once SRC_PATH . 'routes/propiedad_router.php';
+    exit;
 }
 
 // --- FAVORITOS (por usuario) ---
@@ -184,78 +281,74 @@ elseif (strpos($path, '/api/servicios') === 0) {
     exit;
 }
 
+// --- PROPIEDAD SERVICIO ---
+elseif (strpos($path, '/api/propiedades-servicios') === 0) {
+    $routerPath = SRC_PATH . 'routes/propiedadservicio_router.php';
+    if (file_exists($routerPath)) {
+        require_once $routerPath;
+    } else {
+        renderError("Archivo de rutas no encontrado: propiedadservicio_router.php", 500);
+    }
+    exit;
+}
+
 // --- RESERVAS ---
 elseif (strpos($path, '/api/reservas') === 0) {
-    require_once SRC_PATH . 'routes/reserva_router.php';
+    $routerPath = SRC_PATH . 'routes/reserva_router.php';
+    if (file_exists($routerPath)) {
+        require_once $routerPath;
+    } else {
+        renderError("Archivo de rutas no encontrado: reserva_router.php", 500);
+    }
     exit;
 }
 
 // --- RESEÑAS ---
 elseif (strpos($path, '/api/resenas') === 0) {
-    require_once SRC_PATH . 'routes/resena_router.php';
+    $routerPath = SRC_PATH . 'routes/resena_router.php';
+    if (file_exists($routerPath)) {
+        require_once $routerPath;
+    } else {
+        renderError("Archivo de rutas no encontrado: resena_router.php", 500);
+    }
     exit;
 }
 
 // --- CONSULTAS ---
 elseif (strpos($path, '/api/consultas') === 0) {
-    require_once SRC_PATH . 'routes/consulta_router.php';
+    $routerPath = SRC_PATH . 'routes/consulta_router.php';
+    if (file_exists($routerPath)) {
+        require_once $routerPath;
+    } else {
+        renderError("Archivo de rutas no encontrado: consulta_router.php", 500);
+    }
     exit;
 }
 
 // --- ROLES ---
 elseif (strpos($path, '/api/roles') === 0) {
-    require_once SRC_PATH . 'routes/rol_router.php';
-    exit;
-}
-
-// --- PROPIEDADES ---
-elseif (strpos($path, '/api/propiedades') === 0) {
-    require_once SRC_PATH . 'routes/propiedad_router.php';
+    $routerPath = SRC_PATH . 'routes/rol_router.php';
+    if (file_exists($routerPath)) {
+        require_once $routerPath;
+    } else {
+        renderError("Archivo de rutas no encontrado: rol_router.php", 500);
+    }
     exit;
 }
 
 // --- DEBUG ---
-elseif (strpos($path, '/debug') === 0) {
-    require_once SRC_PATH . 'routes/debug_router.php';
-    exit;
-}
-
-// --- LOGIN ---
-elseif (strpos($path, '/api/autenticador') === 0) {
-    require_once SRC_PATH . 'routes/autenticador_router.php';
-    exit;
-}
-
-// --- PAGINAS --
-    if (strpos($path, '/api/') !== 0) {
-    header('Content-Type: text/html; charset=utf-8');
+elseif (strpos($path, '/debug') === 0 || strpos($path, '/api/debug') === 0) {
+    $routerPath = SRC_PATH . 'routes/debug_router.php';
+    if (file_exists($routerPath)) {
+        require_once $routerPath;
+    } else {
+        renderError("Archivo de rutas no encontrado: debug_router.php", 500);
     }
-    require SRC_PATH . 'routes/pagina_router.php'; 
     exit;
+}
 
 // ============================================
 // RUTA NO ENCONTRADA (404)
 // ============================================
 
-renderJson([
-    'success' => false,
-    'error' => 'Ruta no encontrada'
-], 404);
-exit;
-
-// --- HELPERS ---
-
-function renderJson(array $data, int $code = 200): void {
-    header("Content-Type: application/json; charset=utf-8");
-    http_response_code($code);
-    echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
-function renderError(string $message, int $code): void {
-    renderJson([
-        'success' => false,
-        'error' => $message,
-        'path' => $GLOBALS['path'] ?? null
-    ], $code);
-}
+renderError("Ruta no encontrada", 404);

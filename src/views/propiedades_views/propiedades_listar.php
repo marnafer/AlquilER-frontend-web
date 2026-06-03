@@ -13,7 +13,53 @@ include SRC_PATH . 'views/partials/header.php';
         </a>
     </div>
 
+<<<<<<< HEAD
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-striped mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:60px;">ID</th>
+                        <th>Título</th>
+                        <th style="width:120px;">Precio</th>
+                        <th>Dirección</th>
+                        <th style="width:90px;">Amb.</th>
+                        <th style="width:90px;">Dorm.</th>
+                        <th style="width:90px;">Baños</th>
+                        <th style="width:110px;">Disponible</th>
+                        <th style="width:180px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-propiedades">
+                    <?php if (!empty($propiedades)): ?>
+                        <?php foreach ($propiedades as $p): ?>
+                            <tr data-id="<?php echo htmlspecialchars($p->id) ?>">
+                                <td><?php echo htmlspecialchars($p->id) ?></td>
+                                <td><?php echo htmlspecialchars($p->titulo) ?></td>
+                                <td><?php echo htmlspecialchars(number_format((float)$p->precio, 2, ',', '.')) ?></td>
+                                <td><?php echo htmlspecialchars($p->direccion ?? '—') ?></td>
+                                <td><?php echo htmlspecialchars($p->cantidad_ambientes ?? '—') ?></td>
+                                <td><?php echo htmlspecialchars($p->cantidad_dormitorios ?? '—') ?></td>
+                                <td><?php echo htmlspecialchars($p->cantidad_banos ?? '—') ?></td>
+                                <td><?php echo ($p->disponible ? '<span class="badge bg-success">Sí</span>' : '<span class="badge bg-secondary">No</span>') ?></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary btn-ver" data-id="<?php echo htmlspecialchars($p->id) ?>">Ver</button>
+                                    <a href="/api/propiedades/nuevo?copiar=<?php echo htmlspecialchars($p->id) ?>" class="btn btn-sm btn-outline-secondary">Copiar</a>
+                                    <button class="btn btn-sm btn-outline-danger btn-eliminar" data-id="<?php echo htmlspecialchars($p->id) ?>">Eliminar</button>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr><td colspan="9" class="text-center py-4">No hay propiedades registradas.</td></tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+=======
     <div id="alerta"></div>
+>>>>>>> 4ad93a49aafe06e2454ad57b841b94bddc9cafc9
 
     <div class="table-responsive">
         <table class="table table-striped table-hover align-middle">
