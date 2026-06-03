@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Categoria extends Model
 {
@@ -15,7 +14,7 @@ class Categoria extends Model
     /**
      * Relación: Una categoría tiene muchas propiedades.
      */
-    public function propiedades(): HasMany
+    public function propiedades()
     {
         return $this->hasMany(Propiedad::class, 'categoria_id');
     }

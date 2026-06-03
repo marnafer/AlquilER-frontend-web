@@ -25,4 +25,47 @@ class Propiedad extends Model
     
     // Indicamos que use deleted_at para el Soft Delete
     protected $dates = ['deleted_at'];
+
+    // Relaciones con otros modelos 
+
+    public function categoria()
+    {
+        return $this->belongsTo(Categoria::class); 
+    }
+
+    public function localidad()
+    {
+        return $this->belongsTo(Localidad::class); 
+    }
+
+    public function usuario()
+    {
+        return $this->belongsTo(Usuario::class); 
+    }
+
+    public function servicios()
+    {
+        return $this->belongsToMany(Servicio::class);
+    }
+
+    public function imagenes()
+    {
+        return $this->hasMany(PropiedadImagen::class); 
+    }
+
+    public function reservas()
+    {
+        return $this->hasMany(Reserva::class); 
+    }
+
+    public function consultas()
+    {
+        return $this->hasMany(Consulta::class);
+    }
+
+    public function favoritos()
+    {
+        return $this->hasMany(Favorito::class);
+    }
+   
 }

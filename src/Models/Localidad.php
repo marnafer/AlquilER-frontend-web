@@ -14,6 +14,6 @@ class Localidad extends Model
 
     public function provincia()
     {
-        return $this->belongsTo(Provincia::class); // No hay FK directa en la tabla actual
+        return $this->belongsTo(Provincia::class); 
     }
 }

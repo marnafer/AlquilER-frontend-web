@@ -12,7 +12,8 @@ class Favorito extends Model {
 
     protected $fillable = ['usuario_id', 'propiedad_id'];
 
-    public function propiedad() { 
+    public function propiedad() 
+    { 
         return $this->belongsTo(Propiedad::class, 'propiedad_id');
     }
 }
