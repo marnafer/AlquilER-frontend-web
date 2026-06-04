@@ -30,42 +30,42 @@ class Propiedad extends Model
 
     public function categoria()
     {
-        return $this->belongsTo(Categoria::class); 
+        return $this->belongsTo(Categoria::class, 'categoria_id'); 
     }
 
     public function localidad()
     {
-        return $this->belongsTo(Localidad::class); 
+        return $this->belongsTo(Localidad::class, 'localidad_id');
     }
 
     public function usuario()
     {
-        return $this->belongsTo(Usuario::class); 
-    }
-
-    public function servicios()
-    {
-        return $this->belongsToMany(Servicio::class);
+        return $this->belongsTo(Usuario::class, 'usuario_id'); 
     }
 
     public function imagenes()
     {
-        return $this->hasMany(PropiedadImagen::class); 
+        return $this->hasMany(PropiedadImagen::class, 'propiedad_id');
     }
 
     public function reservas()
     {
-        return $this->hasMany(Reserva::class); 
+        return $this->hasMany(Reserva::class, 'propiedad_id');
+    }
+
+    public function servicios()
+    {
+        return $this->belongsToMany(Servicio::class, 'propiedad_servicio', 'propiedad_id', 'servicio_id');
     }
 
     public function consultas()
     {
-        return $this->hasMany(Consulta::class);
+        return $this->hasMany(Consulta::class, 'propiedad_id');
     }
 
     public function favoritos()
     {
-        return $this->hasMany(Favorito::class);
+        return $this->hasMany(Favorito::class, 'propiedad_id');
     }
    
 }
