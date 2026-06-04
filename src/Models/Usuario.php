@@ -25,6 +25,33 @@ class Usuario extends Model
 
     protected $hidden = ['contrasena', 'deleted_at'];
 
+    // Relaciones 
+
+    public function rol()
+    {
+        return $this->belongsTo(Rol::class, 'rol_id');
+    }
+
+    public function consultas()
+    {
+        return $this->hasMany(Consulta::class, 'inquilino_id');
+    }
+
+    public function favoritos()
+    {
+        return $this->belongsToMany(Propiedad::class, 'favoritos', 'usuario_id', 'propiedad_id');
+    }
+
+    public function propiedades()
+    {
+        return $this->hasMany(Propiedad::class, 'usuario_id');
+    }
+
+    public function reservas()
+    {
+        return $this->hasMany(Reserva::class, 'inquilino_id');
+    }
+
     public function obtenerTodos()
     {
         return self::select('usuarios.*', 'roles.nombre as rol_nombre')
