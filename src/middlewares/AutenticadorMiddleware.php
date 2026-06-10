@@ -3,6 +3,7 @@
 namespace App\Middlewares;
 
 use App\Helpers\JwtHelper;
+use App\Helpers\Response;
 
 class AutenticadorMiddleware {
 
@@ -14,18 +15,12 @@ class AutenticadorMiddleware {
 
         // 1. Verificar que exista
         if (!$authHeader) {
-            renderJson([
-                'success' => false,
-                'error' => 'Token requerido'
-            ], 401);
+            Response::unauthorized('Token requerido');
         }
 
         // 2. Verificar formato Bearer
         if (!str_starts_with($authHeader, 'Bearer ')) {
-            renderJson([
-                'success' => false,
-                'error' => 'Formato de token inválido'
-            ], 401);
+            Response::unauthorized('Formato de token inválido');
         }
 
         // 3. Extraer token
@@ -35,10 +30,7 @@ class AutenticadorMiddleware {
         $user = JwtHelper::verificarToken($token);
 
         if (!$user) {
-            renderJson([
-                'success' => false,
-                'error' => 'Token inválido o expirado'
-            ], 401);
+            Response::unauthorized('Token inválido o expirado');
         }
 
         return $user;
@@ -48,10 +40,7 @@ class AutenticadorMiddleware {
         $user = self::verificar();
 
         if ($user->rol_id != 1) {
-            renderJson([
-                'success' => false,
-                'error' => 'Solo propietarios'
-            ], 403);
+            Response::forbidden('Solo propietarios');
         }
 
         return $user;
@@ -61,10 +50,7 @@ class AutenticadorMiddleware {
         $user = self::verificar();
 
         if ($user->rol_id != 2) {
-            renderJson([
-                'success' => false,
-                'error' => 'Solo inquilinos'
-            ], 403);
+            Response::forbidden('Solo inquilinos');
         }
 
         return $user;
@@ -74,10 +60,7 @@ class AutenticadorMiddleware {
         $user = self::verificar();
 
         if ($user->rol_id != 3) {
-            renderJson([
-                'success' => false,
-                'error' => 'Solo administradores'
-            ], 403);
+            Response::forbidden('Solo administradores');
         }
 
         return $user;

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/database.php';
+use App\Helpers\Response;
+use App\Routes\Router;
 
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
@@ -16,111 +18,6 @@ define('SRC_PATH', dirname(__DIR__) . '/src/');
 define('BASE_URL', rtrim(dirname($_SERVER['SCRIPT_NAME']), '/')); // Esto es útil para generar URLs relativas a la raíz del proyecto, 
                                                                   // especialmente si no está en la raíz del servidor web.  
 ini_set('display_errors', 1);
-
-// ============================================
-// FUNCIONES GLOBALES DE RESPUESTA
-// ============================================
-
-/**
- * Enviar respuesta JSON exitosa
- */
-function renderJson($data, $message = null, $statusCode = 200)
-{
-    // Limpiar output buffer
-    if (ob_get_length()) {
-        ob_clean();
-    }
-    
-    http_response_code($statusCode);
-    header('Content-Type: application/json; charset=utf-8');
-    header('X-Content-Type-Options: nosniff');
-    
-    $response = [
-        'success' => true,
-        'data' => $data,
-        'timestamp' => date('Y-m-d H:i:s')
-    ];
-    
-    if ($message !== null) {
-        $response['message'] = $message;
-    }
-    
-    // Usar JSON_UNESCAPED_SLASHES para evitar escapes de barras
-    $json = json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-    
-    echo $json;
-    exit;
-}
-
-/**
- * Enviar respuesta JSON de error
- */
-function renderError($error, $statusCode = 400, $details = null)
-{
-    // Limpiar output buffer
-    if (ob_get_length()) {
-        ob_clean();
-    }
-    
-    http_response_code($statusCode);
-    header('Content-Type: application/json; charset=utf-8');
-    header('X-Content-Type-Options: nosniff');
-    
-    $response = [
-        'success' => false,
-        'error' => $error,
-        'timestamp' => date('Y-m-d H:i:s')
-    ];
-    
-    if ($details !== null) {
-        $response['details'] = $details;
-    }
-    
-    if (isset($GLOBALS['path'])) {
-        $response['path'] = $GLOBALS['path'];
-    }
-    
-    $json = json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-    
-    echo $json;
-    exit;
-}
-
-/**
- * Enviar respuesta JSON con paginación
- */
-function renderPaginated($data, $total, $page = 1, $limit = 10, $message = null)
-{
-    // Limpiar output buffer
-    if (ob_get_length()) {
-        ob_clean();
-    }
-    
-    http_response_code(200);
-    header('Content-Type: application/json; charset=utf-8');
-    header('X-Content-Type-Options: nosniff');
-    
-    $response = [
-        'success' => true,
-        'data' => $data,
-        'pagination' => [
-            'total' => (int)$total,
-            'page' => (int)$page,
-            'limit' => (int)$limit,
-            'last_page' => (int)ceil($total / $limit)
-        ],
-        'timestamp' => date('Y-m-d H:i:s')
-    ];
-    
-    if ($message !== null) {
-        $response['message'] = $message;
-    }
-    
-    $json = json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-    
-    echo $json;
-    exit;
-}
 
 // ============================================
 // CONFIGURACIÓN
@@ -147,6 +44,10 @@ $path = '/' . trim((string)$path_bruto, "/");
 // Hacemos la variable $path global para que esté disponible en los routers
 $GLOBALS['path'] = $path;
 
+$router = new Router();
+
+require_once SRC_PATH . 'routes/routes.php';
+
 // ============================================
 // DEBUG
 // ============================================
@@ -168,11 +69,11 @@ require_once dirname(__DIR__) . '/src/debug/Debugger.php';
 
 // Health
 if ($path === '/health') {
-    renderJson([
+    Response::success([
         'status' => 'ok',
         'timestamp' => date('Y-m-d H:i:s'),
         'php' => phpversion()
-    ], 'API funcionando correctamente');
+    ], 200, 'API funcionando correctamente');
     exit;
 }
 
@@ -198,22 +99,24 @@ if ($path === '/') {
         '/api/debug/test-db'
     ];
     
-    renderJson([
+    Response::success([
         'message' => 'API Alquiler Permanente funcionando',
         'endpoints' => $endpoints
-    ], 'Bienvenido a la API');
+    ], 200, 'Bienvenido a la API');
     exit;
 }
+
+// NUEVO RUTEO CON ARCHIVO GLOBAL ROUTER //
+if (strpos($path, '/api/autenticador') === 0) {
+    $router->dispatch($method, $path);
+    exit;
+}
+
+// VIEJO RUTEO A REEMPLAZAR//
 
 // ============================================
 // RUTAS DE LA API
 // ============================================
-
-// --- PROPIEDADES ---
-if (strpos($path, '/api/propiedades') === 0) {
-    require_once SRC_PATH . 'routes/propiedad_router.php';
-    exit;
-}
 
 // --- FAVORITOS (por usuario) ---
 elseif (preg_match('#^/api/usuarios/\d+/favoritos$#', $path)) {
@@ -281,69 +184,87 @@ elseif (strpos($path, '/api/servicios') === 0) {
     exit;
 }
 
-// --- PROPIEDAD SERVICIO ---
-elseif (strpos($path, '/api/propiedades-servicios') === 0) {
-    $routerPath = SRC_PATH . 'routes/propiedadservicio_router.php';
-    if (file_exists($routerPath)) {
-        require_once $routerPath;
-    } else {
-        renderError("Archivo de rutas no encontrado: propiedadservicio_router.php", 500);
-    }
-    exit;
-}
-
 // --- RESERVAS ---
 elseif (strpos($path, '/api/reservas') === 0) {
     $routerPath = SRC_PATH . 'routes/reserva_router.php';
+
     if (file_exists($routerPath)) {
         require_once $routerPath;
     } else {
-        renderError("Archivo de rutas no encontrado: reserva_router.php", 500);
+        Response::serverError(
+            'Archivo de rutas no encontrado: reserva_router.php'
+        );
     }
+
     exit;
 }
 
 // --- RESEÑAS ---
 elseif (strpos($path, '/api/resenas') === 0) {
     $routerPath = SRC_PATH . 'routes/resena_router.php';
+
     if (file_exists($routerPath)) {
         require_once $routerPath;
     } else {
-        renderError("Archivo de rutas no encontrado: resena_router.php", 500);
+        Response::serverError(
+            'Archivo de rutas no encontrado: resena_router.php'
+        );
     }
+
     exit;
 }
 
 // --- CONSULTAS ---
 elseif (strpos($path, '/api/consultas') === 0) {
     $routerPath = SRC_PATH . 'routes/consulta_router.php';
+
     if (file_exists($routerPath)) {
         require_once $routerPath;
     } else {
-        renderError("Archivo de rutas no encontrado: consulta_router.php", 500);
+        Response::serverError(
+            'Archivo de rutas no encontrado: consulta_router.php'
+        );
     }
+
     exit;
 }
 
 // --- ROLES ---
 elseif (strpos($path, '/api/roles') === 0) {
     $routerPath = SRC_PATH . 'routes/rol_router.php';
+
     if (file_exists($routerPath)) {
         require_once $routerPath;
     } else {
-        renderError("Archivo de rutas no encontrado: rol_router.php", 500);
+        Response::serverError(
+            'Archivo de rutas no encontrado: rol_router.php'
+        );
     }
+
+    exit;
+}
+
+// --- PROPIEDADES ---
+elseif (strpos($path, '/api/propiedades') === 0) {
+    require_once SRC_PATH . 'routes/propiedad_router.php';
     exit;
 }
 
 // --- DEBUG ---
-elseif (strpos($path, '/debug') === 0 || strpos($path, '/api/debug') === 0) {
+elseif (
+    strpos($path, '/debug') === 0 ||
+    strpos($path, '/api/debug') === 0
+) {
     $routerPath = SRC_PATH . 'routes/debug_router.php';
+
     if (file_exists($routerPath)) {
         require_once $routerPath;
     } else {
-        renderError("Archivo de rutas no encontrado: debug_router.php", 500);
+        Response::serverError(
+            'Archivo de rutas no encontrado: debug_router.php'
+        );
     }
+
     exit;
 }
 
@@ -351,4 +272,4 @@ elseif (strpos($path, '/debug') === 0 || strpos($path, '/api/debug') === 0) {
 // RUTA NO ENCONTRADA (404)
 // ============================================
 
-renderError("Ruta no encontrada", 404);
+Response::notFound("Ruta no encontrada");

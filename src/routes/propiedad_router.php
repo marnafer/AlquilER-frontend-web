@@ -22,7 +22,7 @@ switch (true) {
                 http_response_code(405);
                 renderJson([
                     'success' => false,
-                    'error' => "Método $method no permitido"
+                    'error' => "MÃ©todo $method no permitido"
                 ], 405);
         }
         break;
@@ -49,7 +49,7 @@ switch (true) {
                 http_response_code(405);
                 renderJson([
                     'success' => false,
-                    'error' => "Método $method no permitido"
+                    'error' => "MÃ©todo $method no permitido"
                 ], 405);
         }
         break;
@@ -61,7 +61,7 @@ switch (true) {
             http_response_code(405);
             renderJson([
                 'success' => false,
-                'error' => "Método $method no permitido"
+                'error' => "MÃ©todo $method no permitido"
             ], 405);
         }
         break;
