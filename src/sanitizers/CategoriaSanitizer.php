@@ -7,7 +7,7 @@ class CategoriaSanitizer
     /**
      * Sanitiza un ID (por ejemplo de la URL)
      */
-    public static function sanitizeId($id): ?int
+    public static function sanitizarIdCategoria($id): ?int
     {
         if ($id === null || $id === '') {
             return null;
@@ -17,18 +17,27 @@ class CategoriaSanitizer
     }
 
     /**
-     * Sanitiza el nombre:
-     * - trim
-     * - colapsa espacios
-     * - capitaliza palabras (Unicode-safe)
-     * - escapa HTML
+    * Sanitiza un nombre de categoría
      */
-    public static function sanitizarNombre(string $nombre): string
+    public static function sanitizarNombre($nombre)
     {
+        if (!$nombre) {
+            return null;
+        }
+
         $nombre = trim($nombre);
         $nombre = preg_replace('/\s+/u', ' ', $nombre);
         $nombre = mb_convert_case($nombre, MB_CASE_TITLE, 'UTF-8');
-        return htmlspecialchars($nombre, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+        return substr(
+            htmlspecialchars(
+                $nombre,
+                ENT_QUOTES | ENT_SUBSTITUTE,
+                'UTF-8'
+            ),
+            0,
+            50
+        );
     }
 
     /**
@@ -37,7 +46,7 @@ class CategoriaSanitizer
     public static function sanitizarCategoria(array $data): array
     {
         return [
-            'id'     => isset($data['id']) ? self::sanitizeId($data['id']) : null,
+            'id' => self::sanitizarIdCategoria($data['id'] ?? null),
             'nombre' => isset($data['nombre']) && $data['nombre'] !== '' ? self::sanitizarNombre((string)$data['nombre']) : null,
         ];
     }

@@ -5,185 +5,185 @@ namespace App\Controllers;
 use App\Sanitizers\CategoriaSanitizer;
 use App\Validators\CategoriaValidator;
 use App\Models\Categoria;
+use App\Helpers\Response;
 
-class CategoriaController {
-
-    public function listar() {
+class CategoriaController
+{
+    public function listar()
+    {
         try {
+
             $categorias = Categoria::all();
 
-            renderJson([
-                'success' => true,
-                'data' => $categorias,
-                'total' => count($categorias)
-            ], 200);
+            Response::success([
+                'categorias' => $categorias,
+                'total' => $categorias->count()
+            ]);
 
         } catch (\Exception $e) {
-            renderJson([
-                'success' => false,
-                'error' => 'Error interno del servidor'
-            ], 500);
+
+            Response::serverError($e->getMessage());
+
         }
     }
 
-    public function obtener($id) {
-        $idS = CategoriaSanitizer::sanitizeId($id);
-        $validacion = CategoriaValidator::validarId($idS);
+    public function obtener($id)
+    {
+        $idSan = CategoriaSanitizer::sanitizarIdCategoria($id);
+
+        $validacion = CategoriaValidator::validarIdCategoria($idSan);
 
         if (!$validacion['success']) {
-            renderJson($validacion, 400);
+            Response::validationError([
+                'id' => [$validacion['error']]
+            ]);
         }
 
         try {
-            $categoria = Categoria::find($idS);
+
+            $categoria = Categoria::find($idSan);
 
             if (!$categoria) {
-                renderJson([
-                    'success' => false,
-                    'error' => 'Categoría no encontrada'
-                ], 404);
+                Response::notFound('Categoría no encontrada');
             }
 
-            renderJson([
-                'success' => true,
-                'data' => $categoria
-            ], 200);
+            Response::success($categoria);
 
         } catch (\Exception $e) {
-            renderJson([
-                'success' => false,
-                'error' => 'Error interno del servidor'
-            ], 500);
+
+            Response::serverError($e->getMessage());
+
         }
     }
 
-    public function crear() {
+    public function crear()
+    {
         $raw = json_decode(file_get_contents('php://input'), true) ?? [];
 
         $san = CategoriaSanitizer::sanitizarCategoria($raw);
-        $validacion = CategoriaValidator::validarCategoria($san, false);
+
+        $validacion = CategoriaValidator::validarCategoria($san);
 
         if (!$validacion['success']) {
-            renderJson([
-                'success' => false,
-                'errors' => $validacion['errors']
-            ], 400);
+            Response::validationError($validacion['errors']);
         }
 
         try {
+
             if (Categoria::where('nombre', $san['nombre'])->exists()) {
-                renderJson([
-                    'success' => false,
-                    'error' => 'Ya existe una categoría con este nombre'
-                ], 409);
+                Response::badRequest(
+                    'Ya existe una categoría con este nombre'
+                );
             }
 
-            $categoria = Categoria::create($san);
+            $categoria = Categoria::create([
+                'nombre' => $san['nombre']
+            ]);
 
-            renderJson([
-                'success' => true,
-                'message' => 'Categoría creada exitosamente',
-                'data' => $categoria
-            ], 201);
+            Response::created(
+                $categoria,
+                'Categoría creada exitosamente'
+            );
 
         } catch (\Exception $e) {
-            renderJson([
-                'success' => false,
-                'error' => 'Error interno del servidor'
-            ], 500);
+
+            Response::serverError($e->getMessage());
+
         }
     }
 
-    public function actualizar($id) {
+    public function actualizar($id)
+    {
         $raw = json_decode(file_get_contents('php://input'), true) ?? [];
+
         $raw['id'] = $id;
 
         $san = CategoriaSanitizer::sanitizarCategoria($raw);
-        $validacion = CategoriaValidator::validarCategoria($san, true);
+
+        $validacion = CategoriaValidator::validarCategoria(
+            $san,
+            true
+        );
 
         if (!$validacion['success']) {
-            renderJson([
-                'success' => false,
-                'errors' => $validacion['errors']
-            ], 400);
+            Response::validationError(
+                $validacion['errors']
+            );
         }
 
         try {
+
             $categoria = Categoria::find($san['id']);
 
             if (!$categoria) {
-                renderJson([
-                    'success' => false,
-                    'error' => 'Categoría no encontrada'
-                ], 404);
+                Response::notFound('Categoría no encontrada');
             }
 
-            if (Categoria::where('nombre', $san['nombre'])
-                ->where('id', '!=', $san['id'])
-                ->exists()) {
-
-                renderJson([
-                    'success' => false,
-                    'error' => 'Ya existe otra categoría con este nombre'
-                ], 409);
+            if (
+                Categoria::where('nombre', $san['nombre'])
+                    ->where('id', '!=', $san['id'])
+                    ->exists()
+            ) {
+                Response::badRequest(
+                    'Ya existe otra categoría con este nombre'
+                );
             }
 
-            $categoria->update($san);
+            $categoria->update([
+                'nombre' => $san['nombre']
+            ]);
 
-            renderJson([
-                'success' => true,
-                'message' => 'Categoría actualizada exitosamente',
-                'data' => $categoria
-            ], 200);
+            Response::success(
+                $categoria,
+                200,
+                'Categoría actualizada exitosamente'
+            );
 
         } catch (\Exception $e) {
-            renderJson([
-                'success' => false,
-                'error' => 'Error interno del servidor'
-            ], 500);
+
+            Response::serverError($e->getMessage());
+
         }
     }
 
-    public function eliminar($id) {
-        $idS = CategoriaSanitizer::sanitizeId($id);
-        $validacion = CategoriaValidator::validarId($idS);
+    public function eliminar($id)
+    {
+        $idSan = CategoriaSanitizer::sanitizarIdCategoria($id);
+
+        $validacion = CategoriaValidator::validarIdCategoria($idSan);
 
         if (!$validacion['success']) {
-            renderJson([
-                'success' => false,
-                'error' => $validacion['error']
-            ], 400);
+            Response::validationError([
+                'id' => [$validacion['error']]
+            ]);
         }
 
         try {
-            $categoria = Categoria::find($idS);
+
+            $categoria = Categoria::find($idSan);
 
             if (!$categoria) {
-                renderJson([
-                    'success' => false,
-                    'error' => 'Categoría no encontrada'
-                ], 404);
+                Response::notFound('Categoría no encontrada');
             }
 
             if ($categoria->propiedades()->exists()) {
-                renderJson([
-                    'success' => false,
-                    'error' => 'No se puede eliminar porque tiene propiedades asociadas'
-                ], 409);
+                Response::badRequest(
+                    'No se puede eliminar porque tiene propiedades asociadas'
+                );
             }
 
             $categoria->delete();
 
-            renderJson([
-                'success' => true,
-                'message' => 'Categoría eliminada exitosamente'
-            ], 200);
+            Response::success(
+                [],
+                200,
+                'Categoría eliminada exitosamente'
+            );
 
         } catch (\Exception $e) {
-            renderJson([
-                'success' => false,
-                'error' => 'Error interno del servidor'
-            ], 500);
+
+            Response::serverError($e->getMessage());
+
         }
     }
-}
+}   
