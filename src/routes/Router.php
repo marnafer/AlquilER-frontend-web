@@ -32,9 +32,10 @@ class Router
 
     public function dispatch(string $method, string $path): void
     {
-        $handler = $this->routes[$method][$path] ?? null;
+        // 1. Buscar coincidencia exacta
+        if (isset($this->routes[$method][$path])) {
 
-        if ($handler) {
+            $handler = $this->routes[$method][$path];
 
             if (is_array($handler)) {
                 [$controller, $action] = $handler;
@@ -49,10 +50,51 @@ class Router
             return;
         }
 
-        // Verificar si existe la ruta con otro método
+        // 2. Buscar rutas dinámicas
+        foreach ($this->routes[$method] ?? [] as $route => $handler) {
+
+            $pattern = preg_replace(
+                '#\{([a-zA-Z_][a-zA-Z0-9_]*)\}#',
+                '([^/]+)',
+                $route
+            );
+
+            $pattern = '#^' . $pattern . '$#';
+
+            if (preg_match($pattern, $path, $matches)) {
+
+                array_shift($matches);
+
+                if (is_array($handler)) {
+                    [$controller, $action] = $handler;
+
+                    $instance = new $controller();
+                    $instance->$action(...$matches);
+
+                    return;
+                }
+
+                $handler(...$matches);
+                return;
+            }
+        }
+
+        // 3. Verificar si existe la ruta con otro método
         foreach ($this->routes as $httpMethod => $routes) {
-            if (isset($routes[$path])) {
-                Response::methodNotAllowed();
+
+            foreach ($routes as $route => $handler) {
+
+                $pattern = preg_replace(
+                    '#\{([a-zA-Z_][a-zA-Z0-9_]*)\}#',
+                    '([^/]+)',
+                    $route
+                );
+
+                $pattern = '#^' . $pattern . '$#';
+
+                if (preg_match($pattern, $path)) {
+                    Response::methodNotAllowed();
+                }
             }
         }
 

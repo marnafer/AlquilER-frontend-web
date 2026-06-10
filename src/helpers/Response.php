@@ -97,4 +97,12 @@ class Response
 		], 403);
 	}
 
+	public static function badRequest(string $message = 'Solicitud inválida'): void
+	{
+		self::json([
+			'success' => false,
+			'error' => $message
+		], 400);
+	}
+
 }
