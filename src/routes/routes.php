@@ -48,3 +48,21 @@ $router->put('/api/categorias/{id}',[CategoriaController::class, 'actualizar']);
 
 $router->delete('/api/categorias/{id}',[CategoriaController::class, 'eliminar']);
 
+/*
+|--------------------------------------------------------------------------
+| PROVINCIAS
+|--------------------------------------------------------------------------
+*/
+
+$router->get('/api/provincias', [ProvinciaController::class, 'index']);
+
+$router->get('/api/provincias/con-localidades',[ProvinciaController::class, 'indexWithCount']);
+
+$router->get('/api/provincias/{id}',[ProvinciaController::class, 'show']);
+
+$router->post('/api/provincias',[ProvinciaController::class, 'store']);
+
+$router->put('/api/provincias/{id}',[ProvinciaController::class, 'update']);
+
+$router->delete('/api/provincias/{id}',[ProvinciaController::class, 'delete']);
+

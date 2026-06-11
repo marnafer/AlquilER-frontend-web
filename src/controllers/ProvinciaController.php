@@ -5,129 +5,121 @@ namespace App\Controllers;
 use App\Models\Provincia;
 use App\Validators\ProvinciaValidator;
 use App\Sanitizers\ProvinciaSanitizer;
+use App\Helpers\Response;
 
-class ProvinciaController {
-
+class ProvinciaController
+{
     /**
      * GET /api/provincias
      */
-    public function index() {
+    public function index()
+    {
         try {
+
             $provincias = Provincia::all();
 
-            return renderJson([
-                'success' => true,
+            Response::success([
                 'data' => $provincias,
                 'total' => $provincias->count()
-            ], 200);
+            ]);
 
         } catch (\Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+
+            Response::serverError();
         }
     }
 
     /**
      * GET /api/provincias/con-localidades
      */
-    public function indexWithCount() {
+    public function indexWithCount()
+    {
         try {
+
             $provincias = Provincia::withCount('localidades')->get();
 
-            return renderJson([
-                'success' => true,
+            Response::success([
                 'data' => $provincias,
                 'total' => $provincias->count()
-            ], 200);
+            ]);
 
         } catch (\Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+
+            Response::serverError();
         }
     }
 
     /**
      * GET /api/provincias/{id}
      */
-    public function show($id) {
-
+    public function show($id)
+    {
         $idSan = ProvinciaSanitizer::sanitizarIdProvincia($id);
+
         $validacion = ProvinciaValidator::validarSoloIdProvincia($idSan);
 
         if (!$validacion['success']) {
-            return renderJson($validacion, 400);
+            Response::validationError(
+                $validacion['errors']
+            );
         }
 
         try {
+
             $provincia = Provincia::find($idSan);
 
             if (!$provincia) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Provincia no encontrada'
-                ], 404);
+                Response::notFound('Provincia no encontrada');
             }
 
-            return renderJson([
-                'success' => true,
+            Response::success([
                 'data' => $provincia
-            ], 200);
+            ]);
 
         } catch (\Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+
+            Response::serverError();
         }
     }
 
     /**
      * POST /api/provincias
      */
-    public function store() {
-
+    public function store()
+    {
         $raw = json_decode(file_get_contents('php://input'), true);
 
         if (!is_array($raw)) {
-            return renderJson([
-                'success' => false,
-                'error' => 'JSON inválido'
-            ], 400);
+            Response::badRequest('JSON inválido');
         }
 
-        // 1. Sanitizar
         $san = ProvinciaSanitizer::sanitizarProvincia($raw);
 
-        // 2. Validar
         $validacion = ProvinciaValidator::validarCrearProvincia($san);
 
         if (!$validacion['success']) {
-            return renderJson($validacion, 400);
+            Response::validationError(
+                $validacion['errors']
+            );
         }
 
         try {
 
             if (Provincia::where('nombre', $san['nombre'])->exists()) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Ya existe una provincia con este nombre'
-                ], 409);
+                Response::badRequest(
+                    'Ya existe una provincia con este nombre'
+                );
             }
 
             $provincia = Provincia::create($san);
 
-            return renderJson([
-                'success' => true,
-                'message' => 'Provincia creada exitosamente',
-                'data' => $provincia
-            ], 201);
+            Response::created(
+                $provincia->toArray(),
+                'Provincia creada exitosamente'
+            );
 
         } catch (\Exception $e) {
-            return renderJson([
+            Response::json([
                 'success' => false,
                 'error' => $e->getMessage()
             ], 500);
@@ -137,27 +129,24 @@ class ProvinciaController {
     /**
      * PUT /api/provincias/{id}
      */
-    public function update($id) {
-
+    public function update($id)
+    {
         $raw = json_decode(file_get_contents('php://input'), true);
 
         if (!is_array($raw)) {
-            return renderJson([
-                'success' => false,
-                'error' => 'JSON inválido'
-            ], 400);
+            Response::badRequest('JSON inválido');
         }
 
         $raw['id'] = $id;
 
-        // 1. Sanitizar
         $san = ProvinciaSanitizer::sanitizarProvincia($raw);
 
-        // 2. Validar
         $validacion = ProvinciaValidator::validarActualizarProvincia($san);
 
         if (!$validacion['success']) {
-            return renderJson($validacion, 400);
+            Response::validationError(
+                $validacion['errors']
+            );
         }
 
         try {
@@ -165,48 +154,46 @@ class ProvinciaController {
             $provincia = Provincia::find($san['id']);
 
             if (!$provincia) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Provincia no encontrada'
-                ], 404);
+                Response::notFound('Provincia no encontrada');
             }
 
-            if (Provincia::where('nombre', $san['nombre'])
-                ->where('id', '!=', $san['id'])
-                ->exists()) {
-
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Ya existe otra provincia con este nombre'
-                ], 409);
+            if (
+                Provincia::where('nombre', $san['nombre'])
+                    ->where('id', '!=', $san['id'])
+                    ->exists()
+            ) {
+                Response::badRequest(
+                    'Ya existe otra provincia con este nombre'
+                );
             }
 
             $provincia->update($san);
 
-            return renderJson([
+            Response::json([
                 'success' => true,
                 'message' => 'Provincia actualizada exitosamente',
                 'data' => $provincia
             ], 200);
 
         } catch (\Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+
+            Response::serverError();
         }
     }
 
     /**
      * DELETE /api/provincias/{id}
      */
-    public function delete($id) {
-
+    public function delete($id)
+    {
         $idSan = ProvinciaSanitizer::sanitizarIdProvincia($id);
+
         $validacion = ProvinciaValidator::validarSoloIdProvincia($idSan);
 
         if (!$validacion['success']) {
-            return renderJson($validacion, 400);
+            Response::validationError(
+                $validacion['errors']
+            );
         }
 
         try {
@@ -214,32 +201,25 @@ class ProvinciaController {
             $provincia = Provincia::find($idSan);
 
             if (!$provincia) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Provincia no encontrada'
-                ], 404);
+                Response::notFound('Provincia no encontrada');
             }
 
-            // relación Eloquent: provincias -> localidades
             if ($provincia->localidades()->exists()) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'No se puede eliminar la provincia porque tiene localidades asociadas'
-                ], 409);
+                Response::badRequest(
+                    'No se puede eliminar la provincia porque tiene localidades asociadas'
+                );
             }
 
             $provincia->delete();
 
-            return renderJson([
+            Response::json([
                 'success' => true,
                 'message' => 'Provincia eliminada exitosamente'
             ], 200);
 
         } catch (\Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+
+            Response::serverError();
         }
     }
 }
