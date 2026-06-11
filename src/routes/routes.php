@@ -5,6 +5,7 @@ use App\Controllers\UsuarioController;
 use App\Controllers\CategoriaController;
 use App\Controllers\ProvinciaController;
 use App\Controllers\LocalidadController;
+use App\Controllers\RolController;
 
 /*
 |--------------------------------------------------------------------------
@@ -83,3 +84,21 @@ $router->get('/api/localidades/{id}', [LocalidadController::class, 'show']);
 $router->put('/api/localidades/{id}', [LocalidadController::class, 'update']);
 
 $router->delete('/api/localidades/{id}', [LocalidadController::class, 'delete']);
+
+/*
+|--------------------------------------------------------------------------
+| ROLES
+|--------------------------------------------------------------------------
+*/
+
+$router->get('/api/roles', [RolController::class, 'index']);
+
+$router->get('/api/roles/con-usuarios', [RolController::class, 'indexWithCount']);
+
+$router->post('/api/roles', [RolController::class, 'store']);
+
+$router->get('/api/roles/{id}', [RolController::class, 'show']);
+
+$router->put('/api/roles/{id}', [RolController::class, 'update']);
+
+$router->delete('/api/roles/{id}', [RolController::class, 'delete']);

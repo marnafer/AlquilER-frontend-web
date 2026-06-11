@@ -5,55 +5,78 @@ namespace App\Sanitizers;
 class RolSanitizer
 {
     /**
-     * Sanitizar todos los datos de un rol
+     * Sanitizar rol completo
      */
-    public static function sanitizar(array $data): array
+    public static function sanitizarRol($data): array
     {
         return [
-            'id' => self::sanitizarId($data['id'] ?? null),
-            'nombre' => self::sanitizarNombre($data['nombre'] ?? null)
+            'id' => self::sanitizarIdRol($data['id'] ?? null),
+            'nombre' => self::sanitizarNombreRol($data['nombre'] ?? null)
         ];
     }
 
     /**
      * Sanitizar ID
      */
-    public static function sanitizarId($id): ?int
+    public static function sanitizarIdRol($id)
     {
         if ($id === null || $id === '') {
             return null;
         }
-        $idSanitizado = filter_var($id, FILTER_VALIDATE_INT);
-        return ($idSanitizado !== false && $idSanitizado > 0) ? $idSanitizado : null;
+
+        $id = filter_var(
+            $id,
+            FILTER_VALIDATE_INT
+        );
+
+        return ($id !== false && $id > 0)
+            ? $id
+            : null;
     }
 
     /**
      * Sanitizar nombre
      */
-    public static function sanitizarNombre($nombre): ?string
+    public static function sanitizarNombreRol($nombre)
     {
         if ($nombre === null || $nombre === '') {
             return null;
         }
-        
+
         $nombre = trim($nombre);
+
+        $nombre = preg_replace(
+            '/\s+/',
+            ' ',
+            $nombre
+        );
+
         $nombre = strtolower($nombre);
-        $nombre = preg_replace('/\s+/', ' ', $nombre);
-        $nombre = preg_replace('/[^a-záéíóúñ\s]/u', '', $nombre);
-        $nombre = htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8');
-        
+
+        $nombre = preg_replace(
+            '/[^a-záéíóúñ\s]/u',
+            '',
+            $nombre
+        );
+
+        $nombre = htmlspecialchars(
+            $nombre,
+            ENT_QUOTES,
+            'UTF-8'
+        );
+
         if (strlen($nombre) > 30) {
             $nombre = substr($nombre, 0, 30);
         }
-        
+
         return $nombre;
     }
 
     /**
      * Sanitizar solo nombre
      */
-    public static function sanitizarSoloNombre($nombre): ?string
+    public static function sanitizarSoloNombreRol($nombre)
     {
-        return self::sanitizarNombre($nombre);
+        return self::sanitizarNombreRol($nombre);
     }
 }

@@ -7,30 +7,38 @@ class RolValidator
     /**
      * Validar todos los datos de un rol
      */
-    public static function validar(array $data, bool $requerirId = false): array
+    public static function validarRol($data, $requerirId = false): array
     {
         $errores = [];
 
-        // Validar ID (solo si se requiere)
+        // ID
         if ($requerirId) {
-            $error = self::validarId($data['id'] ?? null);
-            if ($error) {
-                $errores['id'] = $error;
+
+            $resultado = self::validarIdRequerido(
+                $data['id'] ?? null,
+                'rol'
+            );
+
+            if (!$resultado['success']) {
+                $errores['id'] = $resultado['error'];
             }
         }
 
-        // Validar nombre
-        $error = self::validarNombre($data['nombre'] ?? null);
-        if ($error) {
-            $errores['nombre'] = $error;
+        // Nombre
+        $resultado = self::validarNombreRol(
+            $data['nombre'] ?? null
+        );
+
+        if (!$resultado['success']) {
+            $errores['nombre'] = $resultado['error'];
         }
 
         if (!empty($errores)) {
+
             return [
                 'success' => false,
                 'message' => 'Error de validación',
-                'errors' => $errores,
-                'data' => null
+                'errors' => $errores
             ];
         }
 
@@ -38,92 +46,130 @@ class RolValidator
             'success' => true,
             'message' => 'Validación exitosa',
             'errors' => null,
+            'data' => [
+                'id' => $data['id'] ?? null,
+                'nombre' => $data['nombre']
+            ]
         ];
     }
 
     /**
-     * Validar ID
+     * Validar ID requerido
      */
-    public static function validarId($id): ?string
-    {
+    public static function validarIdRequerido(
+        $id,
+        $campo = ''
+    ): array {
+
         if ($id === null || $id === '') {
-            return 'El ID de rol es requerido';
+
+            return [
+                'success' => false,
+                'error' => "El ID de $campo es requerido"
+            ];
         }
 
-        if (!is_numeric($id)) {
-            return 'El ID debe ser un número';
+        if (!is_numeric($id) || $id <= 0) {
+
+            return [
+                'success' => false,
+                'error' => "El ID de $campo debe ser positivo"
+            ];
         }
 
-        if ($id <= 0) {
-            return 'El ID debe ser un número positivo';
-        }
-
-        return null;
+        return [
+            'success' => true,
+            'error' => null
+        ];
     }
 
     /**
-     * Validar nombre
+     * Validar nombre del rol
      */
-    public static function validarNombre($nombre): ?string
+    public static function validarNombreRol($nombre): array
     {
         if ($nombre === null || $nombre === '') {
-            return 'El nombre del rol es requerido';
+            return [
+                'success' => false,
+                'error' => 'El nombre del rol es requerido'
+            ];
         }
 
-        $nombreLimpio = trim($nombre);
-        $longitud = strlen($nombreLimpio);
+        $nombre = trim($nombre);
 
-        if ($longitud < 3) {
-            return 'El nombre debe tener al menos 3 caracteres';
+        if (strlen($nombre) < 3) {
+            return [
+                'success' => false,
+                'error' => 'El nombre debe tener al menos 3 caracteres'
+            ];
         }
 
-        if ($longitud > 30) {
-            return 'El nombre no puede exceder los 30 caracteres';
+        if (strlen($nombre) > 30) {
+            return [
+                'success' => false,
+                'error' => 'El nombre no puede exceder los 30 caracteres'
+            ];
         }
 
-        if (!preg_match('/^[a-zA-ZáéíóúñÁÉÍÓÚ\s]+$/u', $nombreLimpio)) {
-            return 'El nombre solo puede contener letras y espacios';
+        if (!preg_match('/^[a-zA-ZáéíóúñÁÉÍÓÚ\s]+$/u', $nombre)) {
+            return [
+                'success' => false,
+                'error' => 'El nombre solo puede contener letras y espacios'
+            ];
         }
 
-        // Roles predefinidos permitidos
-        $rolesPermitidos = ['admin', 'administrador', 'inquilino', 'propietario', 'usuario'];
-        $nombreLower = strtolower($nombreLimpio);
-
-        if (!in_array($nombreLower, $rolesPermitidos)) {
-            return 'Rol no permitido. Roles válidos: ' . implode(', ', $rolesPermitidos);
-        }
-
-        return null;
+        return [
+            'success' => true,
+            'error' => null
+        ];
     }
 
     /**
-     * Validar para crear nuevo rol
+     * Validar creación
      */
-    public static function validarCrear(array $data): array
-    {
-        return self::validar($data, false);
+    public static function validarCrearRol(
+        $data
+    ): array {
+
+        return self::validarRol(
+            $data,
+            false
+        );
     }
 
     /**
-     * Validar para actualizar rol existente
+     * Validar actualización
      */
-    public static function validarActualizar(array $data): array
-    {
-        return self::validar($data, true);
+    public static function validarActualizarRol(
+        $data
+    ): array {
+
+        return self::validarRol(
+            $data,
+            true
+        );
     }
 
     /**
      * Validar solo ID
      */
-    public static function validarSoloId($id): array
-    {
-        $error = self::validarId($id);
+    public static function validarSoloIdRol(
+        $id
+    ): array {
 
-        if ($error) {
+        $resultado = self::validarIdRequerido(
+            $id,
+            'rol'
+        );
+
+        if (!$resultado['success']) {
+
             return [
                 'success' => false,
                 'message' => 'ID inválido',
-                'errors' => ['id' => $error]
+                'errors' => [
+                    'id' => $resultado['error']
+                ]
             ];
         }
 

@@ -5,7 +5,7 @@ namespace App\Controllers;
 use App\Models\Rol;
 use App\Sanitizers\RolSanitizer;
 use App\Validators\RolValidator;
-use Exception;
+use App\Helpers\Response;
 
 class RolController
 {
@@ -15,18 +15,17 @@ class RolController
     public function index()
     {
         try {
-            $roles = Rol::getAll();
 
-            return renderJson([
-                'success' => true,
+            $roles = Rol::all();
+
+            Response::success([
                 'data' => $roles,
-                'total' => count($roles)
+                'total' => $roles->count()
             ]);
-        } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+
+        } catch (\Exception $e) {
+
+            Response::serverError();
         }
     }
 
@@ -36,45 +35,17 @@ class RolController
     public function indexWithCount()
     {
         try {
-            $roles = Rol::getAllWithCount();
 
-            return renderJson([
-                'success' => true,
+            $roles = Rol::withCount('usuarios')->get();
+
+            Response::success([
                 'data' => $roles,
-                'total' => count($roles)
+                'total' => $roles->count()
             ]);
-        } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
 
-    /**
-     * GET /api/roles/default
-     */
-    public function getDefault()
-    {
-        try {
-            $rol = Rol::getDefaultRol();
+        } catch (\Exception $e) {
 
-            if (!$rol) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'No se encontró un rol por defecto'
-                ], 404);
-            }
-
-            return renderJson([
-                'success' => true,
-                'data' => $rol
-            ]);
-        } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            Response::serverError();
         }
     }
 
@@ -83,31 +54,33 @@ class RolController
      */
     public function show($id)
     {
-        $validacion = RolValidator::validarSoloId($id);
+        $idSan = RolSanitizer::sanitizarIdRol($id);
+
+        $validacion = RolValidator::validarSoloIdRol($idSan);
 
         if (!$validacion['success']) {
-            return renderJson($validacion, 400);
+            Response::validationError(
+                $validacion['errors']
+            );
         }
 
         try {
-            $rol = Rol::getById($id);
+
+            $rol = Rol::find($idSan);
 
             if (!$rol) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Rol no encontrado'
-                ], 404);
+                Response::notFound(
+                    'Rol no encontrado'
+                );
             }
 
-            return renderJson([
-                'success' => true,
+            Response::success([
                 'data' => $rol
             ]);
-        } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+
+        } catch (\Exception $e) {
+
+            Response::serverError();
         }
     }
 
@@ -116,43 +89,45 @@ class RolController
      */
     public function store()
     {
-        $data = json_decode(file_get_contents('php://input'), true);
+        $raw = json_decode(
+            file_get_contents('php://input'),
+            true
+        );
 
-        if (!$data) {
-            return renderJson([
-                'success' => false,
-                'error' => 'Datos inválidos'
-            ], 400);
+        if (!is_array($raw)) {
+            Response::badRequest(
+                'JSON inválido'
+            );
         }
 
-        $datos = RolSanitizer::sanitizar($data);
-        $validacion = RolValidator::validarCrear($datos);
+        $san = RolSanitizer::sanitizarRol($raw);
+
+        $validacion = RolValidator::validarCrearRol($san);
 
         if (!$validacion['success']) {
-            return renderJson($validacion, 400);
+            Response::validationError(
+                $validacion['errors']
+            );
         }
 
         try {
-            if (Rol::existsByNombre($datos['nombre'])) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Ya existe un rol con este nombre'
-                ], 409);
+
+            if (Rol::existsByNombre($san['nombre'])) {
+                Response::badRequest(
+                    'Ya existe un rol con ese nombre'
+                );
             }
 
-            $id = Rol::createRol($datos);
+            $rol = Rol::create($san);
 
-            return renderJson([
-                'success' => true,
-                'message' => 'Rol creado exitosamente',
-                'data' => ['id' => $id]
-            ], 201);
+            Response::created(
+                $rol->toArray(),
+                'Rol creado exitosamente'
+            );
 
-        } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+        } catch (\Exception $e) {
+
+            Response::serverError();
         }
     }
 
@@ -161,51 +136,59 @@ class RolController
      */
     public function update($id)
     {
-        $data = json_decode(file_get_contents('php://input'), true);
+        $raw = json_decode(
+            file_get_contents('php://input'),
+            true
+        );
 
-        if (!$data) {
-            return renderJson([
-                'success' => false,
-                'error' => 'Datos inválidos'
-            ], 400);
+        if (!is_array($raw)) {
+            Response::badRequest(
+                'JSON inválido'
+            );
         }
 
-        $data['id'] = $id;
+        $raw['id'] = $id;
 
-        $datos = RolSanitizer::sanitizar($data);
-        $validacion = RolValidator::validarActualizar($datos);
+        $san = RolSanitizer::sanitizarRol($raw);
+
+        $validacion = RolValidator::validarActualizarRol($san);
 
         if (!$validacion['success']) {
-            return renderJson($validacion, 400);
+            Response::validationError(
+                $validacion['errors']
+            );
         }
 
         try {
-            if (!Rol::exists($id)) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Rol no encontrado'
-                ], 404);
+
+            $rol = Rol::find($san['id']);
+
+            if (!$rol) {
+                Response::notFound(
+                    'Rol no encontrado'
+                );
             }
 
-            if (Rol::existsByNombre($datos['nombre'], $id)) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Ya existe otro rol con este nombre'
-                ], 409);
+            if (Rol::existsByNombre(
+                $san['nombre'],
+                $san['id']
+            )) {
+                Response::badRequest(
+                    'Ya existe otro rol con ese nombre'
+                );
             }
 
-            Rol::updateRol($id, $datos);
-
-            return renderJson([
-                'success' => true,
-                'message' => 'Rol actualizado exitosamente'
+            $rol->update([
+                'nombre' => $san['nombre']
             ]);
 
-        } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            Response::success([
+                'data' => $rol->fresh()
+            ]);
+
+        } catch (\Exception $e) {
+
+            Response::serverError();
         }
     }
 
@@ -214,41 +197,41 @@ class RolController
      */
     public function delete($id)
     {
-        $validacion = RolValidator::validarSoloId($id);
+        $idSan = RolSanitizer::sanitizarIdRol($id);
+
+        $validacion = RolValidator::validarSoloIdRol($idSan);
 
         if (!$validacion['success']) {
-            return renderJson($validacion, 400);
+            Response::validationError(
+                $validacion['errors']
+            );
         }
 
         try {
-            if (!Rol::exists($id)) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Rol no encontrado'
-                ], 404);
+
+            $rol = Rol::find($idSan);
+
+            if (!$rol) {
+                Response::notFound(
+                    'Rol no encontrado'
+                );
             }
 
-            $rol = Rol::find($id);
-
-            if ($rol && $rol->hasUsuarios()) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'No se puede eliminar el rol porque tiene usuarios asociados'
-                ], 409);
+            if ($rol->hasUsuarios()) {
+                Response::badRequest(
+                    'No se puede eliminar el rol porque tiene usuarios asociados'
+                );
             }
 
-            Rol::deleteRol($id);
+            $rol->delete();
 
-            return renderJson([
-                'success' => true,
+            Response::success([
                 'message' => 'Rol eliminado exitosamente'
             ]);
 
-        } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+        } catch (\Exception $e) {
+
+            Response::serverError();
         }
     }
 }
