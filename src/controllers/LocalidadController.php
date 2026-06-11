@@ -3,212 +3,205 @@
 namespace App\Controllers;
 
 use App\Models\Localidad;
+use App\Models\Provincia;
 use App\Sanitizers\LocalidadSanitizer;
 use App\Validators\LocalidadValidator;
+use App\Helpers\Response;
 
 class LocalidadController
 {
     /**
      * GET /api/localidades
      */
-    public function indexApi()
+    public function index()
     {
         try {
+
             $localidades = Localidad::all();
 
-            return renderJson([
-                'success' => true,
+            Response::success([
                 'data' => $localidades,
                 'total' => $localidades->count()
-            ], 200);
+            ]);
 
         } catch (\Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+
+            Response::serverError();
         }
     }
 
     /**
      * GET /api/localidades/{id}
      */
-    public function mostrarApi($id)
+    public function show($id)
     {
+        $idSan = LocalidadSanitizer::sanitizarIdLocalidad($id);
+
+        $validacion = LocalidadValidator::validarSoloIdLocalidad($idSan);
+
+        if (!$validacion['success']) {
+            Response::validationError(
+                $validacion['errors']
+            );
+        }
+
         try {
-            // 1. Sanitizar + validar
-            $idSan = LocalidadSanitizer::sanitizarId($id);
-            $validacion = LocalidadValidator::validarId($idSan);
 
-            if (!$validacion['success']) {
-                return renderJson([
-                    'success' => false,
-                    'error' => $validacion['error']
-                ], 400);
-            }
-
-            // 2. Buscar
             $localidad = Localidad::find($idSan);
 
             if (!$localidad) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Localidad no encontrada'
-                ], 404);
+                Response::notFound('Localidad no encontrada');
             }
 
-            return renderJson([
-                'success' => true,
+            Response::success([
                 'data' => $localidad
-            ], 200);
+            ]);
 
         } catch (\Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+
+            Response::serverError();
         }
     }
 
     /**
      * POST /api/localidades
      */
-    public function crear()
+    public function store()
     {
-        $raw = json_decode(file_get_contents('php://input'), true) ?? [];
+        $raw = json_decode(file_get_contents('php://input'), true);
 
         if (!is_array($raw)) {
-            return renderJson([
-                'success' => false,
-                'error' => 'JSON inválido'
-            ], 400);
+            Response::badRequest('JSON invÃ¡lido');
         }
 
-        // Sanitizar
         $san = LocalidadSanitizer::sanitizarLocalidad($raw);
 
-        // Validar
-        $validacion = LocalidadValidator::validarLocalidad($san);
+        $validacion = LocalidadValidator::validarCrearLocalidad($san);
 
         if (!$validacion['success']) {
-            return renderJson([
-                'success' => false,
-                'errors' => $validacion['errors']
-            ], 400);
+            Response::validationError(
+                $validacion['errors']
+            );
         }
 
-        $dataValida = $validacion['data']; // Solo los campos validados
-
         try {
-            $localidad = Localidad::create($dataValida);
 
-            return renderJson([
-                'success' => true,
-                'message' => 'Localidad creada',
-                'data' => $localidad
-            ], 201);
+            if (
+                Localidad::where('nombre', $san['nombre'])
+                    ->exists()
+            ) {
+                Response::badRequest(
+                    'Ya existe una localidad con ese nombre'
+                );
+            }
+
+            $localidad = Localidad::create($san);
+
+            Response::created(
+                $localidad->toArray(),
+                'Localidad creada exitosamente'
+            );
 
         } catch (\Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+
+            Response::serverError();
         }
     }
 
     /**
      * PUT /api/localidades/{id}
      */
-    public function actualizar($id)
+   public function update($id)
     {
-        $idSan = LocalidadSanitizer::sanitizarId($id);
-
-        $validacionId = LocalidadValidator::validarId($idSan);
-
-        if (!$validacionId['success']) {
-            return renderJson($validacionId, 400);
-        }
-
-        $localidad = Localidad::find($idSan);
-
-        if (!$localidad) {
-            return renderJson([
-                'success' => false,
-                'error' => 'Localidad no encontrada'
-            ], 404);
-        }
-
-        $raw = json_decode(file_get_contents('php://input'), true) ?? [];
+        $raw = json_decode(file_get_contents('php://input'), true);
 
         if (!is_array($raw)) {
-            return renderJson([
-                'success' => false,
-                'error' => 'JSON inválido'
-            ], 400);
+            Response::badRequest('JSON invÃ¡lido');
         }
 
-        // Sanitizar
+        $raw['id'] = $id;
+
         $san = LocalidadSanitizer::sanitizarLocalidad($raw);
 
-        // Validar (modo update)
-        $validacion = LocalidadValidator::validarLocalidad($san, true);
+        $validacion = LocalidadValidator::validarActualizarLocalidad($san);
 
         if (!$validacion['success']) {
-            return renderJson([
-                'success' => false,
-                'errors' => $validacion['errors']
-            ], 400);
+            Response::validationError(
+                $validacion['errors']
+            );
         }
 
-        // NO usar id del validator
-        $dataValida = $validacion['data'];
+        try {
 
-        $localidad->update($dataValida);
+            $localidad = Localidad::find($san['id']);
 
-        return renderJson([
-            'success' => true,
-            'message' => 'Localidad actualizada',
-            'data' => $localidad
+        if (!$localidad) {
+            Response::notFound(
+                'Localidad no encontrada'
+            );
+        }
+
+        if (
+            Localidad::where('nombre', $san['nombre'])
+                ->where('id', '!=', $san['id'])
+                ->exists()
+        ) {
+            Response::badRequest(
+                'Ya existe otra localidad con ese nombre'
+            );
+        }
+
+        $localidad->update([
+            'nombre' => $san['nombre'],
+            'codigo_postal' => $san['codigo_postal'],
+            'provincia_id' => $san['provincia_id']
         ]);
+
+        Response::success([
+            'data' => $localidad->fresh()
+        ]);
+
+        } catch (\Exception $e) {
+
+            Response::serverError();
+        }
     }
 
     /**
      * DELETE /api/localidades/{id}
      */
-    public function eliminar($id)
+    public function delete($id)
     {
-        try {
-            $idSan = LocalidadSanitizer::sanitizarId($id);
-            $validacion = LocalidadValidator::validarId($idSan);
+        $idSan = LocalidadSanitizer::sanitizarIdLocalidad($id);
 
-            if (!$validacion['success']) {
-                return renderJson([
-                    'success' => false,
-                    'error' => $validacion['error']
-                ], 400);
-            }
+        $validacion = LocalidadValidator::validarSoloIdLocalidad($idSan);
+
+        if (!$validacion['success']) {
+            Response::validationError(
+                $validacion['errors']
+            );
+        }
+
+        try {
 
             $localidad = Localidad::find($idSan);
 
             if (!$localidad) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Localidad no encontrada'
-                ], 404);
+                Response::notFound(
+                    'Localidad no encontrada'
+                );
             }
 
             $localidad->delete();
 
-            return renderJson([
+            Response::json([
                 'success' => true,
-                'message' => "Localidad #$idSan eliminada"
+                'message' => 'Localidad eliminada exitosamente'
             ], 200);
 
         } catch (\Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+
+            Response::serverError();
         }
     }
 }

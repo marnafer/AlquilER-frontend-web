@@ -3,6 +3,8 @@
 use App\Controllers\AutenticadorController;
 use App\Controllers\UsuarioController;
 use App\Controllers\CategoriaController;
+use App\Controllers\ProvinciaController;
+use App\Controllers\LocalidadController;
 
 /*
 |--------------------------------------------------------------------------
@@ -66,3 +68,18 @@ $router->put('/api/provincias/{id}',[ProvinciaController::class, 'update']);
 
 $router->delete('/api/provincias/{id}',[ProvinciaController::class, 'delete']);
 
+/*
+|--------------------------------------------------------------------------	
+| LOCALIDADES
+|--------------------------------------------------------------------------
+*/
+
+$router->get('/api/localidades', [LocalidadController::class, 'index']);
+
+$router->post('/api/localidades', [LocalidadController::class, 'store']);
+
+$router->get('/api/localidades/{id}', [LocalidadController::class, 'show']);
+
+$router->put('/api/localidades/{id}', [LocalidadController::class, 'update']);
+
+$router->delete('/api/localidades/{id}', [LocalidadController::class, 'delete']);

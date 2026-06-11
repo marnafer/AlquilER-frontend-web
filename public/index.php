@@ -48,11 +48,13 @@ $router = new Router();
 
 require_once SRC_PATH . 'routes/routes.php';
 
+$router->dispatch($method, $path);
+
 // ============================================
 // DEBUG
 // ============================================
 
-require_once dirname(__DIR__) . '/src/debug/Debugger.php';
+//require_once dirname(__DIR__) . '/src/debug/Debugger.php';
 
 //use App\Debug\Debugger;
 
@@ -106,18 +108,12 @@ if ($path === '/') {
     exit;
 }
 
-// NUEVO RUTEO CON ARCHIVO GLOBAL ROUTER //
-if (strpos($path, '/api/autenticador') === 0) {
-    $router->dispatch($method, $path);
-    exit;
-}
-
 // VIEJO RUTEO A REEMPLAZAR//
 
 // ============================================
 // RUTAS DE LA API
 // ============================================
-
+/*
 // --- FAVORITOS (por usuario) ---
 elseif (preg_match('#^/api/usuarios/\d+/favoritos$#', $path)) {
     require_once SRC_PATH . 'routes/favorito_router.php';
@@ -150,7 +146,7 @@ elseif (strpos($path, '/api/logs') === 0) {
 
 // --- LOCALIDADES ---
 elseif (strpos($path, '/api/localidades') === 0) {
-    require_once SRC_PATH . 'routes/localidad_router.php';
+    require_once SRC_PATH . 'routes/routes.php';
     exit;
 }
 
@@ -267,9 +263,9 @@ elseif (
 
     exit;
 }
-
+*/
 // ============================================
 // RUTA NO ENCONTRADA (404)
 // ============================================
 
-Response::notFound("Ruta no encontrada");
+Response::notFound("Ruta no encontrada index");

@@ -2,27 +2,77 @@
 
 namespace App\Validators;
 
-use App\Models\Localidad;
 use App\Models\Provincia;
 
 class LocalidadValidator
 {
-    /**
-     * Valida un ID recibido por URL o query string
-     */
-    public static function validarId($id) {
+    public static function validarLocalidad($data, $requerirId = false): array
+    {
+        $errores = [];
 
-        if ($id === null) {
+        if ($requerirId) {
+            $resultado = self::validarIdRequerido(
+                $data['id'] ?? null,
+                'localidad'
+            );
+
+            if (!$resultado['success']) {
+                $errores['id'] = $resultado['error'];
+            }
+        }
+
+        $resultado = self::validarNombreLocalidad(
+            $data['nombre'] ?? null
+        );
+
+        if (!$resultado['success']) {
+            $errores['nombre'] = $resultado['error'];
+        }
+
+        $resultado = self::validarCodigoPostal(
+            $data['codigo_postal'] ?? null
+        );
+
+        if (!$resultado['success']) {
+            $errores['codigo_postal'] = $resultado['error'];
+        }
+
+        $resultado = self::validarProvinciaId(
+            $data['provincia_id'] ?? null
+        );
+
+        if (!$resultado['success']) {
+            $errores['provincia_id'] = $resultado['error'];
+        }
+
+        if (!empty($errores)) {
             return [
                 'success' => false,
-                'error' => 'El ID es requerido'
+                'message' => 'Error de validación',
+                'errors' => $errores
             ];
         }
 
-        if (!is_int($id) || $id <= 0) {
+        return [
+            'success' => true,
+            'message' => 'Validación exitosa',
+            'errors' => null
+        ];
+    }
+
+    public static function validarIdRequerido($id, $campo = ''): array
+    {
+        if ($id === null || $id === '') {
             return [
                 'success' => false,
-                'error' => 'El ID debe ser un entero positivo'
+                'error' => "El ID de $campo es requerido"
+            ];
+        }
+
+        if (!is_numeric($id) || $id <= 0) {
+            return [
+                'success' => false,
+                'error' => "El ID de $campo debe ser positivo"
             ];
         }
 
@@ -31,79 +81,125 @@ class LocalidadValidator
             'error' => null
         ];
     }
-    public static function validarLocalidad(array $data, bool $isUpdate = false): array
+
+    public static function validarNombreLocalidad($nombre): array
     {
-        $errores = [];
-
-        // Nombre
-        if (!$isUpdate || ($isUpdate && array_key_exists('nombre', $data))) {
-            $nombre = $data['nombre'] ?? null;
-
-            if (empty($nombre)) {
-                $errores['nombre'] = 'El nombre es obligatorio.';
-            } elseif (mb_strlen($nombre) > 150) {
-                $errores['nombre'] = 'El nombre no puede superar 150 caracteres.';
-            } else {
-                if (!$isUpdate) {
-                    $existe = \App\Models\Localidad::where('nombre', $nombre)->first();
-                    if ($existe) {
-                        $errores['nombre'] = 'Ya existe una localidad con ese nombre.';
-                    }
-                }
-            }
-        }
-
-        // Código postal
-        if (array_key_exists('codigo_postal', $data) && $data['codigo_postal'] !== null) {
-            $cp = $data['codigo_postal'];
-
-            if (mb_strlen($cp) > 20) {
-                $errores['codigo_postal'] = 'El código postal es demasiado largo.';
-            }
-
-            if (!preg_match('/^[A-Za-z0-9\-\s]{1,20}$/u', $cp)) {
-                $errores['codigo_postal'] = 'Formato inválido.';
-            }
-        }
-
-        // Provincia
-        if (!$isUpdate || ($isUpdate && array_key_exists('provincia_id', $data))) {
-            $provinciaId = $data['provincia_id'] ?? null;
-
-            if ($provinciaId === null) {
-                $errores['provincia_id'] = 'La provincia es obligatoria.';
-            } elseif (!filter_var($provinciaId, FILTER_VALIDATE_INT) || $provinciaId <= 0) {
-                $errores['provincia_id'] = 'ID de provincia inválido.';
-            } else {
-                $existe = \App\Models\Provincia::find($provinciaId);
-                if (!$existe) {
-                    $errores['provincia_id'] = 'La provincia no existe.';
-                }
-            }
-        }
-
-        // Si hay errores
-        if (!empty($errores)) {
+        if (!$nombre) {
             return [
                 'success' => false,
-                'message' => 'Error de validación',
-                'errors' => $errores,
-                'data' => null
+                'error' => 'El nombre es requerido'
             ];
         }
 
-        // Data limpia lista para DB
-        $dataLimpia = [
-            'nombre' => $data['nombre'],
-            'codigo_postal' => $data['codigo_postal'] ?? null,
-            'provincia_id' => (int) $data['provincia_id']
-        ];
+        if (mb_strlen($nombre) < 2) {
+            return [
+                'success' => false,
+                'error' => 'El nombre debe tener al menos 2 caracteres'
+            ];
+        }
+
+        if (mb_strlen($nombre) > 150) {
+            return [
+                'success' => false,
+                'error' => 'El nombre no puede exceder los 150 caracteres'
+            ];
+        }
 
         return [
             'success' => true,
-            'message' => 'Validación exitosa',
-            'errors' => null,
-            'data' => $dataLimpia
+            'error' => null
+        ];
+    }
+
+    public static function validarCodigoPostal($codigoPostal): array
+    {
+        if ($codigoPostal === null || $codigoPostal === '') {
+            return [
+                'success' => true,
+                'error' => null
+            ];
+        }
+
+        if (mb_strlen($codigoPostal) > 20) {
+            return [
+                'success' => false,
+                'error' => 'El código postal no puede exceder los 20 caracteres'
+            ];
+        }
+
+        if (!preg_match('/^[A-Za-z0-9\-\s]+$/u', $codigoPostal)) {
+            return [
+                'success' => false,
+                'error' => 'Formato de código postal inválido'
+            ];
+        }
+
+        return [
+            'success' => true,
+            'error' => null
+        ];
+    }
+
+    public static function validarProvinciaId($provinciaId): array
+    {
+        if ($provinciaId === null || $provinciaId === '') {
+            return [
+                'success' => false,
+                'error' => 'La provincia es requerida'
+            ];
+        }
+
+        if (!is_numeric($provinciaId) || $provinciaId <= 0) {
+            return [
+                'success' => false,
+                'error' => 'Provincia inválida'
+            ];
+        }
+
+        if (!Provincia::find($provinciaId)) {
+            return [
+                'success' => false,
+                'error' => 'La provincia no existe'
+            ];
+        }
+
+        return [
+            'success' => true,
+            'error' => null
+        ];
+    }
+
+    public static function validarCrearLocalidad($data): array
+    {
+        return self::validarLocalidad($data, false);
+    }
+
+    public static function validarActualizarLocalidad($data): array
+    {
+        return self::validarLocalidad($data, true);
+    }
+
+    public static function validarSoloIdLocalidad($id): array
+    {
+        $resultado = self::validarIdRequerido(
+            $id,
+            'localidad'
+        );
+
+        if (!$resultado['success']) {
+            return [
+                'success' => false,
+                'message' => 'ID inválido',
+                'errors' => [
+                    'id' => $resultado['error']
+                ]
+            ];
+        }
+
+        return [
+            'success' => true,
+            'message' => 'ID válido',
+            'errors' => null
         ];
     }
 }
