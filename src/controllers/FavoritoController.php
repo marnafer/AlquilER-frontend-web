@@ -3,210 +3,241 @@
 namespace App\Controllers;
 
 use App\Models\Favorito;
-use App\Models\Usuario;
-use App\Models\Propiedad;
 use App\Sanitizers\FavoritoSanitizer;
 use App\Validators\FavoritoValidator;
-use Exception;
+use App\Helpers\Response;
 
-// Futuras implementaciones: Autenticacion + DELETE tipo : DELETE /favoritos/{usuario_id}/{propiedad_id} 
-
-class FavoritoController {
-
-    public function listarTodos() {
+class FavoritoController
+{
+    /**
+     * GET /api/favoritos
+     */
+    public function index()
+    {
         try {
-            $favoritos = Favorito::with(['usuario', 'propiedad'])->get();
 
-            return renderJson([
-                'success' => true,
+            $favoritos = Favorito::with([
+                'usuario',
+                'propiedad'
+            ])->get();
+
+            Response::success([
                 'data' => $favoritos,
                 'total' => $favoritos->count()
-            ], 200);
+            ]);
 
-        } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+        } catch (\Exception $e) {
+
+            Response::serverError();
         }
     }
 
-    public function listarFavoritos($usuario_id) {
+    /**
+     * GET /api/usuarios/{id}/favoritos
+     */
+    public function indexByUsuario(
+        $usuarioId
+    ) {
+
+        $usuarioIdSan =
+            FavoritoSanitizer::sanitizarUsuarioId(
+                $usuarioId
+            );
+
+        $validacion =
+            FavoritoValidator::validarUsuarioId(
+                $usuarioIdSan
+            );
+
+        if (!$validacion['success']) {
+
+            Response::validationError(
+                [
+                    'usuario_id' =>
+                        $validacion['error']
+                ]
+            );
+        }
+
         try {
-            $usuario = Usuario::find($usuario_id);
 
-            if (!$usuario) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Usuario no encontrado'
-                ], 404);
-            }
+            $favoritos = Favorito::where(
+                'usuario_id',
+                $usuarioIdSan
+            )
+            ->with('propiedad')
+            ->get();
 
-            $favoritos = Favorito::where('usuario_id', $usuario_id)
-                ->with('propiedad')
-                ->get();
-
-            return renderJson([
-                'success' => true,
+            Response::success([
                 'data' => $favoritos,
                 'total' => $favoritos->count()
-            ], 200);
+            ]);
 
-        } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+        } catch (\Exception $e) {
+
+            Response::serverError();
         }
     }
 
-    public function agregarFavorito() {
-
-        $raw = json_decode(file_get_contents("php://input"), true);
+    /**
+     * POST /api/favoritos
+     */
+    public function store()
+    {
+        $raw = json_decode(
+            file_get_contents('php://input'),
+            true
+        );
 
         if (!is_array($raw)) {
-            return renderJson([
-                'success' => false,
-                'error' => 'JSON inválido'
-            ], 400);
+            Response::badRequest(
+                'JSON inválido'
+            );
         }
 
-        $datosLimpios = FavoritoSanitizer::sanitizarFavorito($raw);
-        $errores = FavoritoValidator::validarFavorito($datosLimpios);
+        $san =
+            FavoritoSanitizer::sanitizarFavorito(
+                $raw
+            );
 
-        if (!empty($errores)) {
-            return renderJson([
-                'success' => false,
-                'errors' => $errores
-            ], 400);
+        $validacion =
+            FavoritoValidator::validarCrearFavorito(
+                $san
+            );
+
+        if (!$validacion['success']) {
+
+            Response::validationError(
+                $validacion['errors']
+            );
         }
 
         try {
-            $usuario = Usuario::find($datosLimpios['usuario_id']);
-            if (!$usuario) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Usuario no encontrado'
-                ], 404);
-            }
 
-            $propiedad = Propiedad::find($datosLimpios['propiedad_id']);
-            if (!$propiedad) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Propiedad no encontrada'
-                ], 404);
-            }
+            $favorito = Favorito::create([
+                'usuario_id' =>
+                    $san['usuario_id'],
 
-            $existe = Favorito::where('usuario_id', $datosLimpios['usuario_id'])
-                ->where('propiedad_id', $datosLimpios['propiedad_id'])
-                ->first();
+                'propiedad_id' =>
+                    $san['propiedad_id']
+            ]);
 
-            if ($existe) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Ya está en favoritos'
-                ], 409);
-            }
+            Response::created(
+                $favorito->toArray(),
+                'Favorito creado exitosamente'
+            );
 
-            $favorito = Favorito::create($datosLimpios);
+        } catch (\Exception $e) {
 
-            return renderJson([
-                'success' => true,
-                'message' => 'Agregado a favoritos',
-                'data' => $favorito
-            ], 201);
-
-        } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            Response::serverError();
         }
     }
 
-    public function eliminarFavorito() {
-
-        $raw = json_decode(file_get_contents('php://input'), true);
+    /**
+     * DELETE /api/favoritos
+     */
+    public function delete()
+    {
+        $raw = json_decode(
+            file_get_contents('php://input'),
+            true
+        );
 
         if (!is_array($raw)) {
-            return renderJson([
-                'success' => false,
-                'error' => 'JSON inválido'
-            ], 400);
+
+            Response::badRequest(
+                'JSON inválido'
+            );
         }
 
-        $datosLimpios = FavoritoSanitizer::sanitizarFavorito($raw);
-        $errores = FavoritoValidator::validarQuitarFavorito($datosLimpios);
+        $san =
+            FavoritoSanitizer::sanitizarFavorito(
+                $raw
+            );
 
-        if (!empty($errores)) {
-            return renderJson([
-                'success' => false,
-                'errors' => $errores
-            ], 400);
+        $validacion =
+            FavoritoValidator::validarEliminarFavorito(
+                $san
+            );
+
+        if (!$validacion['success']) {
+
+            Response::validationError(
+                $validacion['errors']
+            );
         }
 
         try {
-            $existe = Favorito::where('usuario_id', $datosLimpios['usuario_id'])
-                ->where('propiedad_id', $datosLimpios['propiedad_id'])
-                ->first();
 
-            if (!$existe) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Favorito no encontrado'
-                ], 404);
-            }
+            $favorito = Favorito::where(
+                'usuario_id',
+                $san['usuario_id']
+            )
+            ->where(
+                'propiedad_id',
+                $san['propiedad_id']
+            )
+            ->first();
 
-            $existe->delete();
+            $favorito->delete();
 
-            return renderJson([
-                'success' => true,
-                'message' => 'Favorito eliminado correctamente'
-            ], 200);
+            Response::success([
+                'message' => 'Favorito eliminado exitosamente'
+            ]);
 
-        } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+        } catch (\Exception $e) {
+
+            Response::serverError();
         }
     }
 
-    public function eliminarFavoritoPorId($id) {
+    /**
+     * DELETE /api/favoritos/{id}
+     */
+    public function deleteById(
+        $id
+    ) {
+
+        $idSan =
+            FavoritoSanitizer::sanitizarIdFavorito(
+                $id
+            );
+
+        $validacion =
+            FavoritoValidator::validarSoloIdFavorito(
+                $idSan
+            );
+
+        if (!$validacion['success']) {
+
+            Response::validationError(
+                $validacion['errors']
+            );
+        }
 
         try {
-            $idSan = FavoritoSanitizer::sanitizarId($id);
-            $validacion = FavoritoValidator::validarId($idSan);
 
-            if (!$validacion['success']) {
-                return renderJson([
-                    'success' => false,
-                    'error' => $validacion['error']
-                ], 400);
-            }
-
-            $favorito = Favorito::find($idSan);
+            $favorito =
+                Favorito::find(
+                    $idSan
+                );
 
             if (!$favorito) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Favorito no encontrado'
-                ], 404);
+
+                Response::notFound(
+                    'Favorito no encontrado'
+                );
             }
 
             $favorito->delete();
 
-            return renderJson([
-                'success' => true,
+            Response::success([
                 'message' => 'Favorito eliminado exitosamente'
-            ], 200);
+            ]);
 
-        } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+        } catch (\Exception $e) {
+
+            Response::serverError();
         }
     }
 }

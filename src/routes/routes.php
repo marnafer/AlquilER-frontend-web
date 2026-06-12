@@ -7,6 +7,7 @@ use App\Controllers\ProvinciaController;
 use App\Controllers\LocalidadController;
 use App\Controllers\RolController;
 use App\Controllers\PropiedadImagenController;
+use App\Controllers\FavoritoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -106,7 +107,7 @@ $router->delete('/api/roles/{id}', [RolController::class, 'delete']);
 
 /*	
 |--------------------------------------------------------------------------
-| PROPIEDAD IMAGEN
+| PROPIEDAD IMAGENES
 |--------------------------------------------------------------------------
 */
 
@@ -117,3 +118,19 @@ $router->get('/api/propiedad-imagenes', [PropiedadImagenController::class, 'inde
 $router->post('/api/propiedad-imagenes', [PropiedadImagenController::class, 'crear']);
 
 $router->delete('/api/propiedad-imagenes/{id}', [PropiedadImagenController::class, 'eliminar']);
+
+/*	
+|--------------------------------------------------------------------------
+| FAVORITOS
+|--------------------------------------------------------------------------
+*/
+
+$router->get('/api/favoritos', [FavoritoController::class, 'index']);
+
+$router->post('/api/favoritos', [FavoritoController::class, 'store']);
+
+$router->delete('/api/favoritos', [FavoritoController::class, 'delete']);
+
+$router->get('/api/usuarios/{id}/favoritos', [FavoritoController::class, 'indexByUsuario']);
+
+$router->delete('/api/favoritos/{id}', [FavoritoController::class, 'deleteById']);

@@ -2,20 +2,93 @@
 
 namespace App\Sanitizers;
 
-class FavoritoSanitizer {
-    
-    public static function sanitizarId($id) {
-        // Eliminamos caracteres no numéricos y forzamos a entero
-        return filter_var($id, FILTER_SANITIZE_NUMBER_INT);
+class FavoritoSanitizer
+{
+    public static function sanitizarFavorito(
+        $data
+    ): array {
+
+        return [
+            'id' => self::sanitizarIdFavorito(
+                $data['id'] ?? null
+            ),
+
+            'usuario_id' => self::sanitizarUsuarioId(
+                $data['usuario_id'] ?? null
+            ),
+
+            'propiedad_id' => self::sanitizarPropiedadId(
+                $data['propiedad_id'] ?? null
+            )
+        ];
     }
-    
-    /**
-     * Limpia los IDs recibidos para asegurar que sean enteros
-     */
-    public static function sanitizarFavorito(array $data): array {
-            return [
-                'usuario_id'   => isset($data['usuario_id']) ? self::sanitizarId($data['usuario_id']) : 0,
-                'propiedad_id' => isset($data['propiedad_id']) ? self::sanitizarId($data['propiedad_id']) : 0
-            ];
+
+    public static function sanitizarIdFavorito(
+        $id
+    ) {
+
+        if ($id === null || $id === '') {
+            return null;
+        }
+
+        $id = filter_var(
+            $id,
+            FILTER_VALIDATE_INT
+        );
+
+        return (
+            $id !== false &&
+            $id > 0
+        )
+            ? $id
+            : null;
+    }
+
+    public static function sanitizarUsuarioId(
+        $usuarioId
+    ) {
+
+        if (
+            $usuarioId === null ||
+            $usuarioId === ''
+        ) {
+            return null;
+        }
+
+        $usuarioId = filter_var(
+            $usuarioId,
+            FILTER_VALIDATE_INT
+        );
+
+        return (
+            $usuarioId !== false &&
+            $usuarioId > 0
+        )
+            ? $usuarioId
+            : null;
+    }
+
+    public static function sanitizarPropiedadId(
+        $propiedadId
+    ) {
+
+        if (
+            $propiedadId === null ||
+            $propiedadId === ''
+        ) {
+            return null;
+        }
+
+        $propiedadId = filter_var(
+            $propiedadId,
+            FILTER_VALIDATE_INT
+        );
+
+        return (
+            $propiedadId !== false &&
+            $propiedadId > 0
+        )
+            ? $propiedadId
+            : null;
     }
 }
