@@ -8,6 +8,7 @@ use App\Controllers\LocalidadController;
 use App\Controllers\RolController;
 use App\Controllers\PropiedadImagenController;
 use App\Controllers\FavoritoController;
+use App\Controllers\ConsultaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -134,3 +135,23 @@ $router->delete('/api/favoritos', [FavoritoController::class, 'delete']);
 $router->get('/api/usuarios/{id}/favoritos', [FavoritoController::class, 'indexByUsuario']);
 
 $router->delete('/api/favoritos/{id}', [FavoritoController::class, 'deleteById']);
+
+/*
+|--------------------------------------------------------------------------
+| CONSULTAS
+|--------------------------------------------------------------------------
+*/
+
+$router->get('/api/consultas', [ConsultaController::class, 'index']);
+
+$router->get('/api/consultas/{id}', [ConsultaController::class, 'show']);
+
+$router->get('/api/consultas/propiedad/{id}', [ConsultaController::class, 'indexByPropiedad']);
+
+$router->get('/api/consultas/usuario/{id}', [ConsultaController::class, 'indexByUsuario']);
+
+$router->post('/api/consultas', [ConsultaController::class, 'store']);
+
+$router->put('/api/consultas/{id}', [ConsultaController::class, 'update']);
+
+$router->delete('/api/consultas/{id}', [ConsultaController::class, 'delete']);

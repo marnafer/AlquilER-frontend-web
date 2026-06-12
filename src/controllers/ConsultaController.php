@@ -1,279 +1,347 @@
 <?php
-/**
- * Controlador del módulo de Consultas
- * TODAS las respuestas son en JSON
- */
 
 namespace App\Controllers;
 
 use App\Models\Consulta;
 use App\Models\Propiedad;
-use App\Models\Usuario;
 use App\Sanitizers\ConsultaSanitizer;
 use App\Validators\ConsultaValidator;
 use App\Middlewares\AutenticadorMiddleware;
-use SoftDeletes;
+use App\Helpers\Response;
 
-class ConsultaController {
-    
+class ConsultaController
+{
     /**
-     * Listar todas las consultas
      * GET /api/consultas
      */
-
-   public function listar() {
-
+    public function index()
+    {
         AutenticadorMiddleware::soloAdmin();
 
         try {
+
             $consultas = Consulta::all();
 
-            renderJson([
-                'success' => true,
+            Response::success([
                 'data' => $consultas,
                 'total' => $consultas->count()
-            ], 200);
+            ]);
 
         } catch (\Exception $e) {
-            renderJson(['error' => $e->getMessage()], 500);
+
+            Response::serverError();
         }
     }
-    
+
     /**
-     * Obtener una consulta específica
      * GET /api/consultas/{id}
      */
-   public function obtener($id) {
-
+    public function show($id)
+    {
         $user = AutenticadorMiddleware::verificar();
 
+        $idSan = ConsultaSanitizer::sanitizarId($id);
+
+        $validacion = ConsultaValidator::validarSoloIdConsulta(
+            $idSan
+        );
+
+        if (!$validacion['success']) {
+            Response::validationError(
+                $validacion['errors']
+            );
+        }
+
         try {
-            // 1. Sanitizar + validar ID
-            $idSan = ConsultaSanitizer::sanitizarId($id);
-            $validacion = ConsultaValidator::validarConsultaId($idSan);
 
-            if (!$validacion['success']) {
-                return renderJson([
-                    'success' => false,
-                    'error' => $validacion['error']
-                ], 400);
-            }
-
-            // 2. Buscar
             $consulta = Consulta::find($idSan);
 
             if (!$consulta) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Consulta no encontrada'
-                ], 404);
+                Response::notFound(
+                    'Consulta no encontrada'
+                );
             }
 
-            // REGLA DE ACCESO
-            if ($user->rol != 3 && $consulta->inquilino_id != $user->sub) {
-                return renderJson(['error' => 'No autorizado'], 403);
+            if (
+                $user->rol_id != 3 &&
+                $consulta->usuario_id != $user->sub
+            ) {
+                Response::forbidden(
+                    'No autorizado'
+                );
             }
 
-            renderJson([
-                'success' => true,
+            Response::success([
                 'data' => $consulta
-            ], 200);
-
-        } catch (\Exception $e) {
-            renderJson(['error' => $e->getMessage()], 500);
-        }
-    }
-    
-    /**
-     * Listar consultas por propiedad
-     * GET /api/consultas/propiedad/{id}
-     */
-    public function listarPorPropiedad($propiedadId) {
-
-        $user = AutenticadorMiddleware::verificar();
-
-        try {
-
-            $propiedad = Propiedad::find($propiedadId);
-
-            if (!$propiedad) {
-                return renderJson(['error' => 'Propiedad no encontrada'], 404);
-            }
-
-            // propietario dueño o admin
-            if ($user->rol_id != 3 && $propiedad->usuario_id != $user->sub) {
-                return renderJson(['error' => 'No autorizado'], 403);
-            }
-
-            $consultas = Consulta::where('propiedad_id', $propiedadId)->get();
-
-            renderJson([
-                'success' => true,
-                'data' => $consultas,
-                'total' => $consultas->count()
-            ], 200);
-
-        } catch (\Exception $e) {
-            renderJson(['error' => $e->getMessage()], 500);
-        }
-    }
-    
-    /**
-     * Listar consultas por inquilino
-     * GET /api/consultas/inquilino/{id}
-     */
-    public function listarPorInquilino($inquilinoId) {
-
-        $user = AutenticadorMiddleware::verificar();
-
-        try {
-
-            if ($user->rol_id != 3 && $user->sub != $inquilinoId) {
-                return renderJson(['error' => 'No autorizado'], 403);
-            }
-
-            $consultas = Consulta::where('inquilino_id', $inquilinoId)->get();
-
-            renderJson([
-                'success' => true,
-                'data' => $consultas,
-                'total' => $consultas->count()
-            ], 200);
-
-        } catch (\Exception $e) {
-            renderJson(['error' => $e->getMessage()], 500);
-        }
-    }
-    
-    /**
-     * Crear una nueva consulta
-     * POST /api/consultas
-     */
-    public function crear() {
-
-        $user = AutenticadorMiddleware::soloInquilino();
-
-        $raw = json_decode(file_get_contents('php://input'), true);
-
-        // Validar JSON primero
-        if (!is_array($raw)) {
-            return renderJson([
-                'success' => false,
-                'error' => 'JSON inválido'
-            ], 400);
-        }
-
-        // 1. SANITIZAR
-        $san = ConsultaSanitizer::sanitizarConsulta($raw);
-
-        // 2. VALIDAR
-        $validacion = ConsultaValidator::validarCrearConsulta($san);
-
-        if (!$validacion['success']) {
-            return renderJson([
-                'success' => false,
-                'errors' => $validacion['errors']
-            ], 400);
-        }
-
-        // 3. DATOS LIMPIOS
-        $dataValida = $validacion['data'];
-
-        try {
-
-            $propiedad = Propiedad::find($dataValida['propiedad_id']);
-
-            if (!$propiedad) {
-                return renderJson(['error' => 'Propiedad no existe'], 404);
-            }
-
-            // INQUILINO REAL = TOKEN (NO DEL BODY)
-            $consulta = Consulta::create([
-                'propiedad_id'   => $dataValida['propiedad_id'],
-                'inquilino_id'   => $user->sub,
-                'mensaje'        => $dataValida['mensaje'],
-                'fecha_consulta' => date('Y-m-d H:i:s')
             ]);
 
-            renderJson([
-                'success' => true,
-                'message' => 'Consulta creada',
-                'data' => $consulta
-            ], 201);
-
         } catch (\Exception $e) {
-            renderJson(['error' => $e->getMessage()], 500);
+
+            Response::serverError();
         }
     }
-    
-    /**
- * Actualizar una consulta
- * PUT /api/consultas/{id}
- */
-public function actualizar($id) {
 
+    /**
+     * GET /api/consultas/propiedad/{id}
+     */
+    public function indexByPropiedad($propiedadId)
+    {
         $user = AutenticadorMiddleware::verificar();
 
-        $consulta = Consulta::find($id);
+        $idSan = ConsultaSanitizer::sanitizarId(
+            $propiedadId
+        );
 
-        if (!$consulta) {
-            return renderJson(['error' => 'No existe'], 404);
+        try {
+
+            $propiedad = Propiedad::find($idSan);
+
+            if (!$propiedad) {
+                Response::notFound(
+                    'Propiedad no encontrada'
+                );
+            }
+
+            if (
+                $user->rol_id != 3 &&
+                $propiedad->usuario_id != $user->sub
+            ) {
+                Response::forbidden(
+                    'No autorizado'
+                );
+            }
+
+            $consultas = Consulta::where(
+                'propiedad_id',
+                $idSan
+            )->get();
+
+            Response::success([
+                'data' => $consultas,
+                'total' => $consultas->count()
+            ]);
+
+        } catch (\Exception $e) {
+
+            Response::serverError();
+        }
+    }
+
+    /**
+     * GET /api/consultas/usuario/{id}
+     */
+    public function indexByUsuario($usuarioId)
+    {
+        $user = AutenticadorMiddleware::verificar();
+
+        $idSan = ConsultaSanitizer::sanitizarId(
+            $usuarioId
+        );
+
+        try {
+
+            if (
+                $user->rol_id != 3 &&
+                $user->sub != $idSan
+            ) {
+                Response::forbidden(
+                    'No autorizado'
+                );
+            }
+
+            $consultas = Consulta::where(
+                'usuario_id',
+                $idSan
+            )->get();
+
+            Response::success([
+                'data' => $consultas,
+                'total' => $consultas->count()
+            ]);
+
+        } catch (\Exception $e) {
+
+            Response::serverError();
+        }
+    }
+
+    /**
+     * POST /api/consultas
+     */
+    public function store()
+    {
+        $user = AutenticadorMiddleware::verificar();
+
+        $raw = json_decode(
+            file_get_contents('php://input'),
+            true
+        );
+
+        if (!is_array($raw)) {
+            Response::badRequest(
+                'JSON inválido'
+            );
         }
 
-        if ($user->rol != 3 && $consulta->inquilino_id != $user->sub) {
-            return renderJson(['error' => 'No autorizado'], 403);
+        $san = ConsultaSanitizer::sanitizarConsulta(
+            $raw
+        );
+
+        $validacion = ConsultaValidator::validarCrearConsulta(
+            $san
+        );
+
+        if (!$validacion['success']) {
+            Response::validationError(
+                $validacion['errors']
+            );
         }
 
-       $raw = json_decode(file_get_contents('php://input'), true) ?? [];
+        try {
 
-        // 1. AGREGAR ID
+            $propiedad = Propiedad::find(
+                $san['propiedad_id']
+            );
+
+            if (!$propiedad) {
+                Response::notFound(
+                    'Propiedad no encontrada'
+                );
+            }
+
+            $consulta = Consulta::create([
+                'propiedad_id' => $san['propiedad_id'],
+                'usuario_id' => $user->sub,
+                'mensaje' => $san['mensaje'],
+                'fecha_consulta' => date(
+                    'Y-m-d H:i:s'
+                )
+            ]);
+
+            Response::created(
+                $consulta->toArray(),
+                'Consulta creada exitosamente'
+            );
+
+        } catch (\Exception $e) {
+
+            Response::serverError();
+        }
+    }
+
+    /**
+     * PUT /api/consultas/{id}
+     */
+    public function update($id)
+    {
+        $user = AutenticadorMiddleware::verificar();
+
+        $raw = json_decode(
+            file_get_contents('php://input'),
+            true
+        );
+
+        if (!is_array($raw)) {
+            Response::badRequest(
+                'JSON inválido'
+            );
+        }
+
         $raw['id'] = $id;
 
-        // 2. SANITIZAR
-        $san = ConsultaSanitizer::sanitizarConsulta($raw);
+        $san = ConsultaSanitizer::sanitizarConsulta(
+            $raw
+        );
 
-        // 3. VALIDAR
-        $validacion = ConsultaValidator::validarActualizarConsulta($san);
+        $validacion = ConsultaValidator::validarActualizarConsulta(
+            $san
+        );
 
         if (!$validacion['success']) {
-            return renderJson([
-                'success' => false,
-                'errors' => $validacion['errors']
-            ], 400);
+            Response::validationError(
+                $validacion['errors']
+            );
         }
 
-        // 4. ACTUALIZAR
-        $consulta->update($validacion['data']);
+        try {
 
-        renderJson([
-            'success' => true,
-            'message' => 'Actualizada',
-            'data' => $consulta
-        ]);
+            $consulta = Consulta::find(
+                $san['id']
+            );
+
+            if (!$consulta) {
+                Response::notFound(
+                    'Consulta no encontrada'
+                );
+            }
+
+            if (
+                $user->rol_id != 3 &&
+                $consulta->usuario_id != $user->sub
+            ) {
+                Response::forbidden(
+                    'No autorizado'
+                );
+            }
+
+            $consulta->update([
+                'mensaje' => $san['mensaje']
+            ]);
+
+            Response::success([
+                'data' => $consulta->fresh()
+            ]);
+
+        } catch (\Exception $e) {
+
+            Response::serverError();
+        }
     }
-    
-    /**
- * Eliminar una consulta (soft delete)
- * DELETE /api/consultas/{id}
- */
-public function eliminar($id) {
 
+    /**
+     * DELETE /api/consultas/{id}
+     */
+    public function delete($id)
+    {
         AutenticadorMiddleware::soloAdmin();
 
-        $consulta = Consulta::find($id);
+        $idSan = ConsultaSanitizer::sanitizarId(
+            $id
+        );
 
-        $idSan = ConsultaSanitizer::sanitizarId($id);
-        $validacion = ConsultaValidator::validarConsultaId($idSan);
+        $validacion = ConsultaValidator::validarSoloIdConsulta(
+            $idSan
+        );
 
         if (!$validacion['success']) {
-            return renderJson($validacion, 400);
+            Response::validationError(
+                $validacion['errors']
+            );
         }
 
-        $consulta->delete();
+        try {
 
-        renderJson([
-            'success' => true,
-            'message' => 'Eliminada'
-        ]);
+            $consulta = Consulta::find(
+                $idSan
+            );
+
+            if (!$consulta) {
+                Response::notFound(
+                    'Consulta no encontrada'
+                );
+            }
+
+            $consulta->delete();
+
+            Response::success(
+                [],
+                200,
+                'Consulta eliminada exitosamente'
+            );
+
+        } catch (\Exception $e) {
+
+            Response::serverError();
+        }
     }
 }

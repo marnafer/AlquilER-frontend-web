@@ -2,111 +2,306 @@
 
 namespace App\Validators;
 
-class ConsultaValidator {
+class ConsultaValidator
+{
+    /**
+     * Validar consulta completa
+     */
+    public static function validarConsulta(
+        $data,
+        $requerirId = false
+    ): array {
 
-    public static function validarConsulta($data, $requerirId = false) {
         $errores = [];
 
         // ID
         if ($requerirId) {
-            $res = self::validarConsultaId($data['id'] ?? null);
-            if (!$res['success']) $errores['id'] = $res['error'];
+
+            $resultado = self::validarIdRequerido(
+                $data['id'] ?? null,
+                'consulta'
+            );
+
+            if (!$resultado['success']) {
+                $errores['id'] = $resultado['error'];
+            }
         }
 
-        // propiedad_id
-        if (!$requerirId || isset($data['propiedad_id'])) {
-            $res = self::validarPropiedadId($data['propiedad_id'] ?? null);
-            if (!$res['success']) $errores['propiedad_id'] = $res['error'];
+        // Propiedad ID
+        $resultado = self::validarPropiedadId(
+            $data['propiedad_id'] ?? null
+        );
+
+        if (!$resultado['success']) {
+            $errores['propiedad_id'] = $resultado['error'];
         }
 
-        // inquilino_id
-        if (!$requerirId || isset($data['inquilino_id'])) {
-            $res = self::validarInquilinoId($data['inquilino_id'] ?? null);
-            if (!$res['success']) $errores['inquilino_id'] = $res['error'];
+        // Usuario ID
+        if (
+            isset($data['usuario_id'])
+            && $data['usuario_id'] !== null
+        ) {
+
+            $resultado = self::validarUsuarioId(
+                $data['usuario_id']
+            );
+
+            if (!$resultado['success']) {
+                $errores['usuario_id'] = $resultado['error'];
+            }
         }
 
-        // mensaje
-        if (!$requerirId || isset($data['mensaje'])) {
-            $res = self::validarMensajeConsulta($data['mensaje'] ?? null);
-            if (!$res['success']) $errores['mensaje'] = $res['error'];
+        // Mensaje
+        $resultado = self::validarMensajeConsulta(
+            $data['mensaje'] ?? null
+        );
+
+        if (!$resultado['success']) {
+            $errores['mensaje'] = $resultado['error'];
         }
 
-        // fecha opcional
-        if (isset($data['fecha_consulta']) && $data['fecha_consulta'] !== null) {
-            $res = self::validarFechaConsulta($data['fecha_consulta']);
-            if (!$res['success']) $errores['fecha_consulta'] = $res['error'];
+        // Fecha opcional
+        if (
+            isset($data['fecha_consulta'])
+            && $data['fecha_consulta'] !== null
+        ) {
+
+            $resultado = self::validarFechaConsulta(
+                $data['fecha_consulta']
+            );
+
+            if (!$resultado['success']) {
+                $errores['fecha_consulta'] = $resultado['error'];
+            }
         }
 
         if (!empty($errores)) {
+
             return [
                 'success' => false,
-                'errors' => $errores,
-                'data' => null
+                'message' => 'Error de validación',
+                'errors' => $errores
             ];
         }
 
         return [
             'success' => true,
-            'errors' => null,
-            'data' => $data
+            'message' => 'Validación exitosa',
+            'errors' => null
         ];
     }
 
-    public static function validarConsultaId($id) {
-        if (!$id) return ['success' => false, 'error' => 'El ID es requerido'];
-        if (!filter_var($id, FILTER_VALIDATE_INT) || $id <= 0)
-            return ['success' => false, 'error' => 'El ID debe ser entero positivo'];
+    /**
+     * Validar ID requerido
+     */
+    public static function validarIdRequerido(
+        $id,
+        $campo = ''
+    ): array {
 
-        return ['success' => true];
+        if ($id === null || $id === '') {
+
+            return [
+                'success' => false,
+                'error' => "El ID de $campo es requerido. Debe ser un entero positivo."
+            ];
+        }
+
+        if (!is_numeric($id) || $id <= 0) {
+
+            return [
+                'success' => false,
+                'error' => "El ID de $campo debe ser positivo"
+            ];
+        }
+
+        return [
+            'success' => true,
+            'error' => null
+        ];
     }
 
-    public static function validarPropiedadId($id) {
-        if (!$id) return ['success' => false, 'error' => 'El ID de propiedad es requerido'];
-        if (!filter_var($id, FILTER_VALIDATE_INT) || $id <= 0)
-            return ['success' => false, 'error' => 'ID de propiedad inválido'];
+    /**
+     * Validar propiedad_id
+     */
+    public static function validarPropiedadId(
+        $id
+    ): array {
 
-        return ['success' => true];
+        if ($id === null || $id === '') {
+
+            return [
+                'success' => false,
+                'error' => 'El ID de propiedad es requerido. Debe ser un entero positivo.'
+            ];
+        }
+
+        if (!is_numeric($id) || $id <= 0) {
+
+            return [
+                'success' => false,
+                'error' => 'El ID de propiedad debe ser positivo'
+            ];
+        }
+
+        return [
+            'success' => true,
+            'error' => null
+        ];
     }
 
-    public static function validarInquilinoId($id) {
-        if (!$id) return ['success' => false, 'error' => 'El ID del inquilino es requerido'];
-        if (!filter_var($id, FILTER_VALIDATE_INT) || $id <= 0)
-            return ['success' => false, 'error' => 'ID de inquilino inválido'];
+    /**
+     * Validar usuario_id
+     */
+    public static function validarUsuarioId(
+        $id
+    ): array {
 
-        return ['success' => true];
+        if ($id === null || $id === '') {
+
+            return [
+                'success' => false,
+                'error' => 'El ID de usuario es requerido. Debe ser un entero positivo.'
+            ];
+        }
+
+        if (!is_numeric($id) || $id <= 0) {
+
+            return [
+                'success' => false,
+                'error' => 'El ID de usuario debe ser positivo'
+            ];
+        }
+
+        return [
+            'success' => true,
+            'error' => null
+        ];
     }
 
-    public static function validarMensajeConsulta($mensaje) {
-        if (!$mensaje) return ['success' => false, 'error' => 'El mensaje es requerido'];
+    /**
+     * Validar mensaje
+     */
+    public static function validarMensajeConsulta(
+        $mensaje
+    ): array {
 
-        $mensaje = trim($mensaje);
+        if ($mensaje === null || $mensaje === '') {
 
-        if (strlen($mensaje) < 5)
-            return ['success' => false, 'error' => 'Debe tener al menos 5 caracteres'];
+            return [
+                'success' => false,
+                'error' => 'El mensaje es requerido'
+            ];
+        }
 
-        if (strlen($mensaje) > 5000)
-            return ['success' => false, 'error' => 'Máximo 5000 caracteres'];
+        $longitud = mb_strlen(trim($mensaje));
 
-        return ['success' => true];
+        if ($longitud < 5) {
+
+            return [
+                'success' => false,
+                'error' => 'El mensaje debe tener al menos 5 caracteres'
+            ];
+        }
+
+        if ($longitud > 5000) {
+
+            return [
+                'success' => false,
+                'error' => 'El mensaje no puede superar los 5000 caracteres'
+            ];
+        }
+
+        return [
+            'success' => true,
+            'error' => null
+        ];
     }
 
-    public static function validarFechaConsulta($fecha) {
+    /**
+     * Validar fecha
+     */
+    public static function validarFechaConsulta(
+        $fecha
+    ): array {
+
         $timestamp = strtotime($fecha);
 
-        if (!$timestamp)
-            return ['success' => false, 'error' => 'Fecha inválida'];
+        if (!$timestamp) {
 
-        if ($timestamp > time())
-            return ['success' => false, 'error' => 'No puede ser futura'];
+            return [
+                'success' => false,
+                'error' => 'Fecha inválida'
+            ];
+        }
 
-        return ['success' => true];
+        if ($timestamp > time()) {
+
+            return [
+                'success' => false,
+                'error' => 'La fecha no puede ser futura'
+            ];
+        }
+
+        return [
+            'success' => true,
+            'error' => null
+        ];
     }
 
-    public static function validarCrearConsulta($data) {
-        return self::validarConsulta($data, false);
+    /**
+     * Crear
+     */
+    public static function validarCrearConsulta(
+        $data
+    ): array {
+
+        return self::validarConsulta(
+            $data,
+            false
+        );
     }
 
-    public static function validarActualizarConsulta($data) {
-        return self::validarConsulta($data, true);
+    /**
+     * Actualizar
+     */
+    public static function validarActualizarConsulta(
+        $data
+    ): array {
+
+        return self::validarConsulta(
+            $data,
+            true
+        );
+    }
+
+    /**
+     * Validar solo ID
+     */
+    public static function validarSoloIdConsulta(
+        $id
+    ): array {
+
+        $resultado = self::validarIdRequerido(
+            $id,
+            'consulta'
+        );
+
+        if (!$resultado['success']) {
+
+            return [
+                'success' => false,
+                'message' => 'ID inválido',
+                'errors' => [
+                    'id' => $resultado['error']
+                ]
+            ];
+        }
+
+        return [
+            'success' => true,
+            'message' => 'ID válido',
+            'errors' => null
+        ];
     }
 }

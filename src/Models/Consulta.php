@@ -1,7 +1,4 @@
 <?php
-/**
- * Modelo de Consultas
- */
 
 namespace App\Models;
 
@@ -10,17 +7,23 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Consulta extends Model
 {
+    use SoftDeletes;
 
     protected $table = 'consultas';
 
     protected $fillable = [
         'propiedad_id',
-        'inquilino_id',
+        'usuario_id',
         'mensaje',
         'fecha_consulta'
     ];
 
-    public $timestamps = false; // fecha_consulta manual
+    protected $dates = [
+        'fecha_consulta',
+        'deleted_at'
+    ];
+
+    public $timestamps = false;
 
     /*
     |--------------------------------------------------------------------------
@@ -30,11 +33,17 @@ class Consulta extends Model
 
     public function propiedad()
     {
-        return $this->belongsTo(Propiedad::class, 'propiedad_id');
+        return $this->belongsTo(
+            Propiedad::class,
+            'propiedad_id'
+        );
     }
 
-    public function inquilino()
+    public function usuario()
     {
-        return $this->belongsTo(Usuario::class, 'inquilino_id');
+        return $this->belongsTo(
+            Usuario::class,
+            'usuario_id'
+        );
     }
 }
