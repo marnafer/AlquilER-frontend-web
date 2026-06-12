@@ -32,25 +32,20 @@ class Router
 
     public function dispatch(string $method, string $path): void
     {
-        // 1. Buscar coincidencia exacta
+        // 1. Rutas exactas
         if (isset($this->routes[$method][$path])) {
 
             $handler = $this->routes[$method][$path];
 
-            if (is_array($handler)) {
-                [$controller, $action] = $handler;
+            [$controller, $action] = $handler;
 
-                $instance = new $controller();
-                $instance->$action();
+            $instance = new $controller();
+            $instance->$action();
 
-                return;
-            }
-
-            $handler();
             return;
         }
 
-        // 2. Buscar rutas dinámicas
+        // 2. Rutas dinámicas
         foreach ($this->routes[$method] ?? [] as $route => $handler) {
 
             $pattern = preg_replace(
@@ -63,25 +58,21 @@ class Router
 
             if (preg_match($pattern, $path, $matches)) {
 
-                array_shift($matches);
+                array_shift($matches); // quita match completo
 
-                if (is_array($handler)) {
-                    [$controller, $action] = $handler;
+                [$controller, $action] = $handler;
 
-                    $instance = new $controller();
-                    $instance->$action(...$matches);
+                $instance = new $controller();
 
-                    return;
-                }
+                // 🔥 FIX REAL: pasar parámetros al controller
+                $instance->$action(...$matches);
 
-                $handler(...$matches);
                 return;
             }
         }
 
-        // 3. Verificar si existe la ruta con otro método
+        // 3. Método incorrecto
         foreach ($this->routes as $httpMethod => $routes) {
-
             foreach ($routes as $route => $handler) {
 
                 $pattern = preg_replace(
@@ -94,6 +85,7 @@ class Router
 
                 if (preg_match($pattern, $path)) {
                     Response::methodNotAllowed();
+                    return;
                 }
             }
         }

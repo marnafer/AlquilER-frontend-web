@@ -6,6 +6,7 @@ use App\Controllers\CategoriaController;
 use App\Controllers\ProvinciaController;
 use App\Controllers\LocalidadController;
 use App\Controllers\RolController;
+use App\Controllers\PropiedadImagenController;
 
 /*
 |--------------------------------------------------------------------------
@@ -102,3 +103,17 @@ $router->get('/api/roles/{id}', [RolController::class, 'show']);
 $router->put('/api/roles/{id}', [RolController::class, 'update']);
 
 $router->delete('/api/roles/{id}', [RolController::class, 'delete']);
+
+/*	
+|--------------------------------------------------------------------------
+| PROPIEDAD IMAGEN
+|--------------------------------------------------------------------------
+*/
+
+$router->get('/api/propiedad-imagenes/{id}', [PropiedadImagenController::class, 'mostrarApi']);
+
+$router->get('/api/propiedad-imagenes', [PropiedadImagenController::class, 'indexApi']);
+
+$router->post('/api/propiedad-imagenes', [PropiedadImagenController::class, 'crear']);
+
+$router->delete('/api/propiedad-imagenes/{id}', [PropiedadImagenController::class, 'eliminar']);

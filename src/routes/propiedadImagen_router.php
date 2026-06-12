@@ -1,6 +1,6 @@
 <?php
 // Router RESTful para PropiedadImagen
-
+/*
 require_once SRC_PATH . 'controllers/PropiedadImagenController.php';
 
 use App\Controllers\PropiedadImagenController;
@@ -17,7 +17,7 @@ if (preg_match('#^/api/propiedad-imagenes/([0-9]+)$#', $path, $matches)) {
         case 'DELETE': $controller->eliminar($id); break;
         default:
             http_response_code(405);
-            echo json_encode(['error' => 'Método no permitido']);
+            echo json_encode(['error' => 'MÃ©todo no permitido']);
             break;
     }
     exit;
@@ -30,13 +30,13 @@ if (trim($path) === '/api/propiedad-imagenes') {
         case 'POST': $controller->crear(); break;
         default:
             http_response_code(405);
-            echo json_encode(['error' => 'Método no permitido']);
+            echo json_encode(['error' => 'MÃ©todo no permitido']);
             break;
     }
     exit;
 }
 
-// 3. Rutas HTML (mostrar galería de propiedades)
+// 3. Rutas HTML (mostrar galerÃ­a de propiedades)
 
 if ($path === '/propiedades/imagenes') {
     if ($method === 'GET') $controller->listarVistas();
