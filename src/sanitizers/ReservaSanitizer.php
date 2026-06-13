@@ -5,104 +5,67 @@ namespace App\Sanitizers;
 class ReservaSanitizer
 {
     /**
-     * Sanitizar todos los datos de una reserva
+     * Sanitizar reserva completa
      */
     public static function sanitizar(array $data): array
     {
         return [
             'id' => self::sanitizarId($data['id'] ?? null),
-            'propiedad_id' => self::sanitizarPropiedadId($data['propiedad_id'] ?? null),
-            'inquilino_id' => self::sanitizarInquilinoId($data['inquilino_id'] ?? null),
-            'fecha_desde' => self::sanitizarFecha($data['fecha_desde'] ?? null),
-            'fecha_hasta' => self::sanitizarFecha($data['fecha_hasta'] ?? null),
-            'precio_total' => self::sanitizarPrecio($data['precio_total'] ?? null),
+            'propiedad_id' => self::sanitizarId($data['propiedad_id'] ?? null),
+            'usuario_id' => self::sanitizarId($data['usuario_id'] ?? null),
+            'fecha_inicio_alquiler' => self::sanitizarFecha($data['fecha_inicio_alquiler'] ?? null),
+            'fecha_fin_alquiler' => self::sanitizarFecha($data['fecha_fin_alquiler'] ?? null),
             'estado' => self::sanitizarEstado($data['estado'] ?? null),
             'fecha_reserva' => self::sanitizarFechaHora($data['fecha_reserva'] ?? null)
         ];
     }
 
     /**
-     * Sanitizar ID de reserva
+     * Sanitizar ID
      */
     public static function sanitizarId($id): ?int
     {
         if ($id === null || $id === '') {
             return null;
         }
-        $idSanitizado = filter_var($id, FILTER_VALIDATE_INT);
-        return ($idSanitizado !== false && $idSanitizado > 0) ? $idSanitizado : null;
+
+        $id = filter_var($id, FILTER_VALIDATE_INT);
+
+        return ($id !== false && $id > 0)
+            ? $id
+            : null;
     }
 
     /**
-     * Sanitizar ID de propiedad
-     */
-    public static function sanitizarPropiedadId($id): ?int
-    {
-        if ($id === null || $id === '') {
-            return null;
-        }
-        $idSanitizado = filter_var($id, FILTER_VALIDATE_INT);
-        return ($idSanitizado !== false && $idSanitizado > 0) ? $idSanitizado : null;
-    }
-
-    /**
-     * Sanitizar ID de inquilino
-     */
-    public static function sanitizarInquilinoId($id): ?int
-    {
-        if ($id === null || $id === '') {
-            return null;
-        }
-        $idSanitizado = filter_var($id, FILTER_VALIDATE_INT);
-        return ($idSanitizado !== false && $idSanitizado > 0) ? $idSanitizado : null;
-    }
-
-    /**
-     * Sanitizar fecha (formato Y-m-d)
+     * Sanitizar fecha (Y-m-d)
      */
     public static function sanitizarFecha($fecha): ?string
     {
         if ($fecha === null || $fecha === '') {
             return null;
         }
+
         $timestamp = strtotime($fecha);
-        return $timestamp ? date('Y-m-d', $timestamp) : null;
+
+        return $timestamp
+            ? date('Y-m-d', $timestamp)
+            : null;
     }
 
     /**
-     * Sanitizar fecha y hora (formato Y-m-d H:i:s)
+     * Sanitizar fecha y hora
      */
     public static function sanitizarFechaHora($fecha): ?string
     {
         if ($fecha === null || $fecha === '') {
             return null;
         }
-        $timestamp = strtotime($fecha);
-        return $timestamp ? date('Y-m-d H:i:s', $timestamp) : null;
-    }
 
-    /**
-     * Sanitizar precio
-     */
-    public static function sanitizarPrecio($precio): ?float
-    {
-        if ($precio === null || $precio === '') {
-            return null;
-        }
-        
-        // Reemplazar coma por punto
-        $precio = str_replace(',', '.', $precio);
-        
-        // Eliminar cualquier cosa que no sea número o punto
-        $precio = preg_replace('/[^0-9\.]/', '', $precio);
-        
-        $precioSanitizado = filter_var($precio, FILTER_VALIDATE_FLOAT);
-        
-        if ($precioSanitizado !== false && $precioSanitizado > 0) {
-            return round($precioSanitizado, 2);
-        }
-        
-        return null;
+        $timestamp = strtotime($fecha);
+
+        return $timestamp
+            ? date('Y-m-d H:i:s', $timestamp)
+            : null;
     }
 
     /**
@@ -114,25 +77,15 @@ class ReservaSanitizer
             return null;
         }
 
-        $estado = strtolower(trim($estado));
-        return htmlspecialchars($estado, ENT_QUOTES, 'UTF-8');
-    }
-
-    /**
-     * Sanitizar solo fechas (para verificar disponibilidad)
-     */
-    public static function sanitizarFechas(array $data): array
-    {
-        return [
-            'fecha_desde' => self::sanitizarFecha($data['fecha_desde'] ?? null),
-            'fecha_hasta' => self::sanitizarFecha($data['fecha_hasta'] ?? null)
-        ];
+        return strtolower(
+            trim($estado)
+        );
     }
 
     /**
      * Sanitizar solo estado
      */
-    public static function sanitizarSoloEstado($estado): string
+    public static function sanitizarSoloEstado($estado): ?string
     {
         return self::sanitizarEstado($estado);
     }
@@ -144,8 +97,8 @@ class ReservaSanitizer
     {
         return [
             'id' => self::sanitizarId($data['id'] ?? null),
-            'propiedad_id' => self::sanitizarPropiedadId($data['propiedad_id'] ?? null),
-            'inquilino_id' => self::sanitizarInquilinoId($data['inquilino_id'] ?? null)
+            'propiedad_id' => self::sanitizarId($data['propiedad_id'] ?? null),
+            'usuario_id' => self::sanitizarId($data['usuario_id'] ?? null)
         ];
     }
 }

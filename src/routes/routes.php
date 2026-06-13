@@ -9,6 +9,7 @@ use App\Controllers\RolController;
 use App\Controllers\PropiedadImagenController;
 use App\Controllers\FavoritoController;
 use App\Controllers\ConsultaController;
+use App\Controllers\ReservaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -155,3 +156,29 @@ $router->post('/api/consultas', [ConsultaController::class, 'store']);
 $router->put('/api/consultas/{id}', [ConsultaController::class, 'update']);
 
 $router->delete('/api/consultas/{id}', [ConsultaController::class, 'delete']);
+
+/*
+|--------------------------------------------------------------------------
+| RESERVAS
+|--------------------------------------------------------------------------
+*/
+
+$router->get('/api/reservas', [ReservaController::class, 'index']);
+
+$router->get('/api/reservas/mis-reservas', [ReservaController::class, 'misReservas']);
+
+$router->get('/api/reservas/{id}', [ReservaController::class, 'show']);
+
+$router->get('/api/reservas/propiedad/{id}', [ReservaController::class, 'reservasPorPropiedad']);
+
+$router->post('/api/reservas', [ReservaController::class, 'store']);
+
+$router->put('/api/reservas/{id}/aprobar', [ReservaController::class, 'aprobar']);
+
+$router->put('/api/reservas/{id}/rechazar', [ReservaController::class, 'rechazar']);
+
+$router->put('/api/reservas/{id}/cancelar', [ReservaController::class, 'cancelar']);
+
+$router->put('/api/reservas/{id}/finalizar', [ReservaController::class, 'finalizar']);
+
+$router->delete('/api/reservas/{id}', [ReservaController::class, 'delete']);

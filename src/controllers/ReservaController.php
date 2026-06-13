@@ -4,7 +4,8 @@ namespace App\Controllers;
 
 use App\Models\Reserva;
 use App\Models\Propiedad;
-use App\Models\Usuario;
+use App\Helpers\Response;
+use App\Middlewares\AutenticadorMiddleware;
 use App\Sanitizers\ReservaSanitizer;
 use App\Validators\ReservaValidator;
 
@@ -12,23 +13,23 @@ class ReservaController
 {
     /**
      * GET /api/reservas
+     * Solo admin
      */
     public function index()
     {
+        AutenticadorMiddleware::soloAdmin();
+
         try {
+
             $reservas = Reserva::all();
 
-            return renderJson([
-                'success' => true,
-                'data' => $reservas,
+            Response::success([
+                'reservas' => $reservas,
                 'total' => $reservas->count()
-            ], 200);
+            ]);
 
         } catch (\Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            Response::serverError($e->getMessage());
         }
     }
 
@@ -37,78 +38,111 @@ class ReservaController
      */
     public function show($id)
     {
-        // Sanitizar + validar ID
-        $idSan = ReservaSanitizer::sanitizarId($id);
-        $validacion = ReservaValidator::validarSoloId($idSan);
-
-        if (!$validacion['success']) {
-            return renderJson($validacion, 400);
-        }
+        $user = AutenticadorMiddleware::verificar();
 
         try {
-            $reserva = Reserva::find($idSan);
 
-            if (!$reserva) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Reserva no encontrada'
-                ], 404);
+            $validacion = ReservaValidator::validarSoloId($id);
+
+            if (!$validacion['success']) {
+                Response::validationError(
+                    $validacion['errors']
+                );
             }
 
-            return renderJson([
-                'success' => true,
-                'data' => $reserva
-            ], 200);
+            $reserva = Reserva::find($id);
+
+            if (!$reserva) {
+                Response::notFound('Reserva no encontrada');
+            }
+
+            $propiedad = Propiedad::find(
+                $reserva->propiedad_id
+            );
+
+            $esAdmin = $user->rol_id == 3;
+            $esPropietario =
+                $propiedad &&
+                $propiedad->usuario_id == $user->sub;
+
+            $esUsuario =
+                $reserva->usuario_id == $user->sub;
+
+            if (
+                !$esAdmin &&
+                !$esPropietario &&
+                !$esUsuario
+            ) {
+                Response::forbidden();
+            }
+
+            Response::success($reserva);
 
         } catch (\Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            Response::serverError($e->getMessage());
+        }
+    }
+
+    /**
+     * GET /api/reservas/mis-reservas
+     */
+    public function misReservas()
+    {
+        $user = AutenticadorMiddleware::verificar();
+
+        try {
+
+            $reservas = Reserva::where(
+                'usuario_id',
+                $user->sub
+            )->get();
+
+            Response::success([
+                'reservas' => $reservas,
+                'total' => $reservas->count()
+            ]);
+
+        } catch (\Exception $e) {
+            Response::serverError($e->getMessage());
         }
     }
 
     /**
      * GET /api/reservas/propiedad/{id}
      */
-    public function getByPropiedad($propiedadId)
+    public function reservasPorPropiedad($propiedadId)
     {
-        try {
-            $reservas = Reserva::where('propiedad_id', $propiedadId)->get();
+        $user = AutenticadorMiddleware::verificar();
 
-            return renderJson([
-                'success' => true,
-                'data' => $reservas,
+        try {
+
+            $propiedad = Propiedad::find($propiedadId);
+
+            if (!$propiedad) {
+                Response::notFound(
+                    'Propiedad no encontrada'
+                );
+            }
+
+            if (
+                $user->rol_id != 3 &&
+                $propiedad->usuario_id != $user->sub
+            ) {
+                Response::forbidden();
+            }
+
+            $reservas = Reserva::where(
+                'propiedad_id',
+                $propiedadId
+            )->get();
+
+            Response::success([
+                'reservas' => $reservas,
                 'total' => $reservas->count()
-            ], 200);
+            ]);
 
         } catch (\Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * GET /api/reservas/inquilino/{id}
-     */
-    public function getByInquilino($inquilinoId)
-    {
-        try {
-            $reservas = Reserva::where('inquilino_id', $inquilinoId)->get();
-
-            return renderJson([
-                'success' => true,
-                'data' => $reservas,
-                'total' => $reservas->count()
-            ], 200);
-
-        } catch (\Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            Response::serverError($e->getMessage());
         }
     }
 
@@ -117,175 +151,268 @@ class ReservaController
      */
     public function store()
     {
-        $raw = json_decode(file_get_contents('php://input'), true) ?? [];
+        $user = AutenticadorMiddleware::verificar();
+
+        $raw = json_decode(
+            file_get_contents('php://input'),
+            true
+        );
 
         if (!is_array($raw)) {
-            return renderJson([
-                'success' => false,
-                'error' => 'JSON inválido'
-            ], 400);
+            Response::badRequest(
+                'JSON inválido'
+            );
         }
 
-        // 1. Sanitizar
         $san = ReservaSanitizer::sanitizar($raw);
 
-        // 2. Validar
-        $validacion = ReservaValidator::validarCrear($san);
+        $san['usuario_id'] = $user->sub;
+
+        $validacion =
+            ReservaValidator::validarCrear(
+                $san
+            );
 
         if (!$validacion['success']) {
-            return renderJson([
-                'success' => false,
-                'errors' => $validacion['errors']
-            ], 400);
+            Response::validationError(
+                $validacion['errors']
+            );
         }
 
-        $data = $validacion['data'];
-
         try {
-            // Verificar propiedad
-            if (!Propiedad::find($data['propiedad_id'])) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Propiedad no existe'
-                ], 404);
+
+            $propiedad = Propiedad::find(
+                $san['propiedad_id']
+            );
+
+            if (!$propiedad) {
+                Response::notFound(
+                    'Propiedad no encontrada'
+                );
             }
 
-            // Verificar inquilino
-            if (!Usuario::find($data['inquilino_id'])) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Inquilino no existe'
-                ], 404);
-            }
+            $reserva = Reserva::create([
+                'propiedad_id' =>
+                    $san['propiedad_id'],
 
-            // Verificar disponibilidad
-            $existe = Reserva::where('propiedad_id', $data['propiedad_id'])
-                ->where(function ($q) use ($data) {
-                    $q->whereBetween('fecha_desde', [$data['fecha_desde'], $data['fecha_hasta']])
-                      ->orWhereBetween('fecha_hasta', [$data['fecha_desde'], $data['fecha_hasta']]);
-                })
-                ->exists();
+                'usuario_id' =>
+                    $user->sub,
 
-            if ($existe) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Propiedad no disponible en esas fechas'
-                ], 409);
-            }
+                'fecha_inicio_alquiler' =>
+                    $san['fecha_inicio_alquiler'],
 
-            $reserva = Reserva::create($data);
+                'fecha_fin_alquiler' =>
+                    $san['fecha_fin_alquiler'],
 
-            return renderJson([
-                'success' => true,
-                'message' => 'Reserva creada',
-                'data' => $reserva
-            ], 201);
+                'estado' => 'pendiente'
+            ]);
+
+            Response::created(
+                $reserva,
+                'Reserva creada correctamente'
+            );
 
         } catch (\Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            Response::serverError($e->getMessage());
         }
     }
 
     /**
-     * PUT /api/reservas/{id}
+     * PUT /api/reservas/{id}/aprobar
      */
-    public function update($id)
+    public function aprobar($id)
     {
-        $raw = json_decode(file_get_contents('php://input'), true) ?? [];
-
-        if (!is_array($raw)) {
-            return renderJson([
-                'success' => false,
-                'error' => 'JSON inválido'
-            ], 400);
-        }
-
-        $raw['id'] = $id;
-
-        $san = ReservaSanitizer::sanitizar($raw);
-        $validacion = ReservaValidator::validarActualizar($san);
-
-        if (!$validacion['success']) {
-            return renderJson([
-                'success' => false,
-                'errors' => $validacion['errors']
-            ], 400);
-        }
+        $user = AutenticadorMiddleware::verificar();
 
         try {
+
             $reserva = Reserva::find($id);
 
             if (!$reserva) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Reserva no encontrada'
-                ], 404);
+                Response::notFound(
+                    'Reserva no encontrada'
+                );
             }
 
-            $reserva->update($validacion['data']);
+            $propiedad = Propiedad::find(
+                $reserva->propiedad_id
+            );
 
-            return renderJson([
-                'success' => true,
-                'message' => 'Reserva actualizada',
-                'data' => $reserva
-            ], 200);
-
-        } catch (\Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * PATCH /api/reservas/{id}/estado
-     */
-    public function changeStatus($id)
-    {
-        $raw = json_decode(file_get_contents('php://input'), true) ?? [];
-
-        if (!isset($raw['estado'])) {
-            return renderJson([
-                'success' => false,
-                'error' => 'Estado requerido'
-            ], 400);
-        }
-
-        $estadoSan = ReservaSanitizer::sanitizarSoloEstado($raw['estado']);
-        $validacion = ReservaValidator::validarSoloEstado($estadoSan);
-
-        if (!$validacion['success']) {
-            return renderJson($validacion, 400);
-        }
-
-        try {
-            $reserva = Reserva::find($id);
-
-            if (!$reserva) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Reserva no encontrada'
-                ], 404);
+            if (
+                $user->rol_id != 3 &&
+                $propiedad->usuario_id != $user->sub
+            ) {
+                Response::forbidden();
             }
 
-            $reserva->estado = $estadoSan;
+            if (
+                $reserva->estado !== 'pendiente'
+            ) {
+                Response::badRequest(
+                    'La reserva no puede aprobarse'
+                );
+            }
+
+            $reserva->estado = 'aprobada';
             $reserva->save();
 
-            return renderJson([
-                'success' => true,
-                'message' => 'Estado actualizado',
-                'data' => $reserva
-            ], 200);
+            Response::success(
+                $reserva,
+                200,
+                'Reserva aprobada'
+            );
 
         } catch (\Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            Response::serverError($e->getMessage());
+        }
+    }
+
+    /**
+     * PUT /api/reservas/{id}/rechazar
+     */
+    public function rechazar($id)
+    {
+        $user = AutenticadorMiddleware::verificar();
+
+        try {
+
+            $reserva = Reserva::find($id);
+
+            if (!$reserva) {
+                Response::notFound(
+                    'Reserva no encontrada'
+                );
+            }
+
+            $propiedad = Propiedad::find(
+                $reserva->propiedad_id
+            );
+
+            if (
+                $user->rol_id != 3 &&
+                $propiedad->usuario_id != $user->sub
+            ) {
+                Response::forbidden();
+            }
+
+            if (
+                $reserva->estado !== 'pendiente'
+            ) {
+                Response::badRequest(
+                    'La reserva no puede rechazarse'
+                );
+            }
+
+            $reserva->estado = 'rechazada';
+            $reserva->save();
+
+            Response::success(
+                $reserva,
+                200,
+                'Reserva rechazada'
+            );
+
+        } catch (\Exception $e) {
+            Response::serverError($e->getMessage());
+        }
+    }
+
+    /**
+     * PUT /api/reservas/{id}/cancelar
+     */
+    public function cancelar($id)
+    {
+        $user = AutenticadorMiddleware::verificar();
+
+        try {
+
+            $reserva = Reserva::find($id);
+
+            if (!$reserva) {
+                Response::notFound(
+                    'Reserva no encontrada'
+                );
+            }
+
+            if (
+                $user->rol_id != 3 &&
+                $reserva->usuario_id != $user->sub
+            ) {
+                Response::forbidden();
+            }
+
+            if (
+                !in_array(
+                    $reserva->estado,
+                    ['pendiente', 'aprobada']
+                )
+            ) {
+                Response::badRequest(
+                    'La reserva no puede cancelarse'
+                );
+            }
+
+            $reserva->estado = 'cancelada';
+            $reserva->save();
+
+            Response::success(
+                $reserva,
+                200,
+                'Reserva cancelada'
+            );
+
+        } catch (\Exception $e) {
+            Response::serverError($e->getMessage());
+        }
+    }
+
+    /**
+     * PUT /api/reservas/{id}/finalizar
+     */
+    public function finalizar($id)
+    {
+        $user = AutenticadorMiddleware::verificar();
+
+        try {
+
+            $reserva = Reserva::find($id);
+
+            if (!$reserva) {
+                Response::notFound(
+                    'Reserva no encontrada'
+                );
+            }
+
+            $propiedad = Propiedad::find(
+                $reserva->propiedad_id
+            );
+
+            if (
+                $user->rol_id != 3 &&
+                $propiedad->usuario_id != $user->sub
+            ) {
+                Response::forbidden();
+            }
+
+            if (
+                $reserva->estado !== 'aprobada'
+            ) {
+                Response::badRequest(
+                    'La reserva no puede finalizarse'
+                );
+            }
+
+            $reserva->estado = 'finalizada';
+            $reserva->save();
+
+            Response::success(
+                $reserva,
+                200,
+                'Reserva finalizada'
+            );
+
+        } catch (\Exception $e) {
+            Response::serverError($e->getMessage());
         }
     }
 
@@ -294,78 +421,28 @@ class ReservaController
      */
     public function delete($id)
     {
-        $idSan = ReservaSanitizer::sanitizarId($id);
-        $validacion = ReservaValidator::validarSoloId($idSan);
-
-        if (!$validacion['success']) {
-            return renderJson($validacion, 400);
-        }
+        AutenticadorMiddleware::soloAdmin();
 
         try {
-            $reserva = Reserva::find($idSan);
+
+            $reserva = Reserva::find($id);
 
             if (!$reserva) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Reserva no encontrada'
-                ], 404);
+                Response::notFound(
+                    'Reserva no encontrada'
+                );
             }
 
             $reserva->delete();
 
-            return renderJson([
-                'success' => true,
-                'message' => 'Reserva eliminada'
-            ], 200);
+            Response::success(
+                [],
+                200,
+                'Reserva eliminada'
+            );
 
         } catch (\Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * GET /api/reservas/disponibilidad
-     */
-    public function checkAvailability()
-    {
-        $propiedadId = $_GET['propiedad_id'] ?? null;
-        $fechaDesde = $_GET['fecha_desde'] ?? null;
-        $fechaHasta = $_GET['fecha_hasta'] ?? null;
-
-        $sanFechas = ReservaSanitizer::sanitizarFechas([
-            'fecha_desde' => $fechaDesde,
-            'fecha_hasta' => $fechaHasta
-        ]);
-
-        $validacion = ReservaValidator::validarFechasDisponibilidad($sanFechas);
-
-        if (!$validacion['success']) {
-            return renderJson($validacion, 400);
-        }
-
-        try {
-            $existe = Reserva::where('propiedad_id', $propiedadId)
-            ->where(function ($query) use ($desde, $hasta) {
-                $query->where('fecha_desde', '<', $hasta)
-                      ->where('fecha_hasta', '>', $desde);
-            })
-            ->exists();
-
-            return renderJson([
-                'success' => true,
-                'data' => [
-                    'disponible' => !$existe
-                ]
-            ], 200);
-
-        } catch (\Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            Response::serverError($e->getMessage());
         }
     }
 }
