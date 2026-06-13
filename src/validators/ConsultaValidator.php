@@ -269,10 +269,41 @@ class ConsultaValidator
         $data
     ): array {
 
-        return self::validarConsulta(
-            $data,
-            true
+        $errores = [];
+
+        // ID
+        $resultado = self::validarIdRequerido(
+            $data['id'] ?? null,
+            'consulta'
         );
+
+        if (!$resultado['success']) {
+            $errores['id'] = $resultado['error'];
+        }
+
+        // Mensaje
+        $resultado = self::validarMensajeConsulta(
+            $data['mensaje'] ?? null
+        );
+
+        if (!$resultado['success']) {
+            $errores['mensaje'] = $resultado['error'];
+        }
+
+        if (!empty($errores)) {
+
+            return [
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $errores
+            ];
+        }
+
+        return [
+            'success' => true,
+            'message' => 'Validación exitosa',
+            'errors' => null
+        ];
     }
 
     /**
