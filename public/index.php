@@ -268,4 +268,4 @@ elseif (
 // RUTA NO ENCONTRADA (404)
 // ============================================
 
-Response::notFound("Ruta no encontrada index");
+Response::notFound("Ruta no encontrada: $path");

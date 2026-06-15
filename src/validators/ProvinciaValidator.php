@@ -42,7 +42,7 @@ class ProvinciaValidator
         if ($id === null || $id === '') {
             return [
                 'success' => false,
-                'error' => 'El ID de provincia es requerido'
+                'error' => 'El ID de provincia es requerido. Debe ser un numero entero positivo.'
             ];
         }
 

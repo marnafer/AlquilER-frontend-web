@@ -72,9 +72,7 @@ class ProvinciaController
                 Response::notFound('Provincia no encontrada');
             }
 
-            Response::success([
-                'data' => $provincia
-            ]);
+            Response::success($provincia);
 
         } catch (\Exception $e) {
 
@@ -169,11 +167,11 @@ class ProvinciaController
 
             $provincia->update($san);
 
-            Response::json([
-                'success' => true,
-                'message' => 'Provincia actualizada exitosamente',
-                'data' => $provincia
-            ], 200);
+            Response::success(
+                $provincia,
+                200,
+                'Provincia actualizada exitosamente'
+            );
 
         } catch (\Exception $e) {
 
@@ -212,10 +210,11 @@ class ProvinciaController
 
             $provincia->delete();
 
-            Response::json([
-                'success' => true,
-                'message' => 'Provincia eliminada exitosamente'
-            ], 200);
+            Response::success(
+                null,
+                200,
+                'Provincia eliminada exitosamente'
+            );
 
         } catch (\Exception $e) {
 
