@@ -11,6 +11,8 @@ use App\Controllers\FavoritoController;
 use App\Controllers\ConsultaController;
 use App\Controllers\ReservaController;
 use App\Controllers\ResenaController;
+use App\Controllers\ServicioController;
+use App\Controllers\PropiedadServicioController;
 
 /*
 |--------------------------------------------------------------------------
@@ -205,3 +207,41 @@ $router->post('/api/resenas', [ResenaController::class, 'store']);
 $router->put('/api/resenas/{id}', [ResenaController::class, 'update']);
 
 $router->delete('/api/resenas/{id}', [ResenaController::class, 'delete']);
+
+/*
+|--------------------------------------------------------------------------
+| SERVICIOS
+|--------------------------------------------------------------------------
+*/
+
+$router->get('/api/servicios', [ServicioController::class, 'listar']);
+
+$router->get('/api/servicios/{id}', [ServicioController::class, 'obtener']);
+
+$router->post('/api/servicios', [ServicioController::class, 'crear']);
+
+$router->put('/api/servicios/{id}', [ServicioController::class, 'actualizar']);
+
+$router->delete('/api/servicios/{id}', [ServicioController::class, 'eliminar']);
+
+/*
+|--------------------------------------------------------------------------
+| PROPIEDADES-SERVICIOS
+|--------------------------------------------------------------------------
+*/
+
+$router->get('/api/propiedades-servicios', [PropiedadServicioController::class, 'index']);
+
+$router->get('/api/propiedades-servicios/estadisticas', [PropiedadServicioController::class, 'getEstadisticas']);
+
+$router->get('/api/propiedades-servicios/{id}', [PropiedadServicioController::class, 'show']);
+
+$router->post('/api/propiedades-servicios', [PropiedadServicioController::class, 'store']);
+
+$router->delete('/api/propiedades-servicios/{id}', [PropiedadServicioController::class, 'delete']);
+
+$router->get('/api/propiedades-servicios/propiedad/{id}', [PropiedadServicioController::class, 'getByPropiedad']);
+
+$router->get('/api/propiedades-servicios/servicio/{id}', [PropiedadServicioController::class, 'getByServicio']);
+
+$router->post('/api/propiedades-servicios/sync/{id}', [PropiedadServicioController::class, 'sync']);

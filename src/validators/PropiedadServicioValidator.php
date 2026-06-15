@@ -5,38 +5,50 @@ namespace App\Validators;
 class PropiedadServicioValidator
 {
     /**
-     * Validar todos los datos de una relación propiedad-servicio
+     * Validación principal (crear / update)
      */
     public static function validar(array $data, bool $requerirId = false): array
     {
         $errores = [];
 
-        // Validar ID (solo si se requiere para actualizaciones)
+        // -------------------------
+        // ID relación (solo update)
+        // -------------------------
         if ($requerirId) {
             $error = self::validarId($data['id'] ?? null);
+
             if ($error) {
                 $errores['id'] = $error;
             }
         }
 
-        // Validar propiedad_id
+        // -------------------------
+        // propiedad_id
+        // -------------------------
         $error = self::validarPropiedadId($data['propiedad_id'] ?? null);
+
         if ($error) {
             $errores['propiedad_id'] = $error;
         }
 
-        // Validar servicio_id
+        // -------------------------
+        // servicio_id
+        // -------------------------
         $error = self::validarServicioId($data['servicio_id'] ?? null);
+
         if ($error) {
             $errores['servicio_id'] = $error;
         }
 
+        // -------------------------
+        // respuesta final
+        // -------------------------
         if (!empty($errores)) {
-        return [
-            'success' => false,
-            'message' => 'Error de validación',
-            'errors' => $errores
-        ];
+            return [
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $errores
+            ];
         }
 
         return [
@@ -56,70 +68,70 @@ class PropiedadServicioValidator
         }
 
         if (!is_numeric($id)) {
-            return 'El ID debe ser un número';
+            return 'El ID debe ser numérico';
         }
 
-        if ($id <= 0) {
-            return 'El ID debe ser un número positivo';
+        if ((int)$id <= 0) {
+            return 'El ID debe ser mayor a cero';
         }
 
         if (filter_var($id, FILTER_VALIDATE_INT) === false) {
-            return 'El ID debe ser un número entero';
+            return 'El ID debe ser un entero válido';
         }
 
         return null;
     }
 
     /**
-     * Validar ID de propiedad
+     * Validar propiedad_id
      */
     public static function validarPropiedadId($id): ?string
     {
         if ($id === null || $id === '') {
-            return 'El ID de propiedad es requerido';
+            return 'El ID de propiedad es requerido. Debe ser un entero positivo.';
         }
 
         if (!is_numeric($id)) {
-            return 'El ID de propiedad debe ser un número';
+            return 'El ID de propiedad debe ser numérico';
         }
 
-        if ($id <= 0) {
-            return 'El ID de propiedad debe ser un número positivo';
+        if ((int)$id <= 0) {
+            return 'El ID de propiedad debe ser mayor a cero';
         }
 
         if (filter_var($id, FILTER_VALIDATE_INT) === false) {
-            return 'El ID de propiedad debe ser un número entero';
+            return 'El ID de propiedad debe ser un entero válido';
         }
 
         return null;
     }
 
     /**
-     * Validar ID de servicio
+     * Validar servicio_id
      */
     public static function validarServicioId($id): ?string
     {
         if ($id === null || $id === '') {
-            return 'El ID de servicio es requerido';
+            return 'El ID de servicio es requerido. Debe ser un entero positivo.';
         }
 
         if (!is_numeric($id)) {
-            return 'El ID de servicio debe ser un número';
+            return 'El ID de servicio debe ser numérico';
         }
 
-        if ($id <= 0) {
-            return 'El ID de servicio debe ser un número positivo';
+        if ((int)$id <= 0) {
+            return 'El ID de servicio debe ser mayor a cero';
         }
 
         if (filter_var($id, FILTER_VALIDATE_INT) === false) {
-            return 'El ID de servicio debe ser un número entero';
+            return 'El ID de servicio debe ser un entero válido';
         }
 
         return null;
     }
 
     /**
-     * Validar para crear nueva relación
+     * Validación para creación
      */
     public static function validarCrear(array $data): array
     {
@@ -127,7 +139,7 @@ class PropiedadServicioValidator
     }
 
     /**
-     * Validar para actualizar relación existente
+     * Validación para actualización
      */
     public static function validarActualizar(array $data): array
     {
@@ -135,20 +147,22 @@ class PropiedadServicioValidator
     }
 
     /**
-     * Validar solo ID
+     * Validación rápida solo ID
      */
     public static function validarSoloId($id): array
     {
         $error = self::validarId($id);
-        
+
         if ($error) {
             return [
                 'success' => false,
                 'message' => 'ID inválido',
-                'errors' => ['id' => $error]
+                'errors' => [
+                    'id' => $error
+                ]
             ];
         }
-        
+
         return [
             'success' => true,
             'message' => 'ID válido',
