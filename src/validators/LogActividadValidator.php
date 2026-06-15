@@ -5,7 +5,7 @@ namespace App\Validators;
 class LogActividadValidator
 {
     /**
-     * Validar todos los datos de un log
+     * Validar payload completo
      */
     public static function validar(array $data, bool $requerirId = false): array
     {
@@ -19,12 +19,10 @@ class LogActividadValidator
             }
         }
 
-        // usuario_id (opcional)
-        if (isset($data['usuario_id']) && !empty($data['usuario_id'])) {
-            $error = self::validarUsuarioId($data['usuario_id']);
-            if ($error) {
-                $errores['usuario_id'] = $error;
-            }
+        // usuario_id (obligatorio)
+        $error = self::validarUsuarioId($data['usuario_id'] ?? null);
+        if ($error) {
+            $errores['usuario_id'] = $error;
         }
 
         // acción
@@ -34,15 +32,14 @@ class LogActividadValidator
         }
 
         // IP (opcional)
-        if (isset($data['ip_address']) && !empty($data['ip_address'])) {
+        if (isset($data['ip_address']) && $data['ip_address'] !== null && $data['ip_address'] !== '') {
             $error = self::validarIp($data['ip_address']);
             if ($error) {
                 $errores['ip_address'] = $error;
             }
         }
 
-        // 🔥 FORMATO CORRECTO
-        if (count($errores) > 0) {
+        if (!empty($errores)) {
             return [
                 'success' => false,
                 'message' => 'Error de validación',
@@ -63,15 +60,15 @@ class LogActividadValidator
     public static function validarId($id): ?string
     {
         if ($id === null || $id === '') {
-            return 'El ID de log es requerido';
+            return 'El ID es requerido. Debe ser un entero positivo.';
         }
 
         if (!is_numeric($id)) {
-            return 'El ID debe ser un número';
+            return 'El ID debe ser numérico';
         }
 
-        if ($id <= 0) {
-            return 'El ID debe ser un número positivo';
+        if ((int)$id <= 0) {
+            return 'El ID debe ser mayor a 0';
         }
 
         return null;
@@ -83,15 +80,19 @@ class LogActividadValidator
     public static function validarUsuarioId($id): ?string
     {
         if ($id === null || $id === '') {
-            return null;
+            return 'El ID de usuario es requerido. Debe ser un entero positivo.';
         }
 
         if (!is_numeric($id)) {
             return 'El ID de usuario debe ser un número';
         }
 
-        if ($id <= 0) {
+        if ((int)$id <= 0) {
             return 'El ID de usuario debe ser un número positivo';
+        }
+
+        if (filter_var($id, FILTER_VALIDATE_INT) === false) {
+            return 'El ID de usuario debe ser un número entero';
         }
 
         return null;
@@ -103,17 +104,17 @@ class LogActividadValidator
     public static function validarAccion($accion): ?string
     {
         if ($accion === null || $accion === '') {
-            return 'La acción es requerida';
+            return 'La acción es obligatoria';
         }
 
         $accion = trim($accion);
 
-        if (strlen($accion) < 3) {
+        if (mb_strlen($accion) < 3) {
             return 'La acción debe tener al menos 3 caracteres';
         }
 
-        if (strlen($accion) > 255) {
-            return 'La acción no puede exceder los 255 caracteres';
+        if (mb_strlen($accion) > 255) {
+            return 'La acción no puede superar los 255 caracteres';
         }
 
         return null;
@@ -129,22 +130,14 @@ class LogActividadValidator
         }
 
         if (!filter_var($ip, FILTER_VALIDATE_IP)) {
-            return 'La dirección IP no es válida';
+            return 'La IP no es válida';
         }
 
         return null;
     }
 
     /**
-     * Crear
-     */
-    public static function validarCrear(array $data): array
-    {
-        return self::validar($data, false);
-    }
-
-    /**
-     * Solo ID
+     * Validar solo ID (para rutas)
      */
     public static function validarSoloId($id): array
     {
@@ -154,7 +147,9 @@ class LogActividadValidator
             return [
                 'success' => false,
                 'message' => 'ID inválido',
-                'errors' => ['id' => $error]
+                'errors' => [
+                    'id' => $error
+                ]
             ];
         }
 
@@ -163,5 +158,46 @@ class LogActividadValidator
             'message' => 'ID válido',
             'errors' => null
         ];
+    }
+
+    public static function validarDias($dias): array
+    {
+        $errores = [];
+
+        if (filter_var($dias, FILTER_VALIDATE_INT) === false) {
+            $errores['dias'] = 'La cantidad de días debe ser un número entero';
+        } elseif ((int)$dias <= 0) {
+            $errores['dias'] = 'La cantidad de días debe ser mayor a 0';
+        }
+
+        if (!empty($errores)) {
+            return [
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $errores
+            ];
+        }
+
+        return [
+            'success' => true,
+            'message' => 'Validación exitosa',
+            'errors' => null
+        ];
+    }
+
+    /**
+     * Validar creación
+     */
+    public static function validarCrear(array $data): array
+    {
+        return self::validar($data, false);
+    }
+
+    /**
+     * Validar actualización
+     */
+    public static function validarActualizar(array $data): array
+    {
+        return self::validar($data, true);
     }
 }

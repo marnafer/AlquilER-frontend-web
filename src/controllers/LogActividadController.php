@@ -3,8 +3,10 @@
 namespace App\Controllers;
 
 use App\Models\LogActividad;
+use App\Models\Usuario;
 use App\Sanitizers\LogActividadSanitizer;
 use App\Validators\LogActividadValidator;
+use App\Helpers\Response;
 use Exception;
 
 class LogActividadController
@@ -17,16 +19,13 @@ class LogActividadController
         try {
             $logs = LogActividad::getAll();
 
-            return renderJson([
-                'success' => true,
-                'data' => $logs,
-                'total' => $logs->count()
-            ]);
+            Response::success(
+                $logs,
+                200,
+                'Lista de logs obtenida correctamente'
+            );
         } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            Response::serverError($e->getMessage());
         }
     }
 
@@ -35,30 +34,21 @@ class LogActividadController
      */
     public function show($id)
     {
-        $validacion = LogActividadValidator::validarSoloId($id);
-        if (!$validacion['success']) {
-            return renderJson($validacion, 400);
+        $val = LogActividadValidator::validarSoloId($id);
+        if (!$val['success']) {
+            Response::validationError($val['errors']);
         }
 
         try {
-            $log = LogActividad::find($id);
+            $log = LogActividad::getById($id);
 
             if (!$log) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Log no encontrado'
-                ], 404);
+                Response::notFound('Log no encontrado');
             }
 
-            return renderJson([
-                'success' => true,
-                'data' => $log
-            ]);
+            Response::success($log);
         } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            Response::serverError($e->getMessage());
         }
     }
 
@@ -67,20 +57,31 @@ class LogActividadController
      */
     public function getByUsuario($usuarioId)
     {
+        if (!is_numeric($usuarioId) || $usuarioId <= 0) {
+            Response::validationError([
+                'usuario_id' => 'Debe ser un número positivo'
+            ]);
+        }   
+
         try {
+            // 1. verificar que el usuario exista
+            $usuario = Usuario::find($usuarioId);
+
+            if (!$usuario) {
+                Response::notFound('Usuario no encontrado');
+            }
+
+            // 2. obtener logs
             $logs = LogActividad::where('usuario_id', $usuarioId)->get();
 
-            return renderJson([
-                'success' => true,
+            Response::success([
                 'data' => $logs,
                 'total' => $logs->count(),
                 'usuario_id' => (int)$usuarioId
             ]);
-        } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+
+        } catch (\Exception $e) {
+            Response::serverError($e->getMessage());
         }
     }
 
@@ -93,30 +94,26 @@ class LogActividadController
         $hasta = $_GET['hasta'] ?? null;
 
         if (!$desde || !$hasta) {
-            return renderJson([
-                'success' => false,
-                'error' => 'Las fechas desde y hasta son requeridas'
-            ], 400);
+            Response::badRequest('Las fechas desde y hasta son requeridas');
+        }
+
+        if (!strtotime($desde) || !strtotime($hasta)) {
+            Response::validationError([
+                'fecha' => 'Formato de fecha inválido (YYYY-MM-DD)'
+            ]);
         }
 
         try {
-            $logs = LogActividad::whereBetween('fecha', [
-                $desde,
-                $hasta . ' 23:59:59'
-            ])->get();
+            $logs = LogActividad::getByFechaRango($desde, $hasta);
 
-            return renderJson([
-                'success' => true,
-                'data' => $logs,
-                'total' => $logs->count(),
-                'fecha_desde' => $desde,
-                'fecha_hasta' => $hasta
+            Response::success([
+                'desde' => $desde,
+                'hasta' => $hasta,
+                'total' => count($logs),
+                'data' => $logs
             ]);
         } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            Response::serverError($e->getMessage());
         }
     }
 
@@ -128,26 +125,23 @@ class LogActividadController
         $q = $_GET['q'] ?? null;
 
         if (!$q) {
-            return renderJson([
-                'success' => false,
-                'error' => 'El término de búsqueda es requerido'
-            ], 400);
+            return Response::badRequest('El término de búsqueda es requerido');
         }
+
+        $q = trim($q);
+        $q = preg_replace('/\s+/', ' ', $q);
 
         try {
             $logs = LogActividad::where('accion', 'LIKE', "%$q%")->get();
 
-            return renderJson([
-                'success' => true,
+            return Response::success([
                 'data' => $logs,
                 'total' => $logs->count(),
                 'busqueda' => $q
             ]);
+
         } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return Response::serverError($e->getMessage());
         }
     }
 
@@ -157,19 +151,11 @@ class LogActividadController
     public function getEstadisticas()
     {
         try {
-            $total = LogActividad::count();
+            $data = LogActividad::getEstadisticas();
 
-            return renderJson([
-                'success' => true,
-                'data' => [
-                    'total_logs' => $total
-                ]
-            ]);
+            Response::success($data);
         } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            Response::serverError($e->getMessage());
         }
     }
 
@@ -178,23 +164,36 @@ class LogActividadController
      */
     public function registrar()
     {
-        $data = json_decode(file_get_contents('php://input'), true) ?? [];
+        $data = json_decode(file_get_contents('php://input'), true);
 
         if (!is_array($data)) {
-            return renderJson([
-                'success' => false,
-                'error' => 'JSON inválido'
-            ], 400);
+            Response::badRequest('JSON inválido');
         }
 
+        $ipOriginal = $data['ip_address'] ?? null;
+
         $san = LogActividadSanitizer::sanitizar($data);
+
         $validacion = LogActividadValidator::validarCrear($san);
 
         if (!$validacion['success']) {
-            return renderJson([
-                'success' => false,
-                'errors' => $validacion['errors']
-            ], 400);
+            Response::validationError($validacion['errors']);
+        }
+
+        if (
+            $ipOriginal !== null &&
+            $ipOriginal !== '' &&
+            !filter_var($ipOriginal, FILTER_VALIDATE_IP)
+        ) {
+            Response::validationError([
+                'ip_address' => 'La dirección IP no es válida'
+            ]);
+        }
+
+        if (!Usuario::find($san['usuario_id'])) {
+            Response::validationError([
+                'usuario_id' => 'El usuario indicado no existe'
+            ]);
         }
 
         if (empty($san['ip_address'])) {
@@ -202,18 +201,20 @@ class LogActividadController
         }
 
         try {
+
+            $san['fecha'] = date('Y-m-d H:i:s');
+
             $log = LogActividad::create($san);
 
-            return renderJson([
-                'success' => true,
-                'message' => 'Log registrado',
-                'data' => $log
-            ], 201);
+            Response::created(
+                $log,
+                'Log registrado correctamente'
+            );
+
         } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+
+            Response::serverError($e->getMessage());
+
         }
     }
 
@@ -224,31 +225,26 @@ class LogActividadController
     {
         $dias = $_GET['dias'] ?? 30;
 
-        if (!is_numeric($dias) || $dias <= 0) {
-            return renderJson([
-                'success' => false,
-                'error' => 'El número de días debe ser positivo'
-            ], 400);
+        $validacion = LogActividadValidator::validarDias($dias);
+
+        if (!$validacion['success']) {
+            Response::validationError($validacion['errors']);
         }
+
+        $dias = (int)$dias;
 
         try {
             $fechaLimite = date('Y-m-d H:i:s', strtotime("-{$dias} days"));
 
             $eliminados = LogActividad::where('fecha', '<', $fechaLimite)->delete();
 
-            return renderJson([
-                'success' => true,
-                'message' => "Se eliminaron {$eliminados} logs",
-                'data' => [
-                    'dias' => (int)$dias,
-                    'eliminados' => $eliminados
-                ]
-            ]);
-        } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            Response::success([
+                'dias' => $dias,
+                'eliminados' => $eliminados
+            ], 200, "Se eliminaron {$eliminados} logs");
+
+        } catch (\Exception $e) {
+            Response::serverError($e->getMessage());
         }
     }
 
@@ -257,22 +253,28 @@ class LogActividadController
      */
     public function limpiarPorUsuario($usuarioId)
     {
-        try {
-            $eliminados = LogActividad::where('usuario_id', $usuarioId)->delete();
+        $validacion = LogActividadValidator::validarSoloId($usuarioId);
 
-            return renderJson([
-                'success' => true,
-                'message' => "Logs eliminados",
-                'data' => [
-                    'usuario_id' => (int)$usuarioId,
-                    'eliminados' => $eliminados
-                ]
-            ]);
-        } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+        if (!$validacion['success']) {
+            Response::validationError($validacion['errors']);
+        }
+
+        $usuario = Usuario::find((int)$usuarioId);
+
+        if (!$usuario) {
+            Response::notFound('Usuario no encontrado');
+        }
+
+        try {
+            $eliminados = LogActividad::where('usuario_id', (int)$usuarioId)->delete();
+
+            Response::success([
+                'usuario_id' => (int)$usuarioId,
+                'eliminados' => $eliminados
+            ], 200, 'Logs del usuario eliminados');
+
+        } catch (\Exception $e) {
+            Response::serverError($e->getMessage());
         }
     }
 
@@ -281,32 +283,23 @@ class LogActividadController
      */
     public function delete($id)
     {
-        $validacion = LogActividadValidator::validarSoloId($id);
-        if (!$validacion['success']) {
-            return renderJson($validacion, 400);
+        $val = LogActividadValidator::validarSoloId($id);
+        if (!$val['success']) {
+            Response::validationError($val['errors']);
         }
 
         try {
             $log = LogActividad::find($id);
 
             if (!$log) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Log no encontrado'
-                ], 404);
+                Response::notFound('Log no encontrado');
             }
 
             $log->delete();
 
-            return renderJson([
-                'success' => true,
-                'message' => 'Log eliminado'
-            ]);
+            Response::success([], 200, 'Log eliminado correctamente');
         } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            Response::serverError($e->getMessage());
         }
     }
 }

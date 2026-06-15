@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class LogActividad extends Model
 {
     protected $table = 'logs_actividad';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -17,6 +18,9 @@ class LogActividad extends Model
     ];
 
     protected $casts = [
+        'usuario_id' => 'integer',
+        'accion' => 'string',
+        'ip_address' => 'string',
         'fecha' => 'datetime'
     ];
 
@@ -29,50 +33,54 @@ class LogActividad extends Model
     }
 
     /**
-     * Obtener todos los logs
+     * Obtener todos los logs con información de usuario
      */
     public static function getAll()
     {
         return self::with('usuario')
             ->orderBy('fecha', 'desc')
             ->get()
-            ->map(function($log) {
+            ->map(function ($log) {
                 return [
                     'id' => $log->id,
                     'usuario_id' => $log->usuario_id,
                     'accion' => $log->accion,
                     'ip_address' => $log->ip_address,
                     'fecha' => $log->fecha,
-                    'usuario_nombre' => $log->usuario ? ($log->usuario->nombre . ' ' . $log->usuario->apellido) : null,
+                    'usuario_nombre' => $log->usuario
+                        ? ($log->usuario->nombre . ' ' . $log->usuario->apellido)
+                        : null,
                     'usuario_email' => $log->usuario->email ?? null
                 ];
             });
     }
 
     /**
-     * Obtener un log por ID
+     * Obtener log por ID
      */
     public static function getById($id)
     {
         $log = self::with('usuario')->find($id);
-        
+
         if (!$log) {
             return null;
         }
-        
+
         return [
             'id' => $log->id,
             'usuario_id' => $log->usuario_id,
             'accion' => $log->accion,
             'ip_address' => $log->ip_address,
             'fecha' => $log->fecha,
-            'usuario_nombre' => $log->usuario ? ($log->usuario->nombre . ' ' . $log->usuario->apellido) : null,
+            'usuario_nombre' => $log->usuario
+                ? ($log->usuario->nombre . ' ' . $log->usuario->apellido)
+                : null,
             'usuario_email' => $log->usuario->email ?? null
         ];
     }
 
     /**
-     * Obtener logs por usuario
+     * Logs por usuario
      */
     public static function getByUsuario($usuarioId)
     {
@@ -80,91 +88,80 @@ class LogActividad extends Model
             ->with('usuario')
             ->orderBy('fecha', 'desc')
             ->get()
-            ->map(function($log) {
-                return [
-                    'id' => $log->id,
-                    'accion' => $log->accion,
-                    'ip_address' => $log->ip_address,
-                    'fecha' => $log->fecha,
-                    'usuario_nombre' => $log->usuario ? ($log->usuario->nombre . ' ' . $log->usuario->apellido) : null
-                ];
-            });
-    }
-
-    /**
-     * Obtener logs por rango de fechas
-     */
-    public static function getByFechaRango($fechaDesde, $fechaHasta)
-    {
-        return self::with('usuario')
-            ->whereBetween('fecha', [$fechaDesde, $fechaHasta])
-            ->orderBy('fecha', 'desc')
-            ->get()
-            ->map(function($log) {
+            ->map(function ($log) {
                 return [
                     'id' => $log->id,
                     'usuario_id' => $log->usuario_id,
                     'accion' => $log->accion,
                     'ip_address' => $log->ip_address,
                     'fecha' => $log->fecha,
-                    'usuario_nombre' => $log->usuario ? ($log->usuario->nombre . ' ' . $log->usuario->apellido) : null
+                    'usuario_nombre' => $log->usuario
+                        ? ($log->usuario->nombre . ' ' . $log->usuario->apellido)
+                        : null
                 ];
             });
     }
 
     /**
-     * Obtener logs por acción (búsqueda)
+     * Logs por rango de fechas
      */
-    public static function getByAccion($busqueda)
+    public static function getByFechaRango($desde, $hasta)
     {
         return self::with('usuario')
-            ->where('accion', 'LIKE', "%{$busqueda}%")
+            ->whereBetween('fecha', [$desde, $hasta])
             ->orderBy('fecha', 'desc')
-            ->get()
-            ->map(function($log) {
-                return [
-                    'id' => $log->id,
-                    'usuario_id' => $log->usuario_id,
-                    'accion' => $log->accion,
-                    'ip_address' => $log->ip_address,
-                    'fecha' => $log->fecha,
-                    'usuario_nombre' => $log->usuario ? ($log->usuario->nombre . ' ' . $log->usuario->apellido) : null
-                ];
-            });
+            ->get();
     }
 
     /**
-     * Crear un nuevo log
+     * Búsqueda por acción
      */
-    public static function createLog($data)
+    public static function getByAccion($texto)
     {
-        $data['fecha'] = date('Y-m-d H:i:s');
-        return self::create($data);
+        return self::with('usuario')
+            ->where('accion', 'LIKE', "%{$texto}%")
+            ->orderBy('fecha', 'desc')
+            ->get();
     }
 
     /**
-     * Registrar acción de usuario (método auxiliar)
+     * Crear log
      */
-    public static function registrar($usuarioId, $accion, $ip = null)
+    public static function createLog(array $data)
     {
-        return self::createLog([
-            'usuario_id' => $usuarioId,
-            'accion' => $accion,
-            'ip_address' => $ip
+        return self::create([
+            'usuario_id' => $data['usuario_id'] ?? null,
+            'accion' => $data['accion'],
+            'ip_address' => $data['ip_address'] ?? null,
+            'fecha' => $data['fecha'] ?? date('Y-m-d H:i:s')
         ]);
     }
 
     /**
-     * Eliminar logs antiguos (más de X días)
+     * Registrar acción
+     */
+    public static function registrar($usuarioId, $accion, $ip = null)
+    {
+        return self::create([
+            'usuario_id' => $usuarioId,
+            'accion' => $accion,
+            'ip_address' => $ip,
+            'fecha' => date('Y-m-d H:i:s')
+        ]);
+    }
+
+    /**
+     * Eliminar logs antiguos
      */
     public static function deleteOldLogs($dias)
     {
         $fechaLimite = date('Y-m-d H:i:s', strtotime("-{$dias} days"));
+
         return self::where('fecha', '<', $fechaLimite)->delete();
     }
 
     /**
-     * Eliminar logs de un usuario específico
+     * Eliminar logs por usuario
      */
     public static function deleteByUsuario($usuarioId)
     {
@@ -172,70 +169,53 @@ class LogActividad extends Model
     }
 
     /**
-     * Eliminar un log específico
+     * Verificar existencia
      */
-    public static function deleteLog($id)
-    {
-        $log = self::find($id);
-        if (!$log) {
-            return false;
-        }
-        return $log->delete();
-    }
-
-    /**
-     * Verificar si existe un log
-     */
-    public static function exists($id)
+    public static function existsLog($id)
     {
         return self::where('id', $id)->exists();
     }
 
     /**
-     * Obtener estadísticas de logs
+     * Estadísticas
      */
     public static function getEstadisticas()
     {
         $total = self::count();
-        
-        // Logs por día (últimos 7 días)
-        $porDia = self::selectRaw('DATE(fecha) as dia, COUNT(*) as cantidad')
-            ->where('fecha', '>=', date('Y-m-d', strtotime('-7 days')))
+
+        $porDia = self::selectRaw('DATE(fecha) as dia, COUNT(*) as total')
             ->groupBy('dia')
             ->orderBy('dia', 'desc')
-            ->get()
-            ->toArray();
-        
-        // Logs por usuario (top 10)
-        $topUsuarios = self::selectRaw('usuario_id, COUNT(*) as cantidad')
+            ->limit(7)
+            ->get();
+
+        $topUsuarios = self::selectRaw('usuario_id, COUNT(*) as total')
             ->whereNotNull('usuario_id')
             ->groupBy('usuario_id')
-            ->orderBy('cantidad', 'desc')
-            ->limit(10)
+            ->orderByDesc('total')
+            ->limit(5)
             ->with('usuario')
             ->get()
-            ->map(function($log) {
+            ->map(function ($log) {
                 return [
+                    'usuario_id' => $log->usuario_id,
                     'nombre' => $log->usuario->nombre ?? null,
                     'apellido' => $log->usuario->apellido ?? null,
-                    'cantidad' => $log->cantidad
+                    'total' => $log->total
                 ];
-            })
-            ->toArray();
-        
-        // Acciones más comunes
-        $accionesComunes = self::selectRaw('accion, COUNT(*) as cantidad')
+            });
+
+        $acciones = self::selectRaw('accion, COUNT(*) as total')
             ->groupBy('accion')
-            ->orderBy('cantidad', 'desc')
+            ->orderByDesc('total')
             ->limit(10)
-            ->get()
-            ->toArray();
-        
+            ->get();
+
         return [
             'total' => $total,
             'por_dia' => $porDia,
             'top_usuarios' => $topUsuarios,
-            'acciones_comunes' => $accionesComunes
+            'acciones' => $acciones
         ];
     }
 }

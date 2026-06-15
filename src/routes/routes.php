@@ -13,6 +13,7 @@ use App\Controllers\ReservaController;
 use App\Controllers\ResenaController;
 use App\Controllers\ServicioController;
 use App\Controllers\PropiedadServicioController;
+use App\Controllers\LogActividadController;
 
 /*
 |--------------------------------------------------------------------------
@@ -245,3 +246,29 @@ $router->get('/api/propiedades-servicios/propiedad/{id}', [PropiedadServicioCont
 $router->get('/api/propiedades-servicios/servicio/{id}', [PropiedadServicioController::class, 'getByServicio']);
 
 $router->post('/api/propiedades-servicios/sync/{id}', [PropiedadServicioController::class, 'sync']);
+
+/*
+|--------------------------------------------------------------------------
+| LOGS ACTIVIDAD
+|--------------------------------------------------------------------------
+*/
+
+$router->get('/api/logs-actividad', [LogActividadController::class, 'index']);
+
+$router->get('/api/logs-actividad/estadisticas', [LogActividadController::class, 'getEstadisticas']);
+
+$router->get('/api/logs-actividad/buscar', [LogActividadController::class, 'search']);
+
+$router->get('/api/logs-actividad/fecha', [LogActividadController::class, 'getByFecha']);
+
+$router->get('/api/logs-actividad/usuario/{id}', [LogActividadController::class, 'getByUsuario']);
+
+$router->post('/api/logs-actividad/registrar', [LogActividadController::class, 'registrar']);
+
+$router->get('/api/logs-actividad/{id}', [LogActividadController::class, 'show']);
+
+$router->delete('/api/logs-actividad/{id}', [LogActividadController::class, 'delete']);
+
+$router->delete('/api/logs-actividad/limpiar/antiguos', [LogActividadController::class, 'limpiarAntiguos']);
+
+$router->delete('/api/logs-actividad/usuario/{id}', [LogActividadController::class, 'limpiarPorUsuario']);

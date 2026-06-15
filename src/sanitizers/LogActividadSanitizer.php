@@ -5,7 +5,7 @@ namespace App\Sanitizers;
 class LogActividadSanitizer
 {
     /**
-     * Sanitizar todos los datos de un log
+     * Sanitizar payload completo de log
      */
     public static function sanitizar(array $data): array
     {
@@ -14,7 +14,7 @@ class LogActividadSanitizer
             'usuario_id' => self::sanitizarUsuarioId($data['usuario_id'] ?? null),
             'accion' => self::sanitizarAccion($data['accion'] ?? null),
             'ip_address' => self::sanitizarIp($data['ip_address'] ?? null),
-            'fecha' => self::sanitizarFecha($data['fecha'] ?? null)
+            'fecha' => self::sanitizarFecha($data['fecha'] ?? null),
         ];
     }
 
@@ -26,59 +26,67 @@ class LogActividadSanitizer
         if ($id === null || $id === '') {
             return null;
         }
-        $idSanitizado = filter_var($id, FILTER_VALIDATE_INT);
-        return ($idSanitizado !== false && $idSanitizado > 0) ? $idSanitizado : null;
+
+        $id = filter_var($id, FILTER_VALIDATE_INT);
+        return ($id !== false && $id > 0) ? $id : null;
     }
 
     /**
-     * Sanitizar ID de usuario
+     * Sanitizar usuario_id
      */
     public static function sanitizarUsuarioId($id): ?int
     {
         if ($id === null || $id === '') {
             return null;
         }
-        $idSanitizado = filter_var($id, FILTER_VALIDATE_INT);
-        return ($idSanitizado !== false && $idSanitizado > 0) ? $idSanitizado : null;
+
+        $id = filter_var($id, FILTER_VALIDATE_INT);
+        return ($id !== false && $id > 0) ? $id : null;
     }
 
     /**
-     * Sanitizar acción
+     * Sanitizar acción (texto libre controlado)
      */
     public static function sanitizarAccion($accion): ?string
     {
         if ($accion === null || $accion === '') {
             return null;
         }
-        
+
         $accion = trim($accion);
-        $accion = preg_replace('/\s+/', ' ', $accion);
+        $accion = preg_replace('/\s+/u', ' ', $accion);
         $accion = strip_tags($accion);
-        $accion = htmlspecialchars($accion, ENT_QUOTES, 'UTF-8');
-        
-        if (strlen($accion) > 255) {
-            $accion = substr($accion, 0, 255);
+
+        $accion = htmlspecialchars(
+            $accion,
+            ENT_QUOTES | ENT_SUBSTITUTE,
+            'UTF-8'
+        );
+
+        if (mb_strlen($accion) > 255) {
+            $accion = mb_substr($accion, 0, 255);
         }
-        
+
         return $accion;
     }
 
     /**
-     * Sanitizar IP address
+     * Sanitizar IP
      */
     public static function sanitizarIp($ip): ?string
     {
         if ($ip === null || $ip === '') {
             return null;
         }
-        
+
         $ip = trim($ip);
-        
-        if (filter_var($ip, FILTER_VALIDATE_IP)) {
-            return $ip;
+
+        // Solo aceptar IPs válidas
+        if (!filter_var($ip, FILTER_VALIDATE_IP)) {
+            return null;
         }
-        
-        return null;
+
+        return $ip;
     }
 
     /**
@@ -89,30 +97,46 @@ class LogActividadSanitizer
         if ($fecha === null || $fecha === '') {
             return null;
         }
+
         $timestamp = strtotime($fecha);
-        return $timestamp ? date('Y-m-d H:i:s', $timestamp) : null;
+
+        if (!$timestamp) {
+            return null;
+        }
+
+        return date('Y-m-d H:i:s', $timestamp);
     }
 
     /**
-     * Obtener IP del cliente
+     * Obtener IP real del cliente
      */
     public static function getClientIp(): ?string
     {
         $ip = null;
-        
+
         if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
             $ip = $_SERVER['HTTP_CLIENT_IP'];
         } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-        } else {
-            $ip = $_SERVER['REMOTE_ADDR'] ?? null;
+            // puede venir lista de IPs
+            $ipList = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+            $ip = trim($ipList[0]);
+        } elseif (!empty($_SERVER['REMOTE_ADDR'])) {
+            $ip = $_SERVER['REMOTE_ADDR'];
         }
-        
-        if ($ip) {
-            $ip = explode(',', $ip)[0];
-            $ip = trim($ip);
-        }
-        
+
         return self::sanitizarIp($ip);
+    }
+
+    /**
+     * Sanitizar solo campos de creación (sin id)
+     */
+    public static function sanitizarCrear(array $data): array
+    {
+        return [
+            'usuario_id' => self::sanitizarUsuarioId($data['usuario_id'] ?? null),
+            'accion' => self::sanitizarAccion($data['accion'] ?? null),
+            'ip_address' => self::sanitizarIp($data['ip_address'] ?? null),
+            'fecha' => self::sanitizarFecha($data['fecha'] ?? null),
+        ];
     }
 }

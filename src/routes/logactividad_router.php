@@ -1,5 +1,5 @@
 <?php
-
+/*
 use App\Controllers\LogActividadController;
 
 $controller = new LogActividadController();
