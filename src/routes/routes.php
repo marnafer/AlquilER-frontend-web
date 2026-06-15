@@ -10,6 +10,7 @@ use App\Controllers\PropiedadImagenController;
 use App\Controllers\FavoritoController;
 use App\Controllers\ConsultaController;
 use App\Controllers\ReservaController;
+use App\Controllers\ResenaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -182,3 +183,25 @@ $router->put('/api/reservas/{id}/cancelar', [ReservaController::class, 'cancelar
 $router->put('/api/reservas/{id}/finalizar', [ReservaController::class, 'finalizar']);
 
 $router->delete('/api/reservas/{id}', [ReservaController::class, 'delete']);
+
+/*
+|--------------------------------------------------------------------------
+| RESEÑAS
+|--------------------------------------------------------------------------
+*/
+
+$router->get('/api/resenas', [ResenaController::class, 'index']);
+
+$router->get('/api/resenas/estadisticas', [ResenaController::class, 'getEstadisticas']);
+
+$router->get('/api/resenas/propiedad/{id}', [ResenaController::class, 'getByPropiedad']);
+
+$router->get('/api/resenas/usuario/{id}', [ResenaController::class, 'getByUsuario']);
+
+$router->get('/api/resenas/{id}', [ResenaController::class, 'show']);
+
+$router->post('/api/resenas', [ResenaController::class, 'store']);
+
+$router->put('/api/resenas/{id}', [ResenaController::class, 'update']);
+
+$router->delete('/api/resenas/{id}', [ResenaController::class, 'delete']);

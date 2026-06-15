@@ -1,6 +1,6 @@
 <?php
 
-define('JWT_SECRET', getenv('JWT_SECRET') ?: 'dev_secret_123');
+define('JWT_SECRET', getenv('JWT_SECRET') ?: 'clave_larga_y_segura_para_firmar_los_tokens_de_autenticacion_12345678');
 define('JWT_EXPIRATION', 3600);
 
 define('APP_ENV', 'development');

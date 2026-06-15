@@ -21,9 +21,9 @@ if (preg_match('#^/api/reservas/propiedad/([0-9]+)$#', $path, $matches) && $meth
     exit;
 }
 
-// 3. Por inquilino
-if (preg_match('#^/api/reservas/inquilino/([0-9]+)$#', $path, $matches) && $method === 'GET') {
-    $controller->getByInquilino($matches[1]);
+// 3. Por usuario
+if (preg_match('#^/api/reservas/usuario/([0-9]+)$#', $path, $matches) && $method === 'GET') {
+    $controller->getByusuario($matches[1]);
     exit;
 }
 

@@ -46,11 +46,11 @@ class AutenticadorMiddleware {
         return $user;
     }
 
-    public static function soloInquilino() {
+    public static function solousuario() {
         $user = self::verificar();
 
         if ($user->rol_id != 2) {
-            Response::forbidden('Solo inquilinos');
+            Response::forbidden('Solo usuarios');
         }
 
         return $user;

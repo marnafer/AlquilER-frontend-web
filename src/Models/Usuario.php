@@ -34,7 +34,7 @@ class Usuario extends Model
 
     public function consultas()
     {
-        return $this->hasMany(Consulta::class, 'inquilino_id');
+        return $this->hasMany(Consulta::class, 'usuario_id');
     }
 
     public function favoritos()
@@ -49,7 +49,7 @@ class Usuario extends Model
 
     public function reservas()
     {
-        return $this->hasMany(Reserva::class, 'inquilino_id');
+        return $this->hasMany(Reserva::class, 'usuario_id');
     }
 
     public function obtenerTodos()

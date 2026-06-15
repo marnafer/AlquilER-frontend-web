@@ -3,9 +3,13 @@
 namespace App\Controllers;
 
 use App\Models\Resena;
+use App\Models\Reserva;
+use App\Models\Propiedad;
+use App\Models\Usuario;
+use App\Helpers\Response;
+use App\Middlewares\AutenticadorMiddleware;
 use App\Sanitizers\ResenaSanitizer;
 use App\Validators\ResenaValidator;
-use Exception;
 
 class ResenaController
 {
@@ -15,18 +19,19 @@ class ResenaController
     public function index()
     {
         try {
+
             $resenas = Resena::getAll();
 
-            return renderJson([
-                'success' => true,
+            Response::success([
                 'data' => $resenas,
                 'total' => count($resenas)
             ]);
-        } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+
+        } catch (\Exception $e) {
+
+            Response::serverError(
+                $e->getMessage()
+            );
         }
     }
 
@@ -35,80 +40,130 @@ class ResenaController
      */
     public function show($id)
     {
-        $validacion = ResenaValidator::validarSoloId($id);
+        $validacion =
+            ResenaValidator::validarSoloId(
+                $id
+            );
 
         if (!$validacion['success']) {
-            return renderJson($validacion, 400);
+            Response::validationError(
+                $validacion['errors']
+            );
         }
 
         try {
-            $resena = Resena::getById($id);
+
+            $resena =
+                Resena::getById($id);
 
             if (!$resena) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Reseña no encontrada'
-                ], 404);
+                Response::notFound(
+                    'Reseña no encontrada'
+                );
             }
 
-            return renderJson([
-                'success' => true,
-                'data' => $resena
-            ]);
-        } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            Response::success(
+                $resena
+            );
+
+        } catch (\Exception $e) {
+
+            Response::serverError(
+                $e->getMessage()
+            );
         }
     }
 
     /**
      * GET /api/resenas/propiedad/{id}
      */
-    public function getByPropiedad($propiedadId)
-    {
-        try {
-            $resenas = Resena::getByPropiedad($propiedadId);
-            $promedio = Resena::getPromedioByPropiedad($propiedadId);
+    public function getByPropiedad($id)
+{
+    $idSan = ResenaSanitizer::sanitizarId($id);
 
-            return renderJson([
-                'success' => true,
-                'data' => $resenas,
-                'total' => count($resenas),
-                'promedio' => $promedio['promedio'],
-                'total_resenas' => $promedio['total'],
-                'propiedad_id' => (int)$propiedadId
-            ]);
-        } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
-        }
+    $validacion = ResenaValidator::validarSoloId($idSan);
+
+    if (!$validacion['success']) {
+        Response::validationError(
+            $validacion['errors']
+        );
     }
+
+    try {
+
+        $propiedad = Propiedad::find($idSan);
+
+        if (!$propiedad) {
+            Response::notFound(
+                'Propiedad no encontrada'
+            );
+        }
+
+        $resenas = Resena::getByPropiedad(
+            $idSan
+        );
+
+        $promedio = Resena::getPromedioByPropiedad(
+            $idSan
+        );
+
+        Response::success([
+            'data' => $resenas,
+            'promedio' => $promedio['promedio'],
+            'total_resenas' => $promedio['total'],
+            'propiedad_id' => $idSan
+        ]);
+
+    } catch (\Exception $e) {
+
+        Response::serverError(
+            $e->getMessage()
+        );
+    }
+}
 
     /**
      * GET /api/resenas/usuario/{id}
      */
-    public function getByUsuario($usuarioId)
-    {
-        try {
-            $resenas = Resena::getByUsuario($usuarioId);
+    public function getByUsuario($id)
+{
+    $idSan = ResenaSanitizer::sanitizarId($id);
 
-            return renderJson([
-                'success' => true,
-                'data' => $resenas,
-                'total' => count($resenas),
-                'usuario_id' => (int)$usuarioId
-            ]);
-        } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
-        }
+    $validacion = ResenaValidator::validarSoloId($idSan);
+
+    if (!$validacion['success']) {
+        Response::validationError(
+            $validacion['errors']
+        );
     }
+
+    try {
+
+        $usuario = Usuario::find($idSan);
+
+        if (!$usuario) {
+            Response::notFound(
+                'Usuario no encontrado'
+            );
+        }
+
+        $resenas = Resena::getByUsuario(
+            $idSan
+        );
+
+        Response::success([
+            'data' => $resenas,
+            'total' => count($resenas),
+            'usuario_id' => $idSan
+        ]);
+
+    } catch (\Exception $e) {
+
+        Response::serverError(
+            $e->getMessage()
+        );
+    }
+}
 
     /**
      * GET /api/resenas/estadisticas
@@ -116,17 +171,19 @@ class ResenaController
     public function getEstadisticas()
     {
         try {
-            $estadisticas = Resena::getEstadisticas();
 
-            return renderJson([
-                'success' => true,
-                'data' => $estadisticas
-            ]);
-        } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            $estadisticas =
+                Resena::getEstadisticas();
+
+            Response::success(
+                $estadisticas
+            );
+
+        } catch (\Exception $e) {
+
+            Response::serverError(
+                $e->getMessage()
+            );
         }
     }
 
@@ -135,96 +192,202 @@ class ResenaController
      */
     public function store()
     {
-        $data = json_decode(file_get_contents('php://input'), true);
+        $user =
+            AutenticadorMiddleware::verificar();
 
-        if (!$data) {
-            return renderJson([
-                'success' => false,
-                'error' => 'Datos inválidos'
-            ], 400);
+        $raw = json_decode(
+            file_get_contents(
+                'php://input'
+            ),
+            true
+        );
+
+        if (!is_array($raw)) {
+            Response::badRequest(
+                'JSON inválido'
+            );
         }
 
-        $datos = ResenaSanitizer::sanitizar($data);
-        $validacion = ResenaValidator::validarCrear($datos);
+        $san =
+            ResenaSanitizer::sanitizarCrear(
+                $raw
+            );
+
+        $validacion =
+            ResenaValidator::validarCrear(
+                $san
+            );
 
         if (!$validacion['success']) {
-            return renderJson($validacion, 400);
+
+            Response::validationError(
+                $validacion['errors']
+            );
         }
 
         try {
-            if (!Resena::reservaExistsAndFinalizada($datos['reserva_id'])) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'La reserva no existe o no está finalizada'
-                ], 404);
+
+            $reserva =
+                Reserva::find(
+                    $san['reserva_id']
+                );
+
+            if (!$reserva) {
+
+                Response::notFound(
+                    'Reserva no encontrada'
+                );
             }
 
-            if (Resena::existePorReserva($datos['reserva_id'])) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Ya existe una reseña para esta reserva'
-                ], 409);
+            if (
+                $reserva->usuario_id !=
+                $user->sub
+            ) {
+                Response::forbidden(
+                    'La reserva no pertenece al usuario autenticado'
+                );
             }
 
-            $id = Resena::createResena($datos);
+            if (
+                $reserva->estado !==
+                'finalizada'
+            ) {
+                Response::badRequest(
+                    'La reserva debe estar finalizada para poder reseñarla'
+                );
+            }
 
-            return renderJson([
-                'success' => true,
-                'message' => 'Reseña creada exitosamente',
-                'data' => ['id' => $id]
-            ], 201);
+            if (
+                Resena::existePorReserva(
+                    $reserva->id
+                )
+            ) {
+                Response::badRequest(
+                    'Ya existe una reseña para esta reserva'
+                );
+            }
 
-        } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            $resena =
+                Resena::createResena([
+                    'reserva_id' =>
+                        $san['reserva_id'],
+
+                    'calificacion' =>
+                        $san['calificacion'],
+
+                    'comentario' =>
+                        $san['comentario']
+                ]);
+
+            Response::created(
+                $resena,
+                'Reseña creada exitosamente'
+            );
+
+        } catch (\Exception $e) {
+
+            Response::serverError(
+                $e->getMessage()
+            );
         }
-    }
-
+    } 
+    
     /**
      * PUT /api/resenas/{id}
      */
     public function update($id)
     {
-        $data = json_decode(file_get_contents('php://input'), true);
+        $user =
+            AutenticadorMiddleware::verificar();
 
-        if (!$data) {
-            return renderJson([
-                'success' => false,
-                'error' => 'Datos inválidos'
-            ], 400);
+        $raw = json_decode(
+            file_get_contents(
+                'php://input'
+            ),
+            true
+        );
+
+        if (!is_array($raw)) {
+            Response::badRequest(
+                'JSON inválido'
+            );
         }
 
-        $data['id'] = $id;
+        $raw['id'] = $id;
 
-        $datos = ResenaSanitizer::sanitizar($data);
-        $validacion = ResenaValidator::validarActualizar($datos);
+        $san =
+            ResenaSanitizer::sanitizarActualizar(
+                $raw
+            );
+
+        $validacion =
+            ResenaValidator::validarActualizar(
+                $san
+            );
 
         if (!$validacion['success']) {
-            return renderJson($validacion, 400);
+
+            Response::validationError(
+                $validacion['errors']
+            );
         }
 
         try {
-            if (!Resena::exists($id)) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Reseña no encontrada'
-                ], 404);
+
+            $resena =
+                Resena::getWithReserva(
+                    $id
+                );
+
+            if (!$resena) {
+
+                Response::notFound(
+                    'Reseña no encontrada'
+                );
             }
 
-            Resena::updateResena($id, $datos);
+            $esAdmin =
+                $user->rol_id == 3;
 
-            return renderJson([
-                'success' => true,
-                'message' => 'Reseña actualizada exitosamente'
-            ]);
+            $esPropietario =
+                $resena->reserva &&
+                $resena->reserva->usuario_id ==
+                $user->sub;
 
-        } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            if (
+                !$esAdmin &&
+                !$esPropietario
+            ) {
+                Response::forbidden(
+                    'No tiene permisos para modificar esta reseña'
+                );
+            }
+
+            Resena::updateResena(
+                $id,
+                [
+                    'calificacion' =>
+                        $san['calificacion'],
+
+                    'comentario' =>
+                        $san['comentario']
+                ]
+            );
+
+            $resenaActualizada =
+                Resena::getById($id);
+
+            Response::success(
+                $resenaActualizada,
+                200,
+                'Reseña actualizada exitosamente'
+            );
+
+        } catch (\Exception $e) {
+
+            Response::serverError(
+                $e->getMessage()
+            );
         }
     }
 
@@ -233,32 +396,67 @@ class ResenaController
      */
     public function delete($id)
     {
-        $validacion = ResenaValidator::validarSoloId($id);
+        $user =
+            AutenticadorMiddleware::verificar();
+
+        $validacion =
+            ResenaValidator::validarSoloId(
+                $id
+            );
 
         if (!$validacion['success']) {
-            return renderJson($validacion, 400);
+
+            Response::validationError(
+                $validacion['errors']
+            );
         }
 
         try {
-            if (!Resena::exists($id)) {
-                return renderJson([
-                    'success' => false,
-                    'error' => 'Reseña no encontrada'
-                ], 404);
+
+            $resena =
+                Resena::getWithReserva(
+                    $id
+                );
+
+            if (!$resena) {
+
+                Response::notFound(
+                    'Reseña no encontrada'
+                );
             }
 
-            Resena::deleteResena($id);
+            $esAdmin =
+                $user->rol_id == 3;
 
-            return renderJson([
-                'success' => true,
-                'message' => 'Reseña eliminada exitosamente'
-            ]);
+            $esPropietario =
+                $resena->reserva &&
+                $resena->reserva->usuario_id ==
+                $user->sub;
 
-        } catch (Exception $e) {
-            return renderJson([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            if (
+                !$esAdmin &&
+                !$esPropietario
+            ) {
+                Response::forbidden(
+                    'No tiene permisos para eliminar esta reseña'
+                );
+            }
+
+            Resena::deleteResena(
+                $id
+            );
+
+            Response::success(
+                null,
+                200,
+                'Reseña eliminada exitosamente'
+            );
+
+        } catch (\Exception $e) {
+
+            Response::serverError(
+                $e->getMessage()
+            );
         }
     }
 }

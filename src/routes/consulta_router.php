@@ -27,13 +27,13 @@ switch (true) {
         break;
 
     /**
-     * /api/consultas/inquilino/{id}
+     * /api/consultas/usuario/{id}
      */
-    case preg_match('#^/api/consultas/inquilino/([0-9]+)$#', $path, $matches):
-        $inquilinoId = $matches[1];
+    case preg_match('#^/api/consultas/usuario/([0-9]+)$#', $path, $matches):
+        $usuarioId = $matches[1];
 
         if ($method === 'GET') {
-            $controller->listarPorInquilino($inquilinoId);
+            $controller->listarPorusuario($usuarioId);
         } else {
             renderJson([
                 'success' => false,
