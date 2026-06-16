@@ -20,6 +20,19 @@ class Propiedad extends Model
     'usuario_id'
     ];
 
+    protected $casts = [
+    'precio' => 'float',
+    'expensas' => 'float',
+    'disponible' => 'boolean',
+    'cantidad_ambientes' => 'integer',
+    'cantidad_dormitorios' => 'integer',
+    'cantidad_banos' => 'integer',
+    'capacidad' => 'integer',
+    'categoria_id' => 'integer',
+    'localidad_id' => 'integer',
+    'usuario_id' => 'integer'
+    ];
+
     // 3. Desactivamos los timestamps autom�ticos si no ten�s 'created_at' y 'updated_at'
     public $timestamps = false; 
     

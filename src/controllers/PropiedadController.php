@@ -2,274 +2,315 @@
 
 namespace App\Controllers;
 
-require_once SRC_PATH . 'sanitizers/PropiedadSanitizer.php';
-require_once SRC_PATH . 'validators/PropiedadValidator.php';
-
 use App\Models\Propiedad;
+use App\Helpers\Response;
 use App\Sanitizers\PropiedadSanitizer;
 use App\Validators\PropiedadValidator;
 use App\Middlewares\AutenticadorMiddleware;
 
-class PropiedadController {
-
+class PropiedadController
+{
     /**
-     * VISTA: formulario HTML (solo propietarios)
+     * GET /api/propiedades
      */
-    public function mostrarFormulario() {
-
-        AutenticadorMiddleware::soloPropietario();
-
-        header('Content-Type: text/html; charset=utf-8');
-        require_once SRC_PATH . 'views/propiedades_views/propiedades_form.php';
-        exit;
-    }
-
-    /**
-     * VISTA: listado HTML (opcional)
-     */
-    public function listarPropiedades() {
+    public function index()
+    {
         try {
+
             $propiedades = Propiedad::all();
 
-            header('Content-Type: text/html; charset=utf-8');
-            require_once SRC_PATH . 'views/propiedades_views/propiedades_listar.php';
+            Response::success([
+                'data' => $propiedades,
+                'total' => $propiedades->count()
+            ]);
 
         } catch (\Exception $e) {
-            die("Error al listar propiedades: " . $e->getMessage());
+
+            Response::serverError();
         }
     }
 
     /**
-     * API: listar propiedades (PÚBLICO)
+     * GET /api/propiedades/{id}
      */
-    public function indexApi() {
+    public function show($id)
+    {
+        $idSan = PropiedadSanitizer::sanitizarIdPropiedad($id);
 
-        try {
-            $propiedades = Propiedad::whereNull('deleted_at')->get();
+        $validacion = PropiedadValidator::validarSoloIdPropiedad(
+            $idSan
+        );
 
-            renderJson([
-                'status' => 'success',
-                'data' => $propiedades
-            ], 200);
-
-        } catch (\Exception $e) {
-
-            renderJson([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
+        if (!$validacion['success']) {
+            Response::validationError(
+                $validacion['errors']
+            );
         }
-    }
-
-    /**
-     * API: ver propiedad (PÚBLICO)
-     */
-    public function mostrarApi($id) {
 
         try {
-            $propiedad = Propiedad::find($id);
+
+            $propiedad = Propiedad::find($idSan);
 
             if (!$propiedad) {
-                return renderJson([
-                    'status' => 'error',
-                    'message' => 'Propiedad no encontrada'
-                ], 404);
+                Response::notFound(
+                    'Propiedad no encontrada'
+                );
             }
 
-            return renderJson([
-                'status' => 'success',
+            Response::success([
                 'data' => $propiedad
-            ], 200);
+            ]);
 
         } catch (\Exception $e) {
 
-            return renderJson([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
+            Response::serverError();
         }
     }
 
     /**
-     * API: crear propiedad (SOLO PROPIETARIO)
+     * POST /api/propiedades
      */
-    public function crear() {
-
+    public function store()
+    {
         $user = AutenticadorMiddleware::soloPropietario();
 
-        $inputRaw = file_get_contents("php://input");
-        $inputData = json_decode($inputRaw, true) ?? $_POST;
+        $raw = json_decode(
+            file_get_contents('php://input'),
+            true
+        );
 
-        $datosLimpios = PropiedadSanitizer::sanitizarPropiedad($inputData);
+        if (!is_array($raw)) {
+            Response::badRequest(
+                'JSON inválido'
+            );
+        }
 
-        unset($datosLimpios['id']); // no permitir ID en creación (autoincremental)
+        $san = PropiedadSanitizer::sanitizarPropiedad(
+            $raw
+        );
 
-        $errores = PropiedadValidator::validarPropiedad($datosLimpios);
+        $validacion = PropiedadValidator::validarCrearPropiedad(
+            $san
+        );
 
-        if (!empty($errores)) {
-            return renderJson([
-                'status' => 'error',
-                'errors' => $errores
-            ], 400);
+        if (!$validacion['success']) {
+            Response::validationError(
+                $validacion['errors']
+            );
         }
 
         try {
-            $datosLimpios['usuario_id'] = $user->sub;
 
-            $propiedad = Propiedad::create($datosLimpios);
+            $san['usuario_id'] = $user->sub;
 
-            return renderJson([
-                'status' => 'success',
-                'message' => 'Propiedad creada con éxito',
-                'data' => [
-                    'id' => $propiedad->id
-                ]
-            ], 201);
+            $propiedad = Propiedad::create(
+                $san
+            );
+
+            Response::created(
+                $propiedad->toArray(),
+                'Propiedad creada exitosamente'
+            );
 
         } catch (\Exception $e) {
 
-            return renderJson([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
+            Response::serverError();
         }
     }
 
     /**
-     * API: actualizar propiedad (SOLO PROPIETARIO + dueño)
+     * PUT /api/propiedades/{id}
      */
-    public function actualizar($id) {
-
+    public function update($id)
+    {
         $user = AutenticadorMiddleware::soloPropietario();
 
-        $propiedad = Propiedad::find($id);
+        $raw = json_decode(
+            file_get_contents('php://input'),
+            true
+        );
 
-        if (!$propiedad) {
-            return renderJson([
-                'status' => 'error',
-                'message' => 'Propiedad no encontrada'
-            ], 404);
+        if (!is_array($raw)) {
+            Response::badRequest(
+                'JSON inválido'
+            );
         }
 
-        // control de dueño
-        if ($propiedad->usuario_id != $user->sub) {
-            return renderJson([
-                'status' => 'error',
-                'message' => 'No tienes permiso para modificar esta propiedad'
-            ], 403);
-        }
+        $raw['id'] = $id;
 
-        $inputRaw = file_get_contents("php://input");
-        $inputData = json_decode($inputRaw, true) ?? $_POST;
+        $san = PropiedadSanitizer::sanitizarPropiedad(
+            $raw
+        );
 
-        $datosLimpios = PropiedadSanitizer::sanitizarPropiedad($inputData);
-        $errores = PropiedadValidator::validarPropiedad($datosLimpios);
+        $validacion = PropiedadValidator::validarActualizarPropiedad(
+            $san
+        );
 
-        if (!empty($errores)) {
-            return renderJson([
-                'status' => 'error',
-                'errors' => $errores
-            ], 400);
+        if (!$validacion['success']) {
+            Response::validationError(
+                $validacion['errors']
+            );
         }
 
         try {
-            $propiedad->fill($datosLimpios);
-            $propiedad->save();
 
-            return renderJson([
-                'status' => 'success',
-                'message' => 'Propiedad actualizada',
-                'data' => [
-                    'id' => $propiedad->id
-                ]
-            ], 200);
+            $propiedad = Propiedad::find(
+                $san['id']
+            );
 
-        } catch (\Exception $e) {
-
-            return renderJson([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * API: eliminar propiedad (SOLO PROPIETARIO + dueño)
-     */
-    public function eliminar($id) {
-
-        $user = AutenticadorMiddleware::soloPropietario();
-
-        try {
-            $propiedad = Propiedad::find($id);
-
-            if (!$propiedad || $propiedad->deleted_at !== null) { // Checkear soft delete si ya fue eliminada
-                return renderJson([
-                    'status' => 'error',
-                    'message' => 'Propiedad no encontrada'
-                ], 404);
+            if (!$propiedad) {
+                Response::notFound(
+                    'Propiedad no encontrada'
+                );
             }
 
-            // control de dueño
-            if ($propiedad->usuario_id != $user->sub) {
-                return renderJson([
-                    'status' => 'error',
-                    'message' => 'No tienes permiso para eliminar esta propiedad'
-                ], 403);
+            if (
+                $propiedad->usuario_id != $user->sub
+            ) {
+                Response::forbidden(
+                    'No tienes permiso para modificar esta propiedad'
+                );
+            }
+
+            $propiedad->update([
+                'titulo' => $san['titulo'],
+                'descripcion' => $san['descripcion'],
+                'precio' => $san['precio'],
+                'expensas' => $san['expensas'],
+                'direccion' => $san['direccion'],
+                'cantidad_ambientes' => $san['cantidad_ambientes'],
+                'cantidad_dormitorios' => $san['cantidad_dormitorios'],
+                'cantidad_banos' => $san['cantidad_banos'],
+                'capacidad' => $san['capacidad'],
+                'disponible' => $san['disponible'],
+                'categoria_id' => $san['categoria_id'],
+                'localidad_id' => $san['localidad_id']
+            ]);
+
+            Response::success([
+                'data' => $propiedad->fresh()
+            ]);
+
+        } catch (\Exception $e) {
+
+            Response::serverError();
+        }
+    }
+
+    /**
+     * DELETE /api/propiedades/{id}
+     */
+    public function delete($id)
+    {
+        $user = AutenticadorMiddleware::soloPropietario();
+
+        $idSan = PropiedadSanitizer::sanitizarIdPropiedad(
+            $id
+        );
+
+        $validacion = PropiedadValidator::validarSoloIdPropiedad(
+            $idSan
+        );
+
+        if (!$validacion['success']) {
+            Response::validationError(
+                $validacion['errors']
+            );
+        }
+
+        try {
+
+            $propiedad = Propiedad::find(
+                $idSan
+            );
+
+            if (!$propiedad) {
+                Response::notFound(
+                    'Propiedad no encontrada'
+                );
+            }
+
+            if (
+                $propiedad->usuario_id != $user->sub
+            ) {
+                Response::forbidden(
+                    'No tienes permiso para eliminar esta propiedad'
+                );
             }
 
             $propiedad->delete();
 
-            return renderJson([
-                'status' => 'success',
-                'message' => "Propiedad #$id eliminada correctamente"
-            ], 200);
+            Response::success(
+                [],
+                200,
+                'Propiedad eliminada exitosamente'
+            );
 
         } catch (\Exception $e) {
 
-            return renderJson([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
+            Response::serverError();
         }
     }
 
     /**
-     * API: restaurar propiedad (SOLO PROPIETARIO + dueño)
+     * PATCH /api/propiedades/{id}/restaurar
      */
-     public function restaurar($id) {
+    public function restore($id)
+    {
         $user = AutenticadorMiddleware::soloPropietario();
-        try {
-            $propiedad = Propiedad::withTrashed()->find($id);
-            if (!$propiedad) {
-                return renderJson([
-                    'status' => 'error',
-                    'message' => 'Propiedad no encontrada'
-                ], 404);
-            }
-            // control de dueño
-            if ($propiedad->usuario_id != $user->sub) {
-                return renderJson([
-                    'status' => 'error',
-                    'message' => 'No tienes permiso para restaurar esta propiedad'
-                ], 403);
-            }
-            if ($propiedad->deleted_at === null) {
-                return renderJson([
-                    'status' => 'error',
-                    'message' => 'La propiedad no está eliminada'
-                ], 400);
-            }
-            $propiedad->restore();
-            return renderJson([
-                'status' => 'success',
-                'message' => "Propiedad #$id restaurada correctamente"
-            ], 200);
-        } catch (\Exception $e) {
-            return renderJson([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
+
+        $idSan = PropiedadSanitizer::sanitizarIdPropiedad(
+            $id
+        );
+
+        $validacion = PropiedadValidator::validarSoloIdPropiedad(
+            $idSan
+        );
+
+        if (!$validacion['success']) {
+            Response::validationError(
+                $validacion['errors']
+            );
         }
-     }    
+
+        try {
+
+            $propiedad = Propiedad::withTrashed()
+                ->find($idSan);
+
+            if (!$propiedad) {
+                Response::notFound(
+                    'Propiedad no encontrada'
+                );
+            }
+
+            if (
+                $propiedad->usuario_id != $user->sub
+            ) {
+                Response::forbidden(
+                    'No tienes permiso para restaurar esta propiedad'
+                );
+            }
+
+            if ($propiedad->deleted_at === null) {
+                Response::badRequest(
+                    'La propiedad no está eliminada'
+                );
+            }
+
+            $propiedad->restore();
+
+            Response::success(
+                [
+                    'data' => $propiedad->fresh()
+                ],
+                200,
+                'Propiedad restaurada exitosamente'
+            );
+
+        } catch (\Exception $e) {
+
+            Response::serverError();
+        }
+    }
 }

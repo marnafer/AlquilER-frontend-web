@@ -25,6 +25,11 @@ class Router
         $this->routes['PUT'][$uri] = $handler;
     }
 
+    public function patch(string $uri, callable|array $handler): void
+    {
+        $this->routes['PATCH'][$uri] = $handler;
+    }
+
     public function delete(string $uri, callable|array $handler): void
     {
         $this->routes['DELETE'][$uri] = $handler;

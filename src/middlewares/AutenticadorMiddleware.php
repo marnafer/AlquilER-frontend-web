@@ -39,7 +39,7 @@ class AutenticadorMiddleware {
     public static function soloPropietario() {
         $user = self::verificar();
 
-        if ($user->rol_id != 1) {
+        if ($user->rol_id != 2) {
             Response::forbidden('Solo propietarios');
         }
 
@@ -49,7 +49,7 @@ class AutenticadorMiddleware {
     public static function solousuario() {
         $user = self::verificar();
 
-        if ($user->rol_id != 2) {
+        if ($user->rol_id != 1) {
             Response::forbidden('Solo usuarios');
         }
 

@@ -14,6 +14,7 @@ use App\Controllers\ResenaController;
 use App\Controllers\ServicioController;
 use App\Controllers\PropiedadServicioController;
 use App\Controllers\LogActividadController;
+use App\Controllers\PropiedadController;
 
 /*
 |--------------------------------------------------------------------------
@@ -272,3 +273,21 @@ $router->delete('/api/logs-actividad/{id}', [LogActividadController::class, 'del
 $router->delete('/api/logs-actividad/limpiar/antiguos', [LogActividadController::class, 'limpiarAntiguos']);
 
 $router->delete('/api/logs-actividad/usuario/{id}', [LogActividadController::class, 'limpiarPorUsuario']);
+
+/*
+|--------------------------------------------------------------------------
+| PROPIEDADES
+|--------------------------------------------------------------------------
+*/
+
+$router->get('/api/propiedades', [PropiedadController::class, 'index']);
+
+$router->post('/api/propiedades', [PropiedadController::class, 'store']);
+
+$router->get('/api/propiedades/{id}', [PropiedadController::class, 'show']);
+
+$router->put('/api/propiedades/{id}', [PropiedadController::class, 'update']);
+
+$router->delete('/api/propiedades/{id}', [PropiedadController::class, 'delete']);
+
+$router->patch('/api/propiedades/{id}/restaurar', [PropiedadController::class, 'restore']);

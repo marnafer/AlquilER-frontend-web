@@ -1,5 +1,5 @@
 <?php
-
+/*
 use App\controllers\PropiedadController;
 use App\middlewares\AutenticadorMiddleware;
 
