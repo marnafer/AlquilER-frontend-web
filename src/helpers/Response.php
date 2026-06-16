@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+
 namespace App\Helpers;
 
 class Response
@@ -12,7 +13,23 @@ class Response
 			header('X-Content-Type-Options: nosniff');
 		}
 
-		echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+		try {
+			echo json_encode(
+				$data,
+				JSON_PRETTY_PRINT
+				| JSON_UNESCAPED_SLASHES
+				| JSON_UNESCAPED_UNICODE
+				| JSON_THROW_ON_ERROR
+			);
+		} catch (\JsonException $e) {
+			http_response_code(500);
+
+			echo json_encode([
+				'success' => false,
+				'error' => 'Error al generar JSON'
+			]);
+		}
+
 		exit;
 	}
 
@@ -20,14 +37,14 @@ class Response
 
 	public static function success($data = [], int $status = 200, ?string $message = null): void
 	{
-			$response = [
+		$response = [
 			'success' => true,
 			'data' => $data
-			];
+		];
 
-			if ($message !== null) {
+		if ($message !== null) {
 			$response['message'] = $message;
-			}
+		}
 
 		self::json($response, $status);
 	}
@@ -46,63 +63,58 @@ class Response
 		self::json($response, 201);
 	}
 
+	public static function noContent(): void
+	{
+		http_response_code(204);
+		exit;
+	}
+
 	// ===== FUNCIONES DE ERROR =====
+
+	private static function errorResponse(string $message, int $status): void
+	{
+		self::json([
+			'success' => false,
+			'error' => $message
+		], $status);
+	}
 
 	public static function validationError(array $errors): void
 	{
-			self::json([
-				'success' => false,
-				'error' => 'Error de validacion',
-				'validation_errors' => $errors
-			], 422);
+		self::json([
+			'success' => false,
+			'error' => 'Error de validación',
+			'validation_errors' => $errors
+		], 422);
 	}
 
 	public static function notFound(string $message = 'Recurso no encontrado'): void
 	{
-			self::json([
-				'success' => false,
-				'error' => $message
-			], 404);
+		self::errorResponse($message, 404);
 	}
 
 	public static function methodNotAllowed(): void
 	{
-			self::json([
-				'success' => false,
-				'error' => 'Método no permitido'
-			], 405);
+		self::errorResponse('Método no permitido', 405);
 	}
 
-	public static function unauthorized(string $message = 'No autorizado'): void 
+	public static function unauthorized(string $message = 'No autorizado'): void
 	{
-		self::json([
-			'success' => false,
-			'error' => $message
-		], 401);
+		self::errorResponse($message, 401);
 	}
 
-	public static function serverError(string $message = 'Error interno del servidor'): void 
+	public static function serverError(string $message = 'Error interno del servidor'): void
 	{
-		self::json([
-			'success' => false,
-			'error' => $message
-		], 500);
+		self::errorResponse($message, 500);
 	}
 
 	public static function forbidden(string $message = 'Acceso denegado'): void
 	{
-		self::json([
-			'success' => false,
-			'error' => $message
-		], 403);
+		self::errorResponse($message, 403);
 	}
 
 	public static function badRequest(string $message = 'Solicitud inválida'): void
 	{
-		self::json([
-			'success' => false,
-			'error' => $message
-		], 400);
+		self::errorResponse($message, 400);
 	}
-
 }
