@@ -19,12 +19,18 @@ class AutenticadorMiddleware {
         }
 
         // 2. Verificar formato Bearer
+        $authHeader = trim($authHeader);
+
         if (!str_starts_with($authHeader, 'Bearer ')) {
             Response::unauthorized('Formato de token inválido');
         }
 
         // 3. Extraer token
-        $token = substr($authHeader, 7);
+        $token = trim(substr($authHeader, 7));
+
+        if ($token === '') {
+            Response::unauthorized('Token requerido');
+        }
 
         // 4. Validar token
         $user = JwtHelper::verificarToken($token);
@@ -39,7 +45,7 @@ class AutenticadorMiddleware {
     public static function soloPropietario() {
         $user = self::verificar();
 
-        if ($user->rol_id != 2) {
+        if ((int)$user->rol_id != 2) {
             Response::forbidden('Solo propietarios');
         }
 
@@ -49,7 +55,7 @@ class AutenticadorMiddleware {
     public static function solousuario() {
         $user = self::verificar();
 
-        if ($user->rol_id != 1) {
+        if ((int)$user->rol_id != 1) {
             Response::forbidden('Solo usuarios');
         }
 
@@ -59,7 +65,7 @@ class AutenticadorMiddleware {
     public static function soloAdmin() {
         $user = self::verificar();
 
-        if ($user->rol_id != 3) {
+        if ((int)$user->rol_id != 3) {
             Response::forbidden('Solo administradores');
         }
 
