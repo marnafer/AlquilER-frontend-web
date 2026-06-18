@@ -112,11 +112,17 @@ class PropiedadImagenController
                 throw new \Exception('Error al guardar imagen');
             }
 
+            // Verificar si la propiedad ya tiene imágenes para asignar es_principal
+            $cantidadImagenes = PropiedadImagen::where(
+                'propiedad_id',
+                $san['propiedad_id']
+            )->count();
+
             $registro = PropiedadImagen::create([
                 'propiedad_id' => $san['propiedad_id'],
                 'ruta' => '/uploads/propiedades/' . $nombreArchivo,
                 'descripcion' => $san['descripcion'],
-                'es_principal' => 0
+                'es_principal' => $cantidadImagenes === 0 ? 1 : 0
             ]);
 
             Response::created($registro->toArray(), 'Imagen creada correctamente');
@@ -124,6 +130,35 @@ class PropiedadImagenController
         } catch (\Exception $e) {
             Response::serverError();
         }
+    }
+
+
+    /**
+    *PUT /api/propiedad-imagenes/{id}/principal
+    */
+    public function establecerPrincipal($id)
+    {
+        $imagen = PropiedadImagen::find($id);
+
+        if (!$imagen) {
+            Response::notFound('Imagen no encontrada');
+            return;
+        }
+
+        PropiedadImagen::where(
+            'propiedad_id',
+            $imagen->propiedad_id
+        )->update([
+            'es_principal' => 0
+        ]);
+
+        $imagen->es_principal = 1;
+        $imagen->save();
+
+        Response::success([
+            'data' => $imagen,
+            'message' => 'Imagen principal actualizada'
+        ]);
     }
 
     /**

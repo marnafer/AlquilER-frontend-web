@@ -80,5 +80,13 @@ class Propiedad extends Model
     {
         return $this->hasMany(Favorito::class, 'propiedad_id');
     }
+
+    public function imagenPrincipal()
+    {
+        return $this->hasOne(
+            PropiedadImagen::class,
+            'propiedad_id'
+        )->where('es_principal', 1);
+    }
    
 }

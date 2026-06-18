@@ -50,6 +50,7 @@ require_once SRC_PATH . 'routes/api.php';
 require_once SRC_PATH . 'routes/web.php';
 
 $router->dispatch($method, $path);
+exit;
 
 // ============================================
 // DEBUG
@@ -108,9 +109,3 @@ if ($path === '/') {
     ], 200, 'Bienvenido a la API');
     exit;
 }
-
-// ============================================
-// RUTA NO ENCONTRADA (404)
-// ============================================
-
-Response::notFound("Ruta no encontrada: $path");

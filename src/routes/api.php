@@ -124,6 +124,8 @@ $router->get('/api/propiedad-imagenes', [PropiedadImagenController::class, 'inde
 
 $router->post('/api/propiedad-imagenes', [PropiedadImagenController::class, 'crear']);
 
+$router->put('/api/propiedad-imagenes/{id}/principal', [PropiedadImagenController::class, 'establecerPrincipal']);
+
 $router->delete('/api/propiedad-imagenes/{id}', [PropiedadImagenController::class, 'eliminar']);
 
 /*	
