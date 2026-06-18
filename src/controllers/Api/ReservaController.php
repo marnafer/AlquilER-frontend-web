@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Api;
 
 use App\Models\Reserva;
 use App\Models\Propiedad;

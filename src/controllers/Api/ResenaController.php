@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Api;
 
 use App\Models\Resena;
 use App\Models\Reserva;

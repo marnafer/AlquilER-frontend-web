@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Api;
 
 use App\Models\Favorito;
 use App\Sanitizers\FavoritoSanitizer;

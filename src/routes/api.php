@@ -1,20 +1,20 @@
 <?php
 
-use App\Controllers\AutenticadorController;
-use App\Controllers\UsuarioController;
-use App\Controllers\CategoriaController;
-use App\Controllers\ProvinciaController;
-use App\Controllers\LocalidadController;
-use App\Controllers\RolController;
-use App\Controllers\PropiedadImagenController;
-use App\Controllers\FavoritoController;
-use App\Controllers\ConsultaController;
-use App\Controllers\ReservaController;
-use App\Controllers\ResenaController;
-use App\Controllers\ServicioController;
-use App\Controllers\PropiedadServicioController;
-use App\Controllers\LogActividadController;
-use App\Controllers\PropiedadController;
+use App\Controllers\Api\AutenticadorController;
+use App\Controllers\Api\UsuarioController;
+use App\Controllers\Api\CategoriaController;
+use App\Controllers\Api\ProvinciaController;
+use App\Controllers\Api\LocalidadController;
+use App\Controllers\Api\RolController;
+use App\Controllers\Api\PropiedadImagenController;
+use App\Controllers\Api\FavoritoController;
+use App\Controllers\Api\ConsultaController;
+use App\Controllers\Api\ReservaController;
+use App\Controllers\Api\ResenaController;
+use App\Controllers\Api\ServicioController;
+use App\Controllers\Api\PropiedadServicioController;
+use App\Controllers\Api\LogActividadController;
+use App\Controllers\Api\PropiedadController;
 
 /*
 |--------------------------------------------------------------------------

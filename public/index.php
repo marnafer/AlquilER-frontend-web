@@ -46,7 +46,8 @@ $GLOBALS['path'] = $path;
 
 $router = new Router();
 
-require_once SRC_PATH . 'routes/routes.php';
+require_once SRC_PATH . 'routes/api.php';
+require_once SRC_PATH . 'routes/web.php';
 
 $router->dispatch($method, $path);
 
