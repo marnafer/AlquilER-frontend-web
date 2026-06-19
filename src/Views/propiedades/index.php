@@ -18,11 +18,18 @@ include SRC_PATH . 'views/layouts/menu.php';
         <div class="row">
             <?php foreach ($propiedades as $p): ?>
                 <?php
-                // Mantenemos la lógica de imagen que ya funciona en tu home
-                $imagenObj = $p->imagenPrincipal ?? ($p->imagenes->first() ?? null);
+                $imgObj = $p->imagenDestacada();
 
-                $imagen = ($imagenObj && !empty($imagenObj->ruta))
-                    ? BASE_URL . $imagenObj->ruta
+                // 1. Obtenemos la ruta y eliminamos 'public/' si existe al principio
+                $rutaRaw = $imgObj->ruta ?? '';
+                $rutaLimpia = str_replace('public/', '', $rutaRaw);
+
+                // 2. Nos aseguramos de que empiece con /
+                $rutaFinal = '/' . ltrim($rutaLimpia, '/');
+
+                // 3. Concatenamos con BASE_URL
+                $imagen = ($imgObj && !empty($rutaRaw)) 
+                    ? BASE_URL . $rutaFinal 
                     : BASE_URL . '/assets/img/sin-imagen.jpg';
                 ?>
 

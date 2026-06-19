@@ -20,11 +20,21 @@
 
         <div class="row">
 
-            <?php foreach ($propiedades as $propiedad): ?>
+            <?php foreach ($propiedades as $p): ?>
 
                 <?php
-                $imagen = $propiedad->imagenPrincipal
-                    ? BASE_URL . $propiedad->imagenPrincipal->ruta
+                $imgObj = $p->imagenDestacada();
+
+                // 1. Obtenemos la ruta y eliminamos 'public/' si existe al principio
+                $rutaRaw = $imgObj->ruta ?? '';
+                $rutaLimpia = str_replace('public/', '', $rutaRaw);
+
+                // 2. Nos aseguramos de que empiece con /
+                $rutaFinal = '/' . ltrim($rutaLimpia, '/');
+
+                // 3. Concatenamos con BASE_URL
+                $imagen = ($imgObj && !empty($rutaRaw)) 
+                    ? BASE_URL . $rutaFinal 
                     : BASE_URL . '/assets/img/sin-imagen.jpg';
                 ?>
 
@@ -35,38 +45,38 @@
                         <img
                             src="<?= $imagen ?>"
                             class="card-img-top"
-                            alt="<?= htmlspecialchars($propiedad->titulo) ?>"
+                            alt="<?= htmlspecialchars($p->titulo) ?>"
                             style="height:220px; object-fit:cover;"
                         >
 
                         <div class="card-body d-flex flex-column">
 
                             <h5 class="card-title">
-                                <?= htmlspecialchars($propiedad->titulo) ?>
+                                <?= htmlspecialchars($p->titulo) ?>
                             </h5>
 
                             <p class="text-muted mb-2">
                                 <i class="bi bi-tag"></i>
-                                <?= htmlspecialchars($propiedad->categoria?->nombre ?? 'Sin categoría') ?>
+                                <?= htmlspecialchars($p->categoria?->nombre ?? 'Sin categoría') ?>
                             </p>
 
                             <p class="text-muted mb-2">
                                 <i class="bi bi-geo-alt"></i>
-                                <?= htmlspecialchars($propiedad->localidad?->nombre ?? 'Sin localidad') ?>
+                                <?= htmlspecialchars($p->localidad?->nombre ?? 'Sin localidad') ?>
                             </p>
 
                             <p class="card-text">
-                                <?= htmlspecialchars($propiedad->direccion) ?>
+                                <?= htmlspecialchars($p->direccion) ?>
                             </p>
 
                             <div class="mt-auto">
 
                                 <h4 class="fw-bold text-primary">
-                                    $<?= number_format($propiedad->precio, 0, ',', '.') ?>
+                                    $<?= number_format($p->precio, 0, ',', '.') ?>
                                 </h4>
 
                                 <a
-                                    href="<?= BASE_URL ?>/propiedades/<?= $propiedad->id ?>"
+                                    href="<?= BASE_URL ?>/propiedades/<?= $p->id ?>"
                                     class="btn btn-primary w-100"
                                 >
                                     Ver detalle
