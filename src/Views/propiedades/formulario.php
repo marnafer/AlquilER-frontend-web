@@ -1,6 +1,6 @@
 <?php 
-$tituloPagina="Crear Propiedad";
-include SRC_PATH . 'views/partials/header.php'; 
+$tituloPagina="Cargar Propiedad";
+include SRC_PATH . 'views/layouts/header.php'; 
 ?>
 
 <div class="container mt-4">
@@ -265,4 +265,4 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
-<?php include SRC_PATH . 'views/partials/footer.php'; ?>
+<?php include SRC_PATH . 'views/layouts/footer.php'; ?>

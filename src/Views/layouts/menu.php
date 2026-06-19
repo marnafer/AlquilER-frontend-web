@@ -1,7 +1,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="<?= BASE_URL ?>">
+        <a class="navbar-brand fw-bold" href="<?= BASE_URL ?>/home">
             <i class="bi bi-house-door-fill me-2"></i>Alquil-ER
         </a>
 

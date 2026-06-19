@@ -95,7 +95,7 @@ class PropiedadImagenController
 
         try {
 
-            $uploadDir = dirname(dirname(__DIR__)) . '/public/uploads/propiedades';
+            $uploadDir = dirname(SRC_PATH) . '/public/uploads/propiedades';
 
             if (!is_dir($uploadDir)) {
                 mkdir($uploadDir, 0755, true);
@@ -118,9 +118,10 @@ class PropiedadImagenController
                 $san['propiedad_id']
             )->count();
 
+            $rutaRelativa = '/uploads/propiedades/' . $nombreArchivo;
             $registro = PropiedadImagen::create([
                 'propiedad_id' => $san['propiedad_id'],
-                'ruta' => '/uploads/propiedades/' . $nombreArchivo,
+                'ruta' => $rutaRelativa, // <-- Guardamos sin el 'public/'
                 'descripcion' => $san['descripcion'],
                 'es_principal' => $cantidadImagenes === 0 ? 1 : 0
             ]);

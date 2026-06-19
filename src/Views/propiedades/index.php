@@ -1,136 +1,62 @@
 <?php
-$tituloPagina = "Propiedades";
+$tituloPagina = "Todas las Propiedades";
 include SRC_PATH . 'views/layouts/header.php';
+include SRC_PATH . 'views/layouts/menu.php';
 ?>
 
-<div class="container mt-4">
-
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>Propiedades</h3>
-        <a href="<?= BASE_URL ?>/propiedades/nuevo" class="btn btn-primary">
-            + Nueva Propiedad
-        </a>
+<div class="container mt-5">
+    <div class="mb-4 text-center">
+        <h1>Catálogo de Propiedades</h1>
+        <p class="text-muted">Explorá todas nuestras opciones disponibles.</p>
     </div>
 
-    <div id="alerta"></div>
-
-    <div class="card shadow-sm">
-        <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle mb-0">
-                <thead class="table-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>Título</th>
-                        <th>Dirección</th>
-                        <th>Precio</th>
-                        <th>Categoría</th>
-                        <th>Localidad</th>
-                        <th>Ambientes</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla-propiedades">
-                    <tr>
-                        <td colspan="8" class="text-center">Cargando propiedades...</td>
-                    </tr>
-                </tbody>
-            </table>
+    <?php if (empty($propiedades)): ?>
+        <div class="alert alert-info text-center">
+            No hay propiedades disponibles por el momento.
         </div>
-    </div>
+    <?php else: ?>
+        <div class="row">
+            <?php foreach ($propiedades as $p): ?>
+                <?php
+                // Mantenemos la lógica de imagen que ya funciona en tu home
+                $imagenObj = $p->imagenPrincipal ?? ($p->imagenes->first() ?? null);
 
+                $imagen = ($imagenObj && !empty($imagenObj->ruta))
+                    ? BASE_URL . $imagenObj->ruta
+                    : BASE_URL . '/assets/img/sin-imagen.jpg';
+                ?>
+
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm border-0">
+                        <img src="<?= htmlspecialchars($imagen) ?>" 
+                             class="card-img-top" 
+                             alt="<?= htmlspecialchars($p->titulo) ?>" 
+                             style="height:220px; object-fit:cover;">
+
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold"><?= htmlspecialchars($p->titulo) ?></h5>
+                            
+                            <ul class="list-unstyled text-muted mb-3">
+                                <li><i class="bi bi-tag"></i> <?= htmlspecialchars($p->categoria?->nombre ?? 'Sin categoría') ?></li>
+                                <li><i class="bi bi-geo-alt"></i> <?= htmlspecialchars($p->localidad?->nombre ?? 'Sin localidad') ?></li>
+                                <li><i class="bi bi-house"></i> <?= htmlspecialchars($p->direccion) ?></li>
+                            </ul>
+
+                            <div class="mt-auto">
+                                <h4 class="fw-bold text-primary mb-3">
+                                    $<?= number_format((float)$p->precio, 0, ',', '.') ?>
+                                </h4>
+                                <a href="<?= BASE_URL ?>/propiedades/<?= $p->id ?>" 
+                                   class="btn btn-outline-primary w-100">
+                                   Ver detalle
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
 </div>
-
-<script>
-// Usamos una ruta absoluta relativa al origen para evitar conflictos de base
-const BASE = "<?= BASE_URL ?>";
-
-/* ================= ALERTAS ================= */
-function mostrarAlerta(tipo, msg) {
-    const contenedorAlerta = document.getElementById("alerta");
-    contenedorAlerta.innerHTML = `
-        <div class="alert alert-${tipo} alert-dismissible fade show" role="alert">
-            ${msg}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    `;
-}
-
-/* ================= LISTAR ================= */
-async function cargarPropiedades() {
-    const tbody = document.getElementById("tabla-propiedades");
-    
-    try {
-        // IMPORTANTE: Asegúrate de que BASE_URL no tenga doble barra al final
-        const url = `${BASE}/api/propiedades`.replace('//', '/');
-        const resp = await fetch(url);
-        
-        if (!resp.ok) throw new Error("Error en la conexión");
-        
-        const json = await resp.json();
-        console.log("Estructura recibida:", json);
-
-        if (!json.data || json.data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" class="text-center">No hay propiedades registradas</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = ""; // Limpiar tabla
-
-        json.data.forEach(p => {
-            const tr = document.createElement("tr");
-            
-            // Función auxiliar para celdas
-            const createTd = (text) => {
-                const td = document.createElement("td");
-                td.textContent = text;
-                return td;
-            };
-
-            tr.appendChild(createTd(p.id));
-            tr.appendChild(createTd(p.titulo ?? '-'));
-            tr.appendChild(createTd(p.direccion ?? '-'));
-            tr.appendChild(createTd(`$${Number(p.precio).toLocaleString('es-AR')}`));
-            tr.appendChild(createTd(p.categoria?.nombre ?? '-'));
-            tr.appendChild(createTd(p.localidad?.nombre ?? '-'));
-            tr.appendChild(createTd(p.cantidad_ambientes ?? '-'));
-
-            // Acciones
-            const tdAcciones = document.createElement("td");
-            tdAcciones.innerHTML = `
-                <button class="btn btn-sm btn-warning me-2" onclick="editar(${p.id})">Editar</button>
-                <button class="btn btn-sm btn-danger" onclick="eliminar(${p.id})">Eliminar</button>
-            `;
-            tr.appendChild(tdAcciones);
-
-            tbody.appendChild(tr);
-        });
-
-    } catch (err) {
-        console.error(err);
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Error al cargar datos. Verifica la API.</td></tr>';
-    }
-}
-
-/* ================= ACCIONES ================= */
-async function eliminar(id) {
-    if (!confirm("¿Seguro que querés eliminar esta propiedad?")) return;
-
-    try {
-        const resp = await fetch(`${BASE}/api/propiedades/${id}`, { method: "DELETE" });
-        if (!resp.ok) throw new Error("No se pudo eliminar");
-        
-        mostrarAlerta("success", "Propiedad eliminada correctamente");
-        cargarPropiedades();
-    } catch (err) {
-        mostrarAlerta("danger", "Error al eliminar la propiedad");
-    }
-}
-
-function editar(id) {
-    window.location.href = `${BASE}/propiedades/editar/${id}`;
-}
-
-document.addEventListener("DOMContentLoaded", cargarPropiedades);
-</script>
 
 <?php include SRC_PATH . 'views/layouts/footer.php'; ?>
