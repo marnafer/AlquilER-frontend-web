@@ -52,7 +52,7 @@ include SRC_PATH . 'views/layouts/header.php';
 </div>
 
 <script>
-const BASE = "http://localhost/sistema-alquiler/public";
+const BASE = "<?= BASE_URL ?>";
 const form = document.getElementById('formLogin');
 
 // autofocus
@@ -121,7 +121,7 @@ form.addEventListener('submit', async (e) => {
         }
 
         // redirección
-        window.location.href = BASE + "/perfil";
+        window.location.href = BASE + "/home";
 
     } catch (err) {
         console.error("ERROR:", err);

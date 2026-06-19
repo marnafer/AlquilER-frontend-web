@@ -196,7 +196,7 @@ class UsuarioController
             'id' => $usuario->id,
             'nombre' => $usuario->nombre,
             'apellido' => $usuario->apellido,
-            'email' => $usuario->email,
+            'email' => $usuario->email, 
             'telefono' => $usuario->telefono,
             'domicilio' => $usuario->domicilio,
             'rol_id' => $usuario->rol_id,

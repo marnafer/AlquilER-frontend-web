@@ -11,6 +11,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+
     <script>
     // Tomamos la constante global que ya calculó index.php
     const BASE_URL = "<?= BASE_URL ?>";

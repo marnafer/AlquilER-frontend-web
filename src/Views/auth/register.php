@@ -1,203 +1,111 @@
 <?php
 $tituloPagina = "Registrarse";
-include SRC_PATH . 'views/partials/header.php';
+include SRC_PATH . 'views/layouts/header.php';
 ?>
 
 <div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-6">
-
             <div class="card shadow-sm">
                 <div class="card-body">
-
                     <h4 class="mb-3">Crear Cuenta</h4>
-
-                    <form id="formRegister">
-
-                        <div class="mb-3">
-                            <label>Nombre *</label>
-                            <input type="text" name="nombre" class="form-control">
-                            <div class="text-danger small" id="error-nombre"></div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label>Apellido *</label>
-                            <input type="text" name="apellido" class="form-control">
-                            <div class="text-danger small" id="error-apellido"></div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label>Email *</label>
-                            <input type="email" name="email" class="form-control">
-                            <div class="text-danger small" id="error-email"></div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label>Teléfono *</label>
-                            <input type="text" name="telefono" class="form-control">
-                            <div class="text-danger small" id="error-telefono"></div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label>Domicilio *</label>
-                            <input type="text" name="domicilio" class="form-control">
-                            <div class="text-danger small" id="error-domicilio"></div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label>Contraseña *</label>
-                            <input type="password" name="contrasena" class="form-control">
-                            <div class="text-danger small" id="error-contrasena"></div>
-                        </div>
+                    <form id="formRegister" novalidate>
+                        <?php 
+                        $campos = [
+                            ['nombre', 'Nombre', 'text'],
+                            ['apellido', 'Apellido', 'text'],
+                            ['email', 'Email', 'email'],
+                            ['telefono', 'Teléfono', 'text'],
+                            ['domicilio', 'Domicilio', 'text'],
+                            ['contrasena', 'Contraseña', 'password']
+                        ];
+                        foreach($campos as $c): ?>
+                            <div class="mb-3">
+                                <label><?= $c[1] ?> *</label>
+                                <input type="<?= $c[2] ?>" name="<?= $c[0] ?>" class="form-control">
+                                <div class="text-danger small" id="error-<?= $c[0] ?>"></div>
+                            </div>
+                        <?php endforeach; ?>
 
                         <div class="mb-3">
                             <label>Tipo de usuario *</label>
                             <select name="rol_id" class="form-control">
                                 <option value="">— Seleccionar —</option>
                                 <option value="1">Propietario</option>
-                                <option value="2">usuario</option>
+                                <option value="2">Usuario</option>
                             </select>
                             <div class="text-danger small" id="error-rol_id"></div>
                         </div>
 
-                        <button class="btn btn-success w-100" type="submit" id="btn-submit">
-                            Registrarse
-                        </button>
-
+                        <button class="btn btn-success w-100" type="submit" id="btn-submit">Registrarse</button>
                     </form>
-
                 </div>
             </div>
-
         </div>
     </div>
 </div>
 
 <script>
-const BASE = "http://localhost/sistema-alquiler/public";
+const BASE = "<?= BASE_URL ?>"; // Mejor usar la constante PHP
 const form = document.getElementById("formRegister");
 
-/* ================= DEBUG IMPORTANTE ================= */
-console.log("BASE URL:", BASE);
-
-/* ================= HELPERS ================= */
-
-function setError(name, msg) {
+const setError = (name, msg) => {
     const el = document.getElementById("error-" + name);
-    if (el) el.textContent = msg;
-}
+    if (el) el.textContent = msg; // Uso de textContent para prevenir XSS
+};
 
-function clearAllErrors() {
+const clearErrors = () => {
     document.querySelectorAll('[id^="error-"]').forEach(e => e.textContent = "");
-}
-
-function empty(v) {
-    return !v || v.trim() === "";
-}
-
-/* ================= VALIDACIÓN ================= */
-
-function validate(data) {
-
-    let ok = true;
-    clearAllErrors();
-
-    if (empty(data.nombre)) {
-        setError("nombre", "Nombre obligatorio");
-        ok = false;
-    }
-
-    if (empty(data.apellido)) {
-        setError("apellido", "Apellido obligatorio");
-        ok = false;
-    }
-
-    if (empty(data.email)) {
-        setError("email", "Email obligatorio");
-        ok = false;
-    }
-
-    if (empty(data.telefono)) {
-        setError("telefono", "Teléfono obligatorio");
-        ok = false;
-    }
-
-    if (empty(data.domicilio)) {
-        setError("domicilio", "Domicilio obligatorio");
-        ok = false;
-    }
-
-    if (empty(data.contrasena) || data.contrasena.length < 6) {
-        setError("contrasena", "Mínimo 6 caracteres");
-        ok = false;
-    }
-
-    if (empty(data.rol_id)) {
-        setError("rol_id", "Seleccioná un rol");
-        ok = false;
-    }
-
-    return ok;
-}
-
-/* ================= SUBMIT ================= */
+};
 
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
-
-    console.log("SUBMIT ACTIVADO");
-
-    const data = Object.fromEntries(new FormData(form));
-
-    console.log("DATA ENVIADA:", data); // 🔥 CLAVE PARA DEBUG
-
-    if (!validate(data)) return;
+    clearErrors();
+    
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    
+    // Validación básica en cliente
+    if (!data.email.includes('@')) {
+        setError("email", "Ingrese un email válido");
+        return;
+    }
 
     const btn = document.getElementById("btn-submit");
     btn.disabled = true;
-    btn.textContent = "Registrando...";
+    btn.textContent = "Procesando...";
 
     try {
-        const resp = await fetch(BASE + "/api/usuarios", {
+        const resp = await fetch(`${BASE}/api/autenticador/register`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data)
         });
 
-        const text = await resp.text();
-        console.log("RAW RESPONSE:", text);
-
-        let json;
-        try {
-            json = JSON.parse(text);
-        } catch {
-            alert("El backend devolvió HTML o error fatal");
-            return;
-        }
-
-        console.log("JSON:", json);
+        const json = await resp.json();
 
         if (!resp.ok) {
-
+            // Manejo seguro de errores del backend
             if (json.errors) {
-                for (const campo in json.errors) {
-                    setError(campo, json.errors[campo]);
-                }
+                Object.keys(json.errors).forEach(key => setError(key, json.errors[key]));
             } else {
-                alert(json.error || "Error");
+                alert(json.message || "Error al registrar");
             }
-
             return;
         }
 
-        alert("Usuario creado correctamente");
-        window.location.href = BASE + "/login";
+        Swal.fire({
+            icon: 'success',
+            title: '¡Registro exitoso!',
+            text: 'Tu cuenta ha sido creada correctamente.',
+            confirmButtonColor: '#28a745', // Verde Bootstrap
+            confirmButtonText: 'Ir al Login'
+        }).then(() => {
+            window.location.href = `${BASE}/login`;
+        });
 
     } catch (err) {
-        console.error("FETCH ERROR:", err);
-        alert("Error de conexión");
+        alert("Error de conexión con el servidor");
     } finally {
         btn.disabled = false;
         btn.textContent = "Registrarse";
@@ -205,4 +113,4 @@ form.addEventListener("submit", async (e) => {
 });
 </script>
 
-<?php include SRC_PATH . 'views/partials/footer.php'; ?>
+<?php include SRC_PATH . 'views/layouts/footer.php'; ?>
