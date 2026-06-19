@@ -38,6 +38,8 @@ $router->get('/api/usuarios', [UsuarioController::class, 'listarUsuariosApi']);
 
 $router->get('/api/usuarios/{id}', [UsuarioController::class, 'mostrar']);
 
+$router->get('/api/usuarios/me',[UsuarioController::class, 'perfil']);
+
 $router->put('/api/usuarios/{id}', [UsuarioController::class, 'actualizar']);
 
 $router->delete('/api/usuarios/{id}', [UsuarioController::class, 'eliminar']);

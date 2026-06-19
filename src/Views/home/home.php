@@ -6,7 +6,7 @@
     <div class="mb-4">
         <h1>Propiedades destacadas</h1>
         <p class="text-muted">
-            Encontrá el alojamiento ideal para tu próxima estadía.
+            Encontrá la casa de tus sueños.
         </p>
     </div>
 

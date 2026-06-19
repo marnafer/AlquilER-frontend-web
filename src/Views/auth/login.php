@@ -1,6 +1,6 @@
 <?php
 $tituloPagina = "Iniciar Sesión";
-include SRC_PATH . 'views/partials/header.php';
+include SRC_PATH . 'views/layouts/header.php';
 ?>
 
 <div class="container mt-4">
@@ -80,7 +80,7 @@ form.addEventListener('submit', async (e) => {
 
     try {
 
-       const resp = await fetch(BASE + "/api/usuarios/login", {
+       const resp = await fetch(BASE + "/api/autenticador/login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -112,7 +112,7 @@ form.addEventListener('submit', async (e) => {
         }
 
         // ✅ guardar token
-        localStorage.setItem("token", json.token);
+        localStorage.setItem("token", json.data.token);
 
         if (window.Swal) {
             Swal.fire({ icon: 'success', title: 'Login exitoso' });
@@ -121,7 +121,7 @@ form.addEventListener('submit', async (e) => {
         }
 
         // redirección
-        window.location.href = BASE + "/propiedades";
+        window.location.href = BASE + "/perfil";
 
     } catch (err) {
         console.error("ERROR:", err);
@@ -133,4 +133,4 @@ form.addEventListener('submit', async (e) => {
 });
 </script>
 
-<?php include SRC_PATH . 'views/partials/footer.php'; ?>
+<?php include SRC_PATH . 'views/layouts/footer.php'; ?>

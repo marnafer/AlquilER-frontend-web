@@ -174,4 +174,33 @@ class UsuarioController
 
         }
     }
+
+    public function perfil()
+    {
+        $user = AutenticadorMiddleware::verificar();
+
+        $usuario = Usuario::find($user->sub);
+
+        if (!$usuario) {
+            Response::notFound('Usuario no encontrado');
+        }
+
+        $rolNombre = match ((int)$usuario->rol_id) {
+            3 => 'Administrador',
+            2 => 'Propietario',
+            1 => 'Usuario',
+            default => 'Desconocido'
+        };
+
+        Response::success([
+            'id' => $usuario->id,
+            'nombre' => $usuario->nombre,
+            'apellido' => $usuario->apellido,
+            'email' => $usuario->email,
+            'telefono' => $usuario->telefono,
+            'domicilio' => $usuario->domicilio,
+            'rol_id' => $usuario->rol_id,
+            'rol' => $rolNombre
+        ]);
+    }
 }
