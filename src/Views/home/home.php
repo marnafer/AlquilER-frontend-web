@@ -10,7 +10,16 @@
         </p>
     </div>
 
-    <?php if ($propiedades->isEmpty()): ?>
+    <?php
+    if (!isset($propiedades)) {
+        $propiedades = [];
+    }
+    $esVacio = is_object($propiedades)
+        ? $propiedades->isEmpty()
+        : empty($propiedades);
+    ?>
+
+    <?php if ($esVacio): ?>
 
         <div class="alert alert-info">
             No hay propiedades disponibles actualmente.
