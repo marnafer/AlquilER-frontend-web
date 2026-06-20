@@ -11,14 +11,16 @@
 
         <div class="collapse navbar-collapse" id="navbarNav">
             <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="<?= BASE_URL ?>/propiedades">
-                    <i class="bi bi-building"></i> Propiedades
+                <a class="nav-link d-none" id="menu-perfil" href="<?= BASE_URL ?>/perfil">
+                    <i class="bi bi-person"></i> Mi perfil
                 </a>
-                
+                <a class="nav-link d-none" id="menu-mis-propiedades" href="<?= BASE_URL ?>/mis-propiedades">
+                    <i class="bi bi-house-gear"></i> Mis Propiedades
+                </a>
                 <a class="nav-link d-none" id="menu-favoritos" href="<?= BASE_URL ?>/favoritos">
                     <i class="bi bi-heart"></i> Favoritos
                 </a>
-                <a class="nav-link d-none" id="menu-calculadora" href="<?= BASE_URL ?>/calculadora">
+                <a class="nav-link" id="menu-calculadora" href="<?= BASE_URL ?>/calculadora">
                     <i class="bi bi-calculator"></i> Calculadora de aumentos
                 </a>
                 <a class="nav-link d-none" id="menu-logout" href="#" onclick="logout()">
@@ -37,6 +39,7 @@
 function logout() {
     // 1. Borramos el token
     localStorage.removeItem("token");
+    localStorage.removeItem("rol");
 
     // 2. Mostramos la alerta y esperamos
     if (window.Swal) {
@@ -60,16 +63,26 @@ function logout() {
 // Lógica de visibilidad del menú
 document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("token");
+    const rol = localStorage.getItem("rol");
+
+    const menuMisPropiedades = document.getElementById("menu-mis-propiedades");
+    const menuPerfil = document.getElementById("menu-perfil");
     const menuFavoritos = document.getElementById("menu-favoritos");
-    const menuCalculadora = document.getElementById("menu-calculadora");
     const menuLogout = document.getElementById("menu-logout");
     const menuLogin = document.getElementById("menu-login");
 
     if (token) {
-        menuFavoritos.classList.remove("d-none");
-        menuCalculadora.classList.remove("d-none");
+        menuPerfil.classList.remove("d-none");
         menuLogout.classList.remove("d-none");
         menuLogin.classList.add("d-none");
+
+        if (rol === "2") { 
+            menuMisPropiedades.classList.remove("d-none");
+        }
+
+        if (rol === "1" || rol === "3") { 
+            menuFavoritos.classList.remove("d-none");
+        }
     }
 });
 </script>

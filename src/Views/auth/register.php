@@ -31,8 +31,8 @@ include SRC_PATH . 'views/layouts/header.php';
                             <label>Tipo de usuario *</label>
                             <select name="rol_id" class="form-control">
                                 <option value="">— Seleccionar —</option>
-                                <option value="1">Propietario</option>
-                                <option value="2">Usuario</option>
+                                <option value="1">Usuario</option>
+                                <option value="2">Propietario</option>
                             </select>
                             <div class="text-danger small" id="error-rol_id"></div>
                         </div>

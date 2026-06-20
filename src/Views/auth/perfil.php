@@ -1,8 +1,9 @@
 <?php
 
-$tituloPagina = "Mi Perfil";
+$tituloPagina = "Mis datos";
 
 include SRC_PATH . 'views/layouts/header.php';
+include SRC_PATH . 'views/layouts/menu.php';
 
 ?>
 
@@ -65,7 +66,7 @@ async function cargarPerfil() {
 
         card.innerHTML = `
             <div class="card-header bg-white">
-                <h4 class="mb-0">Mi Perfil</h4>
+                <h4 class="mb-0">Mis datos</h4>
             </div>
             <div class="card-body"></div>
         `;
@@ -117,14 +118,6 @@ async function cargarPerfil() {
         divRol.appendChild(pRol);
         cardBody.appendChild(divRol);
 
-        // Botón Logout
-        const logoutBtn = document.createElement("button");
-        logoutBtn.id = "logoutBtn";
-        logoutBtn.className = "btn btn-danger";
-        logoutBtn.textContent = "Cerrar sesión";
-        logoutBtn.addEventListener("click", logout);
-        cardBody.appendChild(logoutBtn);
-
         container.appendChild(card);
 
     } catch (error) {
@@ -133,14 +126,6 @@ async function cargarPerfil() {
             <div class="alert alert-danger">Error al cargar el perfil.</div>
         `;
     }
-}
-
-function logout() {
-
-    localStorage.removeItem("token");
-
-    window.location.href = BASE + "/login";
-
 }
 
 cargarPerfil();

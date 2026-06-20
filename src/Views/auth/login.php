@@ -111,8 +111,9 @@ form.addEventListener('submit', async (e) => {
             return;
         }
 
-        // ✅ guardar token
+        // ✅ guardar token y rol en localStorage
         localStorage.setItem("token", json.data.token);
+        localStorage.setItem("rol", json.data.rol_id);
 
         if (window.Swal) {
             // Usamos las propiedades de temporizador de SweetAlert

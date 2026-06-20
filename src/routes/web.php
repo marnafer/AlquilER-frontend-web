@@ -5,6 +5,7 @@ use App\Controllers\View\LoginController;
 use App\Controllers\View\AuthController;
 use App\Controllers\View\PropiedadesController;
 use App\Controllers\View\CalculadoraController;
+use App\Controllers\View\FavoritosController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,3 +42,11 @@ $router->get('/propiedades', [PropiedadesController::class, 'index']);
 */
 
 $router->get('/calculadora', [CalculadoraController::class, 'index']);
+
+/*
+|--------------------------------------------------------------------------
+| FAVORITOS
+|--------------------------------------------------------------------------
+*/
+
+$router->get('/favoritos', [FavoritosController::class, 'index']);

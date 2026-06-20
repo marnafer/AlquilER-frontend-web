@@ -44,7 +44,8 @@ class AutenticadorController {
         $token = JwtHelper::generarToken($usuario);
 
         Response::success([
-            'token' => $token
+            'token' => $token,
+            'rol_id' => $usuario->rol_id
         ]);
     }
 
