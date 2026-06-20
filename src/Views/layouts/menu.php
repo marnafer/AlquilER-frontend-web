@@ -18,6 +18,9 @@
                 <a class="nav-link d-none" id="menu-favoritos" href="<?= BASE_URL ?>/favoritos">
                     <i class="bi bi-heart"></i> Favoritos
                 </a>
+                <a class="nav-link d-none" id="menu-calculadora" href="<?= BASE_URL ?>/calculadora">
+                    <i class="bi bi-calculator"></i> Calculadora de aumentos
+                </a>
                 <a class="nav-link d-none" id="menu-logout" href="#" onclick="logout()">
                     <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
                 </a>
@@ -58,11 +61,13 @@ function logout() {
 document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("token");
     const menuFavoritos = document.getElementById("menu-favoritos");
+    const menuCalculadora = document.getElementById("menu-calculadora");
     const menuLogout = document.getElementById("menu-logout");
     const menuLogin = document.getElementById("menu-login");
 
     if (token) {
         menuFavoritos.classList.remove("d-none");
+        menuCalculadora.classList.remove("d-none");
         menuLogout.classList.remove("d-none");
         menuLogin.classList.add("d-none");
     }

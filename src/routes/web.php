@@ -4,6 +4,7 @@ use App\Controllers\View\HomeController;
 use App\Controllers\View\LoginController;
 use App\Controllers\View\AuthController;
 use App\Controllers\View\PropiedadesController;
+use App\Controllers\View\CalculadoraController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,3 +33,11 @@ $router->get('/perfil', [AuthController::class, 'perfil']);
 */
 
 $router->get('/propiedades', [PropiedadesController::class, 'index']);
+
+/*
+|--------------------------------------------------------------------------
+| CALCULADORA
+|--------------------------------------------------------------------------
+*/
+
+$router->get('/calculadora', [CalculadoraController::class, 'index']);
