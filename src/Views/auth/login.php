@@ -115,21 +115,31 @@ form.addEventListener('submit', async (e) => {
         localStorage.setItem("token", json.data.token);
 
         if (window.Swal) {
-            Swal.fire({ icon: 'success', title: 'Login exitoso' });
+            // Usamos las propiedades de temporizador de SweetAlert
+            Swal.fire({ 
+                icon: 'success', 
+                title: 'Login exitoso',
+                showConfirmButton: false, // Ocultamos el botón "Ok" porque se cerrará sola
+                timer: 2000 // Espera 1000 milisegundos (1 segundo)
+            }).then(() => {
+                // Esto se ejecuta cuando termina el segundo
+                window.location.href = BASE + "/home";
+            });
         } else {
             alert("Login exitoso");
+            // Usamos setTimeout para el fallback nativo
+            setTimeout(() => {
+                window.location.href = BASE + "/home";
+            }, 2000);
         }
 
-        // redirección
-        window.location.href = BASE + "/home";
-
-    } catch (err) {
-        console.error("ERROR:", err);
-        alert("Error de conexión");
-    } finally {
-        btn.disabled = false;
-        btn.textContent = "Entrar";
-    }
+        } catch (err) {
+            console.error("ERROR:", err);
+            alert("Error de conexión");
+        } finally {
+            btn.disabled = false;
+            btn.textContent = "Entrar";
+        }
 });
 </script>
 

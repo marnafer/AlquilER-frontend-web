@@ -32,8 +32,26 @@
 <script>
 // Función de logout reutilizable
 function logout() {
+    // 1. Borramos el token
     localStorage.removeItem("token");
-    window.location.href = "<?= BASE_URL ?>/home";
+
+    // 2. Mostramos la alerta y esperamos
+    if (window.Swal) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Sesión cerrada',
+            text: 'Esperamos verte pronto.',
+            showConfirmButton: false,
+            timer: 2000
+        }).then(() => {
+            window.location.href = "<?= BASE_URL ?>/home";
+        });
+    } else {
+        alert("Sesión cerrada correctamente.");
+        setTimeout(() => {
+            window.location.href = "<?= BASE_URL ?>/home";
+        }, 2000);
+    }
 }
 
 // Lógica de visibilidad del menú
