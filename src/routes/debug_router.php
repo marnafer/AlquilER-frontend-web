@@ -9,6 +9,7 @@ use App\Controllers\DebugController;
 
 $controller = new DebugController();
 $method = $_SERVER['REQUEST_METHOD'];
+$path = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
 
 // Estadísticas
 if ($path === '/api/debug/stats' && $method === 'GET') {
