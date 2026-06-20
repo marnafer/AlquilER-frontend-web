@@ -175,7 +175,18 @@ button[type="submit"] {
 
 /* Navbar */
 .navbar {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); /* Sombra extendida en todo el ancho */
+    background-color: #0f172a !important; /* Azul oscuro elegante */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Si lo hacés oscuro, tenés que asegurarte de que las letras sean blancas */
+.navbar .nav-link,
+.navbar .navbar-brand {
+     color: #f8fafc !important;
+}
+
+.navbar .nav-link:hover {
+     color: #38bdf8 !important; /* Un celeste brillante al pasar el mouse */
 }
 
 .nav-link i {
@@ -188,4 +199,40 @@ button[type="submit"] {
     color: #64748b;
     font-size: 13px;
     padding: 20px 0;
+}
+
+/* =========================================
+   ESTILOS PARA EL MENÚ DESPLEGABLE (MÓVIL) - COMPACTO
+   ========================================= */
+
+@media (max-width: 991px) {
+
+    /* 1. Contenedor más ajustado y pegado */
+    .navbar-collapse {
+        background-color: #1e293b;
+        padding: 10px; /* Reducido para que no ocupe tanta pantalla */
+        border-radius: 6px;
+        margin-top: 10px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); /* Sombra más suave */
+    }
+
+    /* 2. Opciones más finas (tipo lista) */
+    .navbar-nav .nav-link {
+        border-bottom: 1px solid #334155;
+        padding: 8px 12px !important; /* Relleno mínimo para que sea fácil de tocar, pero no grueso */
+        transition: all 0.2s ease;
+    }
+
+        /* 3. Limpieza del último elemento */
+        .navbar-nav .nav-link:last-child {
+            border-bottom: none;
+        }
+
+        /* 4. Efecto interactivo sutil */
+        .navbar-nav .nav-link:hover {
+            background-color: #0f172a;
+            border-radius: 4px;
+            color: #38bdf8 !important;
+            transform: translateX(5px); /* Lo desliza un poquito a la derecha sin deformar la caja */
+        }
 }

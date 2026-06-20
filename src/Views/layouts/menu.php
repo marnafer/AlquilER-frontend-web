@@ -1,5 +1,5 @@
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+<nav class="navbar navbar-expand-lg navbar-dark mb-4 sticky-top">
     <div class="container">
         <a class="navbar-brand fw-bold" href="<?= BASE_URL ?>/home">
             <i class="bi bi-house-door-fill me-2"></i>Alquil-ER
