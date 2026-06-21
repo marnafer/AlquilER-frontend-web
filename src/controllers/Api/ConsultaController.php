@@ -23,7 +23,7 @@ class ConsultaController
             $consultas = Consulta::all();
 
             Response::success([
-                'data' => $consultas,
+                'items' => $consultas,
                 'total' => $consultas->count()
             ]);
 
@@ -72,7 +72,7 @@ class ConsultaController
             }
 
             Response::success([
-                'data' => $consulta
+                'consulta' => $consulta
             ]);
 
         } catch (\Exception $e) {
@@ -117,7 +117,7 @@ class ConsultaController
             )->get();
 
             Response::success([
-                'data' => $consultas,
+                'items' => $consultas,
                 'total' => $consultas->count()
             ]);
 
@@ -155,7 +155,7 @@ class ConsultaController
             )->get();
 
             Response::success([
-                'data' => $consultas,
+                'items' => $consultas,
                 'total' => $consultas->count()
             ]);
 

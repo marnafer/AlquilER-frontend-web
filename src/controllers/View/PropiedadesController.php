@@ -13,9 +13,9 @@ class PropiedadesController
 		$propiedades = Propiedad::with([
 			'categoria',
 			'localidad',
-			'imagenPrincipal'
+			'imagenPrincipal',
+			'usuario'
 		])
-		->where('disponible', true)
 		->get();
 		require_once __DIR__ . '/../../Views/propiedades/index.php';
 	}

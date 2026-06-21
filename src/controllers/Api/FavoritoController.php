@@ -22,7 +22,7 @@ class FavoritoController
             ])->get();
 
             Response::success([
-                'data' => $favoritos,
+                'items' => $favoritos,
                 'total' => $favoritos->count()
             ]);
 
@@ -69,7 +69,7 @@ class FavoritoController
             ->get();
 
             Response::success([
-                'data' => $favoritos,
+                'items' => $favoritos,
                 'total' => $favoritos->count()
             ]);
 

@@ -14,7 +14,8 @@ class HomeController
         $propiedades = Propiedad::with([
             'categoria',
             'localidad',
-            'imagenPrincipal'
+            'imagenPrincipal',
+            'usuario'
         ])
         ->where('disponible', true)
         ->limit(6)

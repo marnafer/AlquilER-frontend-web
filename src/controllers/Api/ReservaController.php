@@ -24,7 +24,7 @@ class ReservaController
             $reservas = Reserva::all();
 
             Response::success([
-                'reservas' => $reservas,
+                'items' => $reservas,
                 'total' => $reservas->count()
             ]);
 
@@ -98,7 +98,7 @@ class ReservaController
             )->get();
 
             Response::success([
-                'reservas' => $reservas,
+                'items' => $reservas,
                 'total' => $reservas->count()
             ]);
 

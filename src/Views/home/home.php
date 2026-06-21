@@ -20,19 +20,22 @@ include SRC_PATH . 'views/layouts/menu.php';
     </div>
 
     <div class="mx-auto" style="max-width: 950px;">
-        <?php include SRC_PATH . 'views/componentes/buscador.php'; ?>
+        <?php $modoBuscador = 'simple'; include SRC_PATH . 'views/componentes/buscador.php';?>
     </div>
 
 </div>
 
-<div class="container mb-5">
+<div class="container mb-5" style="padding-top: 80px;">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="fw-bold mb-0">Últimos ingresos</h3>
-        <a href="<?= BASE_URL ?>/propiedades" class="text-primary text-decoration-none">Ver todo <i class="bi bi-arrow-right"></i></a>
+        <a href="<?= BASE_URL ?>/propiedades" class="text-primary text-decoration-none">
+            Ver todo <i class="bi bi-arrow-right"></i>
+        </a>
     </div>
     
-    <div id="contenedor-destacados">
-        </div>
+    <div class="container-fluid px-4 px-lg-5" id="contenedor-destacados">
+        <?php include SRC_PATH . 'views/componentes/grid_propiedades.php'; ?>
+    </div>
 </div>
 
 <?php include SRC_PATH . 'views/layouts/footer.php'; ?>

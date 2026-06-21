@@ -10,60 +10,14 @@ include SRC_PATH . 'views/layouts/menu.php';
         <p class="text-muted">Explorá todas nuestras opciones disponibles.</p>
     </div>
 
-    <?php if (empty($propiedades)): ?>
-        <div class="alert alert-info text-center">
-            No hay propiedades disponibles por el momento.
-        </div>
-    <?php else: ?>
-        <div class="row">
-            <?php foreach ($propiedades as $p): ?>
-                <?php
-                $imgObj = $p->imagenDestacada();
+    <div class="mx-auto" style="max-width: 950px; padding-top: 20px;">
+        <?php $modoBuscador = 'avanzado'; include SRC_PATH . 'views/componentes/buscador.php';?>
+    </div>
 
-                // 1. Obtenemos la ruta y eliminamos 'public/' si existe al principio
-                $rutaRaw = $imgObj->ruta ?? '';
-                $rutaLimpia = str_replace('public/', '', $rutaRaw);
-
-                // 2. Nos aseguramos de que empiece con /
-                $rutaFinal = '/' . ltrim($rutaLimpia, '/');
-
-                // 3. Concatenamos con BASE_URL
-                $imagen = ($imgObj && !empty($rutaRaw)) 
-                    ? BASE_URL . $rutaFinal 
-                    : BASE_URL . '/assets/img/sin-imagen.jpg';
-                ?>
-
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100 shadow-sm border-0">
-                        <img src="<?= htmlspecialchars($imagen) ?>" 
-                             class="card-img-top" 
-                             alt="<?= htmlspecialchars($p->titulo) ?>" 
-                             style="height:220px; object-fit:cover;">
-
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title fw-bold"><?= htmlspecialchars($p->titulo) ?></h5>
-                            
-                            <ul class="list-unstyled text-muted mb-3">
-                                <li><i class="bi bi-tag"></i> <?= htmlspecialchars($p->categoria?->nombre ?? 'Sin categoría') ?></li>
-                                <li><i class="bi bi-geo-alt"></i> <?= htmlspecialchars($p->localidad?->nombre ?? 'Sin localidad') ?></li>
-                                <li><i class="bi bi-house"></i> <?= htmlspecialchars($p->direccion) ?></li>
-                            </ul>
-
-                            <div class="mt-auto">
-                                <h4 class="fw-bold text-primary mb-3">
-                                    $<?= number_format((float)$p->precio, 0, ',', '.') ?>
-                                </h4>
-                                <a href="<?= BASE_URL ?>/propiedades/<?= $p->id ?>" 
-                                   class="btn btn-outline-primary w-100">
-                                   Ver detalle
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    <?php endif; ?>
+    <div class="container-fluid px-4 px-lg-5" style="padding-top: 50px;">
+        <h2>Resultados de búsqueda</h2>
+        <?php include SRC_PATH . 'views/componentes/grid_propiedades.php'; ?>
+    </div>
 </div>
 
 <?php include SRC_PATH . 'views/layouts/footer.php'; ?>

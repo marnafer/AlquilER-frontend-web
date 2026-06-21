@@ -20,7 +20,7 @@ class LocalidadController
             $localidades = Localidad::all();
 
             Response::success([
-                'data' => $localidades,
+                'items' => $localidades,
                 'total' => $localidades->count()
             ]);
 

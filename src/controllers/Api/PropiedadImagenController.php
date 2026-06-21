@@ -35,7 +35,7 @@ class PropiedadImagenController
                 ->get();
 
             Response::success([
-                'data' => $imagenes,
+                'items' => $imagenes,
                 'total' => $imagenes->count()
             ]);
 

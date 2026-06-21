@@ -75,7 +75,7 @@ class LogActividadController
             $logs = LogActividad::where('usuario_id', $usuarioId)->get();
 
             Response::success([
-                'data' => $logs,
+                'items' => $logs,
                 'total' => $logs->count(),
                 'usuario_id' => (int)$usuarioId
             ]);
@@ -110,7 +110,7 @@ class LogActividadController
                 'desde' => $desde,
                 'hasta' => $hasta,
                 'total' => count($logs),
-                'data' => $logs
+                'items' => $logs
             ]);
         } catch (Exception $e) {
             Response::serverError($e->getMessage());
@@ -135,7 +135,7 @@ class LogActividadController
             $logs = LogActividad::where('accion', 'LIKE', "%$q%")->get();
 
             return Response::success([
-                'data' => $logs,
+                'items' => $logs,
                 'total' => $logs->count(),
                 'busqueda' => $q
             ]);

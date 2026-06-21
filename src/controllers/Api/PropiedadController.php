@@ -20,7 +20,7 @@ class PropiedadController
             $propiedades = Propiedad::all();
 
             Response::success([
-                'data' => $propiedades,
+                'items' => $propiedades,
                 'total' => $propiedades->count()
             ]);
 

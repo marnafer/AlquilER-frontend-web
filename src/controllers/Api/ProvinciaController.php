@@ -19,7 +19,7 @@ class ProvinciaController
             $provincias = Provincia::all();
 
             Response::success([
-                'data' => $provincias,
+                'items' => $provincias,
                 'total' => $provincias->count()
             ]);
 
@@ -39,7 +39,7 @@ class ProvinciaController
             $provincias = Provincia::withCount('localidades')->get();
 
             Response::success([
-                'data' => $provincias,
+                'items' => $provincias,
                 'total' => $provincias->count()
             ]);
 

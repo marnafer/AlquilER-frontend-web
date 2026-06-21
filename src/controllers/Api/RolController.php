@@ -19,7 +19,7 @@ class RolController
             $roles = Rol::all();
 
             Response::success([
-                'data' => $roles,
+                'items' => $roles,
                 'total' => $roles->count()
             ]);
 
@@ -39,7 +39,7 @@ class RolController
             $roles = Rol::withCount('usuarios')->get();
 
             Response::success([
-                'data' => $roles,
+                'items' => $roles,
                 'total' => $roles->count()
             ]);
 

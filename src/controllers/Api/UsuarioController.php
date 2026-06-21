@@ -30,7 +30,7 @@ class UsuarioController
             $usuarios = Usuario::all();
 
             Response::success([
-                'usuarios' => $usuarios,
+                'items' => $usuarios,
                 'total' => $usuarios->count()
             ]);
 

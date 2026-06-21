@@ -16,7 +16,7 @@ class CategoriaController
             $categorias = Categoria::all();
 
             Response::success([
-                'categorias' => $categorias,
+                'items' => $categorias,
                 'total' => $categorias->count()
             ]);
 

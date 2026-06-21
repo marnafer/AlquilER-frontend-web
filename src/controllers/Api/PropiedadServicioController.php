@@ -20,7 +20,7 @@ class PropiedadServicioController
             $relaciones = PropiedadServicio::with(['propiedad', 'servicio'])->get();
 
             Response::success([
-                'relaciones' => $relaciones,
+                'items' => $relaciones,
                 'total' => $relaciones->count()
             ]);
 

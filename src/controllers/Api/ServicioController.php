@@ -16,7 +16,7 @@ class ServicioController
             $servicios = Servicio::all();
 
             Response::success([
-                'servicios' => $servicios,
+                'items' => $servicios,
                 'total' => $servicios->count()
             ]);
 

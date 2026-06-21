@@ -23,7 +23,7 @@ class ResenaController
             $resenas = Resena::getAll();
 
             Response::success([
-                'data' => $resenas,
+                'items' => $resenas,
                 'total' => count($resenas)
             ]);
 
@@ -108,7 +108,7 @@ class ResenaController
         );
 
         Response::success([
-            'data' => $resenas,
+            'items' => $resenas,
             'promedio' => $promedio['promedio'],
             'total_resenas' => $promedio['total'],
             'propiedad_id' => $idSan
@@ -152,7 +152,7 @@ class ResenaController
         );
 
         Response::success([
-            'data' => $resenas,
+            'items' => $resenas,
             'total' => count($resenas),
             'usuario_id' => $idSan
         ]);
