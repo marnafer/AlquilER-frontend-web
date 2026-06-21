@@ -235,4 +235,16 @@ button[type="submit"] {
             color: #38bdf8 !important;
             transform: translateX(5px); /* Lo desliza un poquito a la derecha sin deformar la caja */
         }
+
+    /* =========================================
+   HERO BANNER DEL HOME
+   ========================================= */
+    .hero-banner {
+        background-size: cover !important;
+        background-position: center center !important;
+        background-repeat: no-repeat !important;
+        /* Controlamos la altura mediante el padding interno */
+        padding-top: 60px;
+        padding-bottom: 80px;
+    }
 }

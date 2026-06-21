@@ -62,34 +62,38 @@ async function cargarPerfil() {
 
         // Creamos la estructura base
         const card = document.createElement("div");
-        card.className = "card shadow-sm";
+        card.className = "card shadow-sm border-0"; // border-0 le da un toque más moderno
 
         card.innerHTML = `
-            <div class="card-header bg-white">
-                <h4 class="mb-0">Mis datos</h4>
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                <h4 class="fw-bold text-dark mb-0">Mis datos personales</h4>
             </div>
-            <div class="card-body"></div>
+            <div class="card-body p-4"></div>
         `;
 
         const cardBody = card.querySelector(".card-body");
 
-        // Función para crear filas de datos de forma segura
+        // Función optimizada para crear filas de datos
         const crearFila = (label1, val1, label2, val2) => {
             const row = document.createElement("div");
-            row.className = "row mb-3";
+            row.className = "row mb-4"; // Un mb-4 da un respiro elegante entre filas
             
+            // Columna 1
             const col1 = document.createElement("div");
-            col1.className = "col-md-6";
-            col1.innerHTML = `<strong>${label1}</strong>`;
+            col1.className = "col-md-6 mb-3 mb-md-0"; // mb-3 solo en celulares para que no se peguen al apilarse
+            col1.innerHTML = `<strong class="text-secondary d-block mb-1">${label1}</strong>`;
             const p1 = document.createElement("p");
-            p1.textContent = val1; // Seguro ante XSS
+            p1.className = "mb-0 fs-5 text-dark"; // mb-0 es la clave para anular el margen por defecto
+            p1.textContent = val1; 
             col1.appendChild(p1);
             
+            // Columna 2
             const col2 = document.createElement("div");
             col2.className = "col-md-6";
-            col2.innerHTML = `<strong>${label2}</strong>`;
+            col2.innerHTML = `<strong class="text-secondary d-block mb-1">${label2}</strong>`;
             const p2 = document.createElement("p");
-            p2.textContent = val2; // Seguro ante XSS
+            p2.className = "mb-0 fs-5 text-dark"; 
+            p2.textContent = val2; 
             col2.appendChild(p2);
             
             row.appendChild(col1);
@@ -97,26 +101,12 @@ async function cargarPerfil() {
             return row;
         };
 
-        // Construcción del contenido
+        // Construcción del contenido (todo usando la misma grilla)
         cardBody.appendChild(crearFila("Nombre", usuario.nombre, "Apellido", usuario.apellido));
         cardBody.appendChild(crearFila("Email", usuario.email, "Teléfono", usuario.telefono ?? '-'));
         
-        // Agregar Domicilio y Rol
-        const divDomicilio = document.createElement("div");
-        divDomicilio.className = "mb-3";
-        divDomicilio.innerHTML = `<strong>Domicilio</strong>`;
-        const pDom = document.createElement("p");
-        pDom.textContent = usuario.domicilio ?? '-';
-        divDomicilio.appendChild(pDom);
-        cardBody.appendChild(divDomicilio);
-
-        const divRol = document.createElement("div");
-        divRol.className = "mb-3";
-        divRol.innerHTML = `<strong>Rol</strong>`;
-        const pRol = document.createElement("p");
-        pRol.textContent = usuario.rol;
-        divRol.appendChild(pRol);
-        cardBody.appendChild(divRol);
+        // Agrupamos Domicilio y Rol en la misma fila para mantener la simetría
+        cardBody.appendChild(crearFila("Domicilio", usuario.domicilio ?? '-', "Rol", usuario.rol));
 
         container.appendChild(card);
 
