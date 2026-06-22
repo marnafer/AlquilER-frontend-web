@@ -104,7 +104,7 @@ form.addEventListener('submit', async (e) => {
 
         if (!resp.ok) {
             if (window.Swal) {
-                Swal.fire({ icon: 'error', title: 'Error', text: json.error || 'Credenciales inválidas' });
+                Swal.fire({ icon: 'error', title: 'Error',  text:'Credenciales inválidas' || json.error});
             } else {
                 alert(json.error || 'Credenciales inválidas');
             }
