@@ -34,6 +34,7 @@ $router->get('/perfil', [AuthController::class, 'perfil']);
 */
 
 $router->get('/propiedades', [PropiedadesController::class, 'index']);
+$router->get('/mis-propiedades', [PropiedadesController::class, 'misPropiedades']);
 
 /*
 |--------------------------------------------------------------------------
