@@ -3,6 +3,7 @@
 namespace App\Controllers\View;
 
 use App\Models\Propiedad;
+use App\Helpers\JwtHelper;
 
 class HomeController
 {
