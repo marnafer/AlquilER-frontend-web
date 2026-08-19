@@ -1,112 +1,91 @@
-<?php
+<?php declare(strict_types=1);
 
-declare(strict_types=1);
+    require_once __DIR__ . '/../vendor/autoload.php';
 
-require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../src/database.php';
-require_once __DIR__ . '/../config/config.php';
-use App\Helpers\Response;
-use App\Routes\Router;
+    $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
+    $dotenv->load();
 
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
+    require_once __DIR__ . '/../src/database.php';
 
-date_default_timezone_set('America/Argentina/Buenos_Aires');
-error_reporting(E_ALL);
+    require_once __DIR__ . '/../config/config.php';
 
-define('SRC_PATH', dirname(__DIR__) . '/src/');
+    use App\Helpers\Response;
+    use App\Routes\Router;
 
-define('BASE_URL', rtrim(dirname($_SERVER['SCRIPT_NAME']), '/')); // Esto es útil para generar URLs relativas a la raíz del proyecto, 
-                                                                  // especialmente si no está en la raíz del servidor web.  
-ini_set('display_errors', 1);
+    date_default_timezone_set('America/Argentina/Buenos_Aires');
+    error_reporting(E_ALL);
 
-// ============================================
-// CONFIGURACIÓN
-// ============================================
+    define('SRC_PATH', dirname(__DIR__) . '/src/');
 
-$method = strtoupper(trim($_SERVER['REQUEST_METHOD'] ?? 'GET'));
-$requestUri = $_SERVER['REQUEST_URI'] ?? '/';
+    define('BASE_URL', rtrim(dirname($_SERVER['SCRIPT_NAME']), '/')); // Esto es útil para generar URLs relativas a la raíz del proyecto, 
+                                                                    // especialmente si no está en la raíz del servidor web.  
+    ini_set('display_errors', 1);
 
-$path_bruto = parse_url($requestUri, PHP_URL_PATH);
+    // ============================================
+    // CORS
+    // ============================================
 
-$scriptName = $_SERVER['SCRIPT_NAME'];
-$baseDir = str_replace('\\', '/', dirname(dirname($scriptName)));
-
-if ($baseDir !== '/' && strpos($path_bruto, $baseDir) === 0) {
-    $path_bruto = substr($path_bruto, strlen($baseDir));
-}
-
-if (strpos($path_bruto, '/public') === 0) {
-    $path_bruto = substr($path_bruto, strlen('/public'));
-}
-
-$path = '/' . trim((string)$path_bruto, "/");
-
-// Hacemos la variable $path global para que esté disponible en los routers
-$GLOBALS['path'] = $path;
-
-$router = new Router();
-
-require_once SRC_PATH . 'routes/api.php';
-require_once SRC_PATH . 'routes/web.php';
-
-$router->dispatch($method, $path);
-exit;
-
-// ============================================
-// DEBUG
-// ============================================
-
-//require_once dirname(__DIR__) . '/src/debug/Debugger.php';
-
-//use App\Debug\Debugger;
-
-//if ($_SERVER['SERVER_NAME'] === 'localhost' || $_SERVER['SERVER_NAME'] === '127.0.0.1') {
-//    Debugger::setEnabled(true);
-//    Debugger::enableErrorReporting();
-//}
-
-// Debugger::request();
-
-// ============================================
-// RUTAS DEL SISTEMA (respuestas rápidas)
-// ============================================
-
-// Health
-if ($path === '/health') {
-    Response::success([
-        'status' => 'ok',
-        'timestamp' => date('Y-m-d H:i:s'),
-        'php' => phpversion()
-    ], 200, 'API funcionando correctamente');
-    exit;
-}
-
-if ($path === '/') {
-    // Endpoints sin escapes
-    $endpoints = [
-        '/health',
-        '/api/categorias',
-        '/api/provincias',
-        '/api/localidades',
-        '/api/usuarios',
-        '/api/propiedades',
-        '/api/servicios',
-        '/api/propiedades-servicios',
-        '/api/reservas',
-        '/api/resenas',
-        '/api/consultas',
-        '/api/favoritos',
-        '/api/logs-actividad',
-        '/api/roles',
-        '/api/propiedad-imagenes',
-        '/api/debug/stats',
-        '/api/debug/test-db'
+    $allowedOrigins = [
+        'http://localhost',
+        'http://127.0.0.1'
     ];
-    
-    Response::success([
-        'message' => 'API Alquiler Permanente funcionando',
-        'endpoints' => $endpoints
-    ], 200, 'Bienvenido a la API');
+
+    $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+
+    if (in_array($origin, $allowedOrigins, true)) {
+        header("Access-Control-Allow-Origin: $origin");
+    }
+
+    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type, Authorization');
+
+    // ============================================
+    // CONFIGURACIÓN
+    // ============================================
+
+    $method = strtoupper(trim($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+    $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
+
+    // ============================================
+    // CORS - PREFLIGHT
+    // ============================================
+
+    if ($method === 'OPTIONS') {
+        http_response_code(204);
+        exit;
+    }
+
+    $path_bruto = parse_url($requestUri, PHP_URL_PATH);
+
+    $scriptName = $_SERVER['SCRIPT_NAME'];
+    $baseDir = str_replace('\\', '/', dirname(dirname($scriptName)));
+
+    if ($baseDir !== '/' && strpos($path_bruto, $baseDir) === 0) {
+        $path_bruto = substr($path_bruto, strlen($baseDir));
+    }
+
+    if (strpos($path_bruto, '/public') === 0) {
+        $path_bruto = substr($path_bruto, strlen('/public'));
+    }
+
+    $path = '/' . trim((string)$path_bruto, "/");
+
+    // Hacemos la variable $path global para que esté disponible en los routers
+    $GLOBALS['path'] = $path;
+
+    // Health
+    if ($method === 'GET' && $path === '/health') {
+        Response::success([
+            'status' => 'ok',
+            'timestamp' => date('Y-m-d H:i:s'),
+            'php' => phpversion()
+        ], 200, 'API funcionando correctamente');
+        exit;
+    }
+
+    $router = new Router();
+
+    require_once SRC_PATH . 'routes/api.php';
+
+    $router->dispatch($method, $path);
     exit;
-}
