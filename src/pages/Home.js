@@ -7,12 +7,6 @@ function Home() {
     const [propiedades, setPropiedades] = useState([]);
     const [categorias, setCategorias] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [stats, setStats] = useState({
-        propiedades: 0,
-        usuarios: 0,
-        reservas: 0,
-        ciudades: 0
-    });
 
     useEffect(() => {
         cargarDatos();
@@ -27,12 +21,6 @@ function Home() {
             
             setPropiedades(props);
             setCategorias(cats);
-            setStats({
-                propiedades: props.length,
-                usuarios: 0,
-                reservas: 0,
-                ciudades: 0
-            });
         } catch (error) {
             console.error('Error cargando datos:', error);
         } finally {
@@ -65,28 +53,13 @@ function Home() {
                                     <i className="fas fa-search"></i> Buscar
                                 </button>
                             </div>
-
-                            <div className="hero-stats">
-                                <div className="stat-item">
-                                    <span className="stat-number">{stats.propiedades}</span>
-                                    <span className="stat-label">Propiedades</span>
-                                </div>
-                                <div className="stat-item">
-                                    <span className="stat-number">{stats.usuarios}</span>
-                                    <span className="stat-label">Usuarios</span>
-                                </div>
-                                <div className="stat-item">
-                                    <span className="stat-number">{stats.reservas}</span>
-                                    <span className="stat-label">Reservas</span>
-                                </div>
-                            </div>
                         </div>
                         
                         <div className="hero-image">
                             <img 
-                                src="/assets/img/hero-illustration.svg" 
+                                src="/assets/img/logo.png" 
                                 alt="AlquilER" 
-                                onError={(e) => e.target.src = '/assets/img/hero-default.png'}
+                                onError={(e) => e.target.src = '/assets/img/logo.png'}
                             />
                         </div>
                     </div>
@@ -190,19 +163,19 @@ function Home() {
                 <div className="container">
                     <div className="stats-grid">
                         <div className="stat-item">
-                            <span className="stat-number">{stats.propiedades}</span>
+                            <span className="stat-number">{propiedades.length}</span>
                             <span className="stat-label">Propiedades publicadas</span>
                         </div>
                         <div className="stat-item">
-                            <span className="stat-number">{stats.usuarios}</span>
+                            <span className="stat-number">0</span>
                             <span className="stat-label">Usuarios registrados</span>
                         </div>
                         <div className="stat-item">
-                            <span className="stat-number">{stats.reservas}</span>
+                            <span className="stat-number">0</span>
                             <span className="stat-label">Reservas realizadas</span>
                         </div>
                         <div className="stat-item">
-                            <span className="stat-number">{stats.ciudades}</span>
+                            <span className="stat-number">0</span>
                             <span className="stat-label">Ciudades disponibles</span>
                         </div>
                     </div>

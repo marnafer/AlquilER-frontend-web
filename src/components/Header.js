@@ -17,8 +17,28 @@ function Header() {
     return (
         <Navbar bg="dark" variant="dark" expand="lg" fixed="top" expanded={expanded}>
             <Container>
-                <Navbar.Brand as={Link} to="/">
-                    <i className="fas fa-home"></i> AlquilER
+                <Navbar.Brand as={Link} to="/" className="d-flex align-items-center">
+                    <i 
+                        className="fas fa-home" 
+                        style={{ 
+                            background: 'linear-gradient(135deg, #0f766e 0%, #059669 50%, #0d9488 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            fontSize: '20px',
+                            marginRight: '8px'
+                        }}
+                    ></i>
+                    <span 
+                        style={{ 
+                            fontWeight: 700, 
+                            fontSize: '22px',
+                            background: 'linear-gradient(135deg, #0f766e 0%, #059669 50%, #0d9488 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
+                        }}
+                    >
+                        AlquilER
+                    </span>
                 </Navbar.Brand>
                 <Navbar.Toggle 
                     aria-controls="basic-navbar-nav" 
@@ -58,6 +78,10 @@ function Header() {
                                     variant="primary" 
                                     className="ms-2"
                                     onClick={() => setExpanded(false)}
+                                    style={{ 
+                                        background: 'linear-gradient(135deg, #0f766e 0%, #059669 50%, #0d9488 100%)',
+                                        border: 'none'
+                                    }}
                                 >
                                     Registrarse
                                 </Button>
