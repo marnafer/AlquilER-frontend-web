@@ -1,16 +1,13 @@
 // Esta es la página de perfil del usuario.
 // Muestra los datos personales y permite ver el dashboard o favoritos.
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
-import Alert from '../components/Alert';
 import Loader from '../components/Loader';
 
 function Perfil() {
     const { usuario, loading } = useAuth();
-    const [mensaje, setMensaje] = useState('');
-
     if (loading) return <Loader />;
 
     return (
@@ -21,8 +18,6 @@ function Perfil() {
 
             <h1>Mi Perfil</h1>
             <p className="subtitle">Estos son tus datos personales</p>
-
-            <Alert type="success" message={mensaje} />
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>

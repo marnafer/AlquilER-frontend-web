@@ -1,7 +1,7 @@
 // Esta es la página de Dashboard (panel del usuario).
 // Muestra estadísticas y acciones rápidas.
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { getPropiedades, getReservas, getFavoritos } from '../services/api';
 import Loader from '../components/Loader';
@@ -16,11 +16,7 @@ function Dashboard() {
         favoritos: 0
     });
 
-    useEffect(() => {
-        cargarDatos();
-    }, []);
-
-    const cargarDatos = async () => {
+    const cargarDatos = useCallback(async () => {
         try {
             // Cargar todo en paralelo
             const [propRes, reservasRes, favoritosRes] = await Promise.all([
@@ -43,7 +39,11 @@ function Dashboard() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [token]);
+
+    useEffect(() => {
+        cargarDatos();
+    }, [cargarDatos]);
 
     if (loading) return <Loader />;
 

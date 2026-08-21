@@ -1,71 +1,72 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { Navbar, Nav, NavDropdown, Container, Button } from 'react-bootstrap';
 
 function Header() {
     const { isAuthenticated, logout, usuario } = useAuth();
     const navigate = useNavigate();
-    const [menuAbierto, setMenuAbierto] = useState(false);
+    const [expanded, setExpanded] = useState(false);
 
     const handleLogout = () => {
         logout();
         navigate('/');
-        setMenuAbierto(false);
+        setExpanded(false);
     };
 
     return (
-        <header className="header">
-            <div className="header-container">
-                <div className="logo" onClick={() => navigate('/')}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1m-2 0h2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    Alquil<span>ER</span>
-                </div>
-
-                {/* Botón hamburguesa para mobile */}
-                <button 
-                    className="menu-toggle" 
-                    onClick={() => setMenuAbierto(!menuAbierto)}
-                    aria-label="Menú"
-                >
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-
-                <nav className={`nav-links ${menuAbierto ? 'abierto' : ''}`}>
-                    <Link to="/" onClick={() => setMenuAbierto(false)}>Inicio</Link>
-                    <Link to="/propiedades" onClick={() => setMenuAbierto(false)}>Propiedades</Link>
-                    
-                    {isAuthenticated ? (
-                        <>
-                            <Link to="/dashboard" onClick={() => setMenuAbierto(false)}>Dashboard</Link>
-                            <Link to="/favoritos" onClick={() => setMenuAbierto(false)}>Favoritos</Link>
-                            <Link to="/reservas" onClick={() => setMenuAbierto(false)}>Mis Reservas</Link>
-                            <div className="user-menu">
-                                <span className="user-name">
-                                    <i className="fas fa-user-circle"></i> {usuario?.nombre || 'Usuario'}
-                                </span>
-                                <Link to="/perfil" onClick={() => setMenuAbierto(false)}>Mi Perfil</Link>
-                                <button className="btn-logout" onClick={handleLogout}>
-                                    <i className="fas fa-sign-out-alt"></i> Cerrar sesión
-                                </button>
-                            </div>
-                        </>
-                    ) : (
-                        <div className="auth-buttons">
-                            <Link to="/login" className="btn-outline" onClick={() => setMenuAbierto(false)}>
-                                <i className="fas fa-sign-in-alt"></i> Ingresar
-                            </Link>
-                            <Link to="/register" className="btn-header" onClick={() => setMenuAbierto(false)}>
-                                <i className="fas fa-user-plus"></i> Registrarse
-                            </Link>
-                        </div>
-                    )}
-                </nav>
-            </div>
-        </header>
+        <Navbar bg="dark" variant="dark" expand="lg" fixed="top" expanded={expanded}>
+            <Container>
+                <Navbar.Brand as={Link} to="/">
+                    <i className="fas fa-home"></i> AlquilER
+                </Navbar.Brand>
+                <Navbar.Toggle 
+                    aria-controls="basic-navbar-nav" 
+                    onClick={() => setExpanded(expanded ? false : true)}
+                />
+                <Navbar.Collapse id="basic-navbar-nav">
+                    <Nav className="ms-auto">
+                        <Nav.Link as={Link} to="/" onClick={() => setExpanded(false)}>Inicio</Nav.Link>
+                        <Nav.Link as={Link} to="/propiedades" onClick={() => setExpanded(false)}>Propiedades</Nav.Link>
+                        
+                        {isAuthenticated ? (
+                            <NavDropdown 
+                                title={<><i className="fas fa-user"></i> {usuario?.nombre || 'Usuario'}</>} 
+                                id="basic-nav-dropdown"
+                                align="end"
+                            >
+                                <NavDropdown.Item as={Link} to="/perfil" onClick={() => setExpanded(false)}>
+                                    <i className="fas fa-user-edit"></i> Perfil
+                                </NavDropdown.Item>
+                                <NavDropdown.Item as={Link} to="/mis-propiedades" onClick={() => setExpanded(false)}>
+                                    <i className="fas fa-building"></i> Mis Propiedades
+                                </NavDropdown.Item>
+                                <NavDropdown.Item as={Link} to="/favoritos" onClick={() => setExpanded(false)}>
+                                    <i className="fas fa-heart"></i> Favoritos
+                                </NavDropdown.Item>
+                                <NavDropdown.Divider />
+                                <NavDropdown.Item onClick={handleLogout} className="text-danger">
+                                    <i className="fas fa-sign-out-alt"></i> Cerrar Sesión
+                                </NavDropdown.Item>
+                            </NavDropdown>
+                        ) : (
+                            <>
+                                <Nav.Link as={Link} to="/login" onClick={() => setExpanded(false)}>Ingresar</Nav.Link>
+                                <Button 
+                                    as={Link} 
+                                    to="/register" 
+                                    variant="primary" 
+                                    className="ms-2"
+                                    onClick={() => setExpanded(false)}
+                                >
+                                    Registrarse
+                                </Button>
+                            </>
+                        )}
+                    </Nav>
+                </Navbar.Collapse>
+            </Container>
+        </Navbar>
     );
 }
 
