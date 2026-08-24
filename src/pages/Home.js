@@ -37,7 +37,6 @@ function Home() {
                 <div className="container">
                     <div className="hero-grid">
                         <div className="hero-content">
-                            <div className="hero-badge">AlquilER</div>
                             <h1>Encontrá tu <span>propiedad ideal</span></h1>
                             <p>Las mejores propiedades en alquiler. Departamentos, casas, locales comerciales y más.</p>
                             
@@ -59,6 +58,7 @@ function Home() {
                             <img 
                                 src="/assets/img/logo.png" 
                                 alt="AlquilER" 
+                                style={{ maxHeight: '500px', width: 'auto' }}
                                 onError={(e) => e.target.src = '/assets/img/logo.png'}
                             />
                         </div>

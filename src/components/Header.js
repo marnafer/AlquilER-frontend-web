@@ -18,16 +18,31 @@ function Header() {
         <Navbar bg="dark" variant="dark" expand="lg" fixed="top" expanded={expanded}>
             <Container>
                 <Navbar.Brand as={Link} to="/" className="d-flex align-items-center">
-                    <i 
-                        className="fas fa-home" 
-                        style={{ 
-                            background: 'linear-gradient(135deg, #0f766e 0%, #059669 50%, #0d9488 100%)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            fontSize: '20px',
-                            marginRight: '8px'
-                        }}
-                    ></i>
+                    {/* Ícono de casa personalizado con SVG */}
+                    <svg 
+                        width="28" 
+                        height="28" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        xmlns="http://www.w3.org/2000/svg"
+                        style={{ marginRight: '10px' }}
+                    >
+                        <path 
+                            d="M3 12L5 10M5 10L12 3L19 10M5 10V20C5 20.5523 5.44772 21 6 21H9M19 10L21 12M19 10V20C19 20.5523 18.5523 21 18 21H15M9 21C9 21.5523 9.44772 22 10 22H14C14.5523 22 15 21.5523 15 21M9 21V15C9 14.4477 9.44772 14 10 14H14C14.5523 14 15 14.4477 15 15V21" 
+                            stroke="url(#gradientHouse)" 
+                            strokeWidth="2" 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round"
+                        />
+                        <defs>
+                            <linearGradient id="gradientHouse" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#0f766e" />
+                                <stop offset="50%" stopColor="#059669" />
+                                <stop offset="100%" stopColor="#0d9488" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    
                     <span 
                         style={{ 
                             fontWeight: 700, 
@@ -40,10 +55,12 @@ function Header() {
                         AlquilER
                     </span>
                 </Navbar.Brand>
+                
                 <Navbar.Toggle 
                     aria-controls="basic-navbar-nav" 
                     onClick={() => setExpanded(expanded ? false : true)}
                 />
+                
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="ms-auto">
                         <Nav.Link as={Link} to="/" onClick={() => setExpanded(false)}>Inicio</Nav.Link>

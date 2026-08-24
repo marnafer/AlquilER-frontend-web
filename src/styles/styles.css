@@ -404,7 +404,20 @@ ul {
 /* ========== CATEGORÍAS ========== */
 .categorias {
     padding: 60px 0;
-    background: #ccfbf1;
+    background: linear-gradient(135deg, #0f766e 0%, #059669 50%, #0d9488 100%);
+}
+
+.categorias .section-badge {
+    background: rgba(255,255,255,0.2);
+    color: #ffffff;
+}
+
+.categorias .section-header h2 {
+    color: #ffffff;
+}
+
+.categorias .section-header p {
+    color: rgba(255,255,255,0.8);
 }
 
 .categorias-grid {
@@ -414,39 +427,42 @@ ul {
 }
 
 .categoria-card {
-    background: var(--white);
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
     padding: 24px;
     border-radius: 16px;
     text-align: center;
     transition: var(--transition);
-    box-shadow: var(--shadow);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #ffffff;
 }
 
 .categoria-card:hover {
     transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
-    background: linear-gradient(135deg, #0f766e 0%, #059669 100%);
-    color: var(--white);
+    background: rgba(255,255,255,0.25);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
 
 .categoria-card .categoria-icon {
     font-size: 36px;
     margin-bottom: 12px;
+    display: block;
 }
 
 .categoria-card h3 {
     font-size: 18px;
     font-weight: 600;
     margin-bottom: 4px;
+    color: #ffffff;
 }
 
 .categoria-card span {
     font-size: 14px;
-    color: #64748b;
+    color: rgba(255,255,255,0.7);
 }
 
 .categoria-card:hover span {
-    color: rgba(255,255,255,0.8);
+    color: rgba(255,255,255,0.9);
 }
 
 /* ========== SERVICIOS ========== */
