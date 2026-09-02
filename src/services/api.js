@@ -1,4 +1,6 @@
-const API_URL = 'http://localhost/sistema-alquiler';
+const API_URL = 'http://localhost:8000';
+
+// AUTENTICACIÓN
 
 export async function login(email, password) {
     try {
@@ -15,13 +17,17 @@ export async function login(email, password) {
 
 export async function register(userData) {
     try {
+        console.log('📤 Enviando al backend:', userData);
         const response = await fetch(`${API_URL}/api/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(userData)
         });
-        return await response.json();
+        const result = await response.json();
+        console.log('📥 Respuesta del backend:', result);
+        return result;
     } catch (error) {
+        console.error('❌ Error en register:', error);
         return { success: false, error: error.message };
     }
 }
@@ -31,8 +37,11 @@ export async function getPerfil(token) {
         const response = await fetch(`${API_URL}/api/perfil`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        return await response.json();
+        const result = await response.json();
+        console.log('📥 Respuesta perfil:', result);
+        return result;
     } catch (error) {
+        console.error('❌ Error en getPerfil:', error);
         return { success: false, error: error.message };
     }
 }

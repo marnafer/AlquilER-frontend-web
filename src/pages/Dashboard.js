@@ -1,11 +1,8 @@
-// Esta es la página de Dashboard (panel del usuario).
-// Muestra estadísticas y acciones rápidas.
-
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { getPropiedades, getReservas, getFavoritos } from '../services/api';
 import Loader from '../components/Loader';
-import { Link } from 'react-router-dom';
 
 function Dashboard() {
     const { token, usuario } = useAuth();
@@ -15,10 +12,10 @@ function Dashboard() {
         reservas: 0,
         favoritos: 0
     });
+    const [reservasRecientes, setReservasRecientes] = useState([]);
 
     const cargarDatos = useCallback(async () => {
         try {
-            // Cargar todo en paralelo
             const [propRes, reservasRes, favoritosRes] = await Promise.all([
                 getPropiedades(),
                 getReservas(token),
@@ -34,6 +31,8 @@ function Dashboard() {
                 reservas: reservas.length,
                 favoritos: favoritos.length
             });
+
+            setReservasRecientes(reservas.slice(0, 3));
         } catch (error) {
             console.error('Error cargando datos del dashboard:', error);
         } finally {
@@ -48,57 +47,81 @@ function Dashboard() {
     if (loading) return <Loader />;
 
     return (
-        <div>
-            <h1 style={{ fontSize: '32px', fontWeight: '700', color: '#0F172A', marginBottom: '8px' }}>
-                📊 Dashboard
-            </h1>
-            <p style={{ color: '#475569', marginBottom: '32px' }}>
-                Bienvenido, {usuario?.nombre || 'Usuario'} 👋
-            </p>
+        <div className="dashboard-page">
+            <div className="dashboard-header">
+                <h1>Dashboard</h1>
+                <p>Bienvenido, {usuario?.nombre || 'Usuario'}</p>
+            </div>
 
             {/* Estadísticas */}
             <div className="dashboard-stats">
-                <div className="dashboard-stat">
-                    <div className="icon">🏠</div>
-                    <div className="number">{stats.propiedades}</div>
-                    <div className="label">Propiedades</div>
+                <div className="stat-card">
+                    <span className="stat-icon">🏠</span>
+                    <div>
+                        <span className="stat-number">{stats.propiedades}</span>
+                        <span className="stat-label">Propiedades</span>
+                    </div>
                 </div>
-                <div className="dashboard-stat">
-                    <div className="icon">📅</div>
-                    <div className="number">{stats.reservas}</div>
-                    <div className="label">Reservas</div>
+                <div className="stat-card">
+                    <span className="stat-icon">📅</span>
+                    <div>
+                        <span className="stat-number">{stats.reservas}</span>
+                        <span className="stat-label">Reservas</span>
+                    </div>
                 </div>
-                <div className="dashboard-stat">
-                    <div className="icon">❤️</div>
-                    <div className="number">{stats.favoritos}</div>
-                    <div className="label">Favoritos</div>
+                <div className="stat-card">
+                    <span className="stat-icon">❤️</span>
+                    <div>
+                        <span className="stat-number">{stats.favoritos}</span>
+                        <span className="stat-label">Favoritos</span>
+                    </div>
                 </div>
             </div>
 
-            {/* Acciones rápidas */}
+            {/* Acciones rápidas y reservas recientes */}
             <div className="dashboard-grid">
                 <div className="dashboard-card">
-                    <h3>⚡ Acciones rápidas</h3>
-                    <Link to="/propiedades/crear" className="action-btn primary">
-                        + Publicar propiedad
-                    </Link>
-                    <Link to="/propiedades" className="action-btn">
-                        🔍 Buscar propiedades
-                    </Link>
-                    <Link to="/perfil" className="action-btn">
-                        👤 Mi perfil
-                    </Link>
-                    <Link to="/favoritos" className="action-btn">
-                        ❤️ Mis favoritos
-                    </Link>
+                    <h3>Acciones rápidas</h3>
+                    <div className="actions-list">
+                        <Link to="/propiedades/crear" className="action-btn primary">
+                            + Publicar propiedad
+                        </Link>
+                        <Link to="/propiedades" className="action-btn">
+                            🔍 Buscar propiedades
+                        </Link>
+                        <Link to="/perfil" className="action-btn">
+                            👤 Mi perfil
+                        </Link>
+                        <Link to="/favoritos" className="action-btn">
+                            ❤️ Mis favoritos
+                        </Link>
+                    </div>
                 </div>
 
                 <div className="dashboard-card">
-                    <h3>📋 Últimas reservas</h3>
-                    <p style={{ color: '#94A3B8', fontSize: '14px' }}>No tenés reservas aún.</p>
-                    <Link to="/propiedades" className="action-btn" style={{ marginTop: '12px' }}>
-                        Explorar propiedades
-                    </Link>
+                    <h3>Últimas reservas</h3>
+                    {reservasRecientes.length > 0 ? (
+                        <ul className="reservas-list">
+                            {reservasRecientes.map((reserva) => (
+                                <li key={reserva.id} className="reserva-item">
+                                    <div>
+                                        <span className="reserva-titulo">
+                                            {reserva.propiedad_titulo || 'Propiedad'}
+                                        </span>
+                                        <span className="reserva-fecha">
+                                            {reserva.fecha_desde} → {reserva.fecha_hasta}
+                                        </span>
+                                    </div>
+                                    <span className={`reserva-estado ${reserva.estado || 'pendiente'}`}>
+                                        {reserva.estado || 'Pendiente'}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="empty-message">No tenés reservas aún</p>
+                    )}
+                    <Link to="/reservas" className="ver-todas">Ver todas las reservas</Link>
                 </div>
             </div>
         </div>

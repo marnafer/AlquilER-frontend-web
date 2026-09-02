@@ -1,11 +1,7 @@
-// Esta es la página de registro de nuevos usuarios.
-// Muestra un formulario completo para crear una cuenta.
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { register } from '../services/api';
-import Alert from '../components/Alert';
 
 function Register() {
     const [formData, setFormData] = useState({
@@ -15,6 +11,7 @@ function Register() {
         password: '',
         password_confirm: '',
         telefono: '',
+        domicilio: '',
         rol: 'inquilino'
     });
     const [error, setError] = useState('');
@@ -40,8 +37,19 @@ function Register() {
             return;
         }
 
+        // Datos que se envían al backend
+        const dataToSend = {
+            nombre: formData.nombre,
+            apellido: formData.apellido,
+            email: formData.email,
+            password: formData.password,
+            telefono: formData.telefono,
+            domicilio: formData.domicilio,
+            rol: formData.rol
+        };
+
         try {
-            const result = await register(formData);
+            const result = await register(dataToSend);
             
             if (result.success && result.token) {
                 authLogin(result.token);
@@ -57,37 +65,43 @@ function Register() {
     };
 
     return (
-        <div className="auth-container">
-            <h1>Crear cuenta 🏠</h1>
-            <p className="subtitle">Registrate para empezar a alquilar</p>
+        <div className="auth-container" style={{ maxWidth: '480px', margin: '40px auto', padding: '40px' }}>
+            <h1 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '8px' }}>Crear cuenta</h1>
+            <p style={{ textAlign: 'center', color: '#64748b', marginBottom: '32px' }}>Registrate para empezar a alquilar</p>
 
-            <Alert type="error" message={error} />
+            {error && (
+                <div className="alert alert-error">
+                    {error}
+                </div>
+            )}
 
             <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label htmlFor="nombre">Nombre</label>
-                    <input
-                        type="text"
-                        id="nombre"
-                        name="nombre"
-                        placeholder="Tu nombre"
-                        value={formData.nombre}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div className="form-group">
+                        <label htmlFor="nombre">Nombre</label>
+                        <input
+                            type="text"
+                            id="nombre"
+                            name="nombre"
+                            placeholder="Tu nombre"
+                            value={formData.nombre}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
 
-                <div className="form-group">
-                    <label htmlFor="apellido">Apellido</label>
-                    <input
-                        type="text"
-                        id="apellido"
-                        name="apellido"
-                        placeholder="Tu apellido"
-                        value={formData.apellido}
-                        onChange={handleChange}
-                        required
-                    />
+                    <div className="form-group">
+                        <label htmlFor="apellido">Apellido</label>
+                        <input
+                            type="text"
+                            id="apellido"
+                            name="apellido"
+                            placeholder="Tu apellido"
+                            value={formData.apellido}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
                 </div>
 
                 <div className="form-group">
@@ -143,6 +157,18 @@ function Register() {
                 </div>
 
                 <div className="form-group">
+                    <label htmlFor="domicilio">Domicilio</label>
+                    <input
+                        type="text"
+                        id="domicilio"
+                        name="domicilio"
+                        placeholder="Ej: Av. San Martín 123"
+                        value={formData.domicilio}
+                        onChange={handleChange}
+                    />
+                </div>
+
+                <div className="form-group">
                     <label htmlFor="rol">Tipo de usuario</label>
                     <select
                         id="rol"
@@ -155,13 +181,13 @@ function Register() {
                     </select>
                 </div>
 
-                <button type="submit" className="btn-primary" disabled={loading}>
+                <button type="submit" className="btn-primary" style={{ width: '100%' }} disabled={loading}>
                     {loading ? 'Cargando...' : 'Crear cuenta'}
                 </button>
             </form>
 
-            <p className="register-link">
-                ¿Ya tenés cuenta? <Link to="/login">Iniciá sesión</Link>
+            <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: '#64748b' }}>
+                ¿Ya tenés cuenta? <Link to="/login" style={{ color: '#0d9488', fontWeight: '600' }}>Iniciá sesión</Link>
             </p>
         </div>
     );
