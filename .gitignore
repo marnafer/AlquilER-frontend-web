@@ -2,9 +2,10 @@
 .vs/
 vendor/
 node_modules/
+frontend/dist/
 .env
 .idea/
 *.log
 
-# No subir archivos de configuración con contraseñas (cuando los crees)
+# No subir archivos de configuraciï¿½n con contraseï¿½as (cuando los crees)
 src/config/config.php
