@@ -1,0 +1,16 @@
+// Este componente muestra un mensaje de alerta (éxito o error).
+// Si no hay mensaje, no muestra nada.
+
+import React from 'react';
+
+function Alert({ type, message }) {
+    if (!message) return null;
+    
+    return (
+        <div className={`alert alert-${type}`}>
+            {message}
+        </div>
+    );
+}
+
+export default Alert;

@@ -1,0 +1,28 @@
+// Este componente muestra una tarjeta con la información de una propiedad.
+// Al hacer clic, navega al detalle de la propiedad.
+
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+
+function PropiedadCard({ propiedad }) {
+    const navigate = useNavigate();
+
+    return (
+        <div className="propiedad-card" onClick={() => navigate(`/propiedades/${propiedad.id}`)}>
+            <div className="imagen">🏠</div>
+            <div className="info">
+                <h3>{propiedad.titulo || 'Propiedad sin título'}</h3>
+                <div className="precio">${propiedad.precio?.toLocaleString() || '0'}</div>
+                <div className="direccion">{propiedad.direccion || 'Dirección no especificada'}</div>
+                <div className="features">
+                    <span><i className="fas fa-bed"></i> {propiedad.habitaciones || 'N/A'}</span>
+                    <span><i className="fas fa-bath"></i> {propiedad.banos || 'N/A'}</span>
+                    <span><i className="fas fa-car"></i> {propiedad.estacionamiento || 'N/A'}</span>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export default PropiedadCard;
+

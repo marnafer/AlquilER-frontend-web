@@ -1,0 +1,59 @@
+// Este componente muestra la barra de búsqueda de propiedades.
+// Tiene campos para buscar por ubicación, categoría y precio máximo.
+// Cuando el usuario busca, ejecuta la función onSearch que recibe como prop.
+
+import React, { useState, useEffect } from 'react';
+import { getCategorias } from '../services/api';
+
+function SearchBar({ onSearch }) {
+    const [busqueda, setBusqueda] = useState('');
+    const [categoria, setCategoria] = useState('');
+    const [precioMax, setPrecioMax] = useState('');
+    const [categorias, setCategorias] = useState([]);
+
+    // Cargo las categorías al montar el componente
+    useEffect(() => {
+        cargarCategorias();
+    }, []);
+
+    const cargarCategorias = async () => {
+        try {
+            const response = await getCategorias();
+            const data = response.data || response || [];
+            setCategorias(data);
+        } catch (error) {
+            console.error('Error cargando categorías:', error);
+        }
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onSearch({ busqueda, categoria, precioMax });
+    };
+
+    return (
+        <form className="search-bar" onSubmit={handleSubmit}>
+            <input
+                type="text"
+                placeholder="¿Dónde querés vivir?"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+            />
+            <select value={categoria} onChange={(e) => setCategoria(e.target.value)}>
+                <option value="">Categoría</option>
+                {categorias.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.nombre}</option>
+                ))}
+            </select>
+            <input
+                type="number"
+                placeholder="Precio máximo"
+                value={precioMax}
+                onChange={(e) => setPrecioMax(e.target.value)}
+            />
+            <button type="submit" className="btn-search">Buscar</button>
+        </form>
+    );
+}
+
+export default SearchBar;

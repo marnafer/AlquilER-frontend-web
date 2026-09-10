@@ -1,0 +1,79 @@
+// Enrutador principal de la aplicación
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+// Hook personalizado para autenticación
+import { useAuth } from './hooks/useAuth';
+// Componentes comunes
+import Header from './components/Header';
+import Footer from './components/Footer';
+// Páginas de la aplicación
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Perfil from './pages/Perfil';
+import Propiedades from './pages/Propiedades';
+import Dashboard from './pages/Dashboard';
+import NotFound from './pages/NotFound';
+
+// Componente para proteger rutas que requieren autenticación
+function PrivateRoute({ children }) {
+    const { isAuthenticated } = useAuth();
+    // Si no está autenticado, redirige al login
+    return isAuthenticated ? children : <Navigate to="/login" />;
+}
+
+// Componente para rutas solo de invitados (no logueados)
+function GuestRoute({ children }) {
+    const { isAuthenticated } = useAuth();
+    // Si está autenticado, redirige al home
+    return !isAuthenticated ? children : <Navigate to="/" />;
+}
+
+function AppRouter() {
+    return (
+        <>
+            {/* Header se muestra en todas las páginas */}
+            <Header />
+            <main className="main">
+                <Routes>
+                    {/* Rutas públicas */}
+                    <Route path="/" element={<Home />} />
+                    <Route path="/home" element={<Home />} />
+                    <Route path="/propiedades" element={<Propiedades />} />
+                    <Route path="/propiedades/:id" element={<Propiedades />} />
+                    
+                    {/* Rutas para invitados (no logueados) */}
+                    <Route path="/login" element={
+                        <GuestRoute>
+                            <Login />
+                        </GuestRoute>
+                    } />
+                    <Route path="/register" element={
+                        <GuestRoute>
+                            <Register />
+                        </GuestRoute>
+                    } />
+                    
+                    {/* Rutas protegidas (requieren autenticación) */}
+                    <Route path="/perfil" element={
+                        <PrivateRoute>
+                            <Perfil />
+                        </PrivateRoute>
+                    } />
+                    <Route path="/dashboard" element={
+                        <PrivateRoute>
+                            <Dashboard />
+                        </PrivateRoute>
+                    } />
+                    
+                    {/* Ruta 404 - siempre al final */}
+                    <Route path="*" element={<NotFound />} />
+                </Routes>
+            </main>
+            {/* Footer se muestra en todas las páginas */}
+            <Footer />
+        </>
+    );
+}
+
+export default AppRouter;

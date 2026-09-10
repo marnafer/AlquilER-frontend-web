@@ -1,0 +1,18 @@
+// Este es un "puente" para usar el contexto de autenticación más fácilmente.
+// En lugar de importar useContext y AuthContext en cada componente,
+// usamos este hook y listo.
+
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
+
+// Hook personalizado para usar la autenticación
+export function useAuth() {
+    const context = useContext(AuthContext);
+    
+    // Si alguien intenta usar este hook fuera del proveedor, le avisamos
+    if (!context) {
+        throw new Error('useAuth debe usarse dentro de un AuthProvider');
+    }
+    
+    return context;
+}
