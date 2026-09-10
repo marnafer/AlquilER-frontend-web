@@ -1,3 +1,16 @@
+<<<<<<< HEAD
+# No subir configuraciones locales de XAMPP o IDEs
+.vs/
+vendor/
+node_modules/
+frontend/dist/
+.env
+.idea/
+*.log
+
+# No subir archivos de configuraci�n con contrase�as (cuando los crees)
+src/config/config.php
+=======
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
@@ -21,3 +34,4 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+>>>>>>> origin/main
