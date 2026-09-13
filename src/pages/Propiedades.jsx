@@ -1,18 +1,16 @@
-// Esta página muestra el listado completo de propiedades y también el detalle
-// de una propiedad específica cuando se selecciona.
-
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { getPropiedades, getPropiedad } from '../services/api';
 import PropiedadCard from '../components/PropiedadCard';
 import Loader from '../components/Loader';
 
 function Propiedades() {
-    const { id } = useParams(); // Si hay ID en la URL, es detalle
+    const { id } = useParams();
     const [propiedades, setPropiedades] = useState([]);
     const [propiedad, setPropiedad] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isDetail, setIsDetail] = useState(false);
+    const [search, setSearch] = useState('');
 
     useEffect(() => {
         if (id) {
@@ -24,8 +22,7 @@ function Propiedades() {
 
     const cargarPropiedades = async () => {
         try {
-            const response = await getPropiedades();
-            const data = response.data || response || [];
+            const data = await getPropiedades();
             setPropiedades(data);
             setIsDetail(false);
         } catch (error) {
@@ -37,8 +34,7 @@ function Propiedades() {
 
     const cargarPropiedad = async (propiedadId) => {
         try {
-            const response = await getPropiedad(propiedadId);
-            const data = response.data || response;
+            const data = await getPropiedad(propiedadId);
             setPropiedad(data);
             setIsDetail(true);
         } catch (error) {
@@ -50,86 +46,118 @@ function Propiedades() {
 
     if (loading) return <Loader />;
 
-    // Vista de detalle de una propiedad
     if (isDetail && propiedad) {
         return (
-            <div>
-                <button 
-                    onClick={() => window.history.back()} 
-                    style={{ background: 'none', border: 'none', color: '#2563EB', cursor: 'pointer', fontSize: '14px', marginBottom: '16px' }}
-                >
-                    ← Volver
-                </button>
-                <div style={{ background: 'white', borderRadius: '12px', padding: '32px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', flexWrap: 'wrap', gap: '16px' }}>
-                        <div>
-                            <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#0F172A' }}>{propiedad.titulo || 'Propiedad'}</h1>
-                            <p style={{ color: '#475569', margin: '8px 0' }}>📍 {propiedad.direccion || 'Dirección no especificada'}</p>
+            <div className="propiedades-page container">
+                <Link to="/propiedades" className="detalle-volver">
+                    <i className="fas fa-arrow-left"></i> Volver a propiedades
+                </Link>
+
+                <div className="propiedad-detalle">
+                    <div className="propiedad-detalle-imagen">
+                        <img
+                            src={`/uploads/propiedades/${propiedad.id}.jpg`}
+                            alt={propiedad.titulo || 'Propiedad'}
+                            onError={(e) => e.target.src = '/assets/img/propiedad-default.jpg'}
+                        />
+                        <span className={`propiedad-badge ${propiedad.disponible ? 'disponible' : 'alquilada'}`}>
+                            {propiedad.disponible ? 'Disponible' : 'Alquilada'}
+                        </span>
+                    </div>
+
+                    <div className="propiedad-detalle-contenido">
+                        <div className="propiedad-detalle-header">
+                            <div>
+                                <h1>{propiedad.titulo || 'Propiedad'}</h1>
+                                <p className="propiedad-direccion">
+                                    <i className="fas fa-map-marker-alt"></i> {propiedad.direccion || 'Dirección no especificada'}
+                                </p>
+                            </div>
+                            <div className="propiedad-detalle-precio">
+                                ${Number(propiedad.precio).toLocaleString()}
+                                {propiedad.expensas > 0 && (
+                                    <span>Expensas: ${Number(propiedad.expensas).toLocaleString()}</span>
+                                )}
+                            </div>
                         </div>
-                        <div style={{ fontSize: '28px', fontWeight: '700', color: '#2563EB' }}>${propiedad.precio?.toLocaleString() || '0'}</div>
-                    </div>
-                    <p style={{ margin: '16px 0', color: '#334155' }}>{propiedad.descripcion || 'Sin descripción'}</p>
-                    <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', padding: '16px 0', borderTop: '1px solid #E2E8F0' }}>
-                        <span><strong>Habitaciones:</strong> {propiedad.habitaciones || 'N/A'}</span>
-                        <span><strong>Baños:</strong> {propiedad.banos || 'N/A'}</span>
-                        <span><strong>Estacionamiento:</strong> {propiedad.estacionamiento || 'N/A'}</span>
-                        <span><strong>Categoría:</strong> {propiedad.categoria_nombre || 'N/A'}</span>
-                    </div>
-                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', paddingTop: '16px', borderTop: '1px solid #E2E8F0' }}>
-                        <button style={{ padding: '12px 32px', background: '#2563EB', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>
-                            Reservar
-                        </button>
-                        <button style={{ padding: '12px 32px', background: '#F1F5F9', color: '#0F172A', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>
-                            Consultar
-                        </button>
+
+                        <p className="propiedad-detalle-descripcion">
+                            {propiedad.descripcion || 'Sin descripción'}
+                        </p>
+
+                        <div className="propiedad-detalle-features">
+                            <div className="detalle-feature">
+                                <i className="fas fa-bed"></i>
+                                <span className="feature-num">{propiedad.cantidad_dormitorios || 0}</span>
+                                <span className="feature-label">Dormitorios</span>
+                            </div>
+                            <div className="detalle-feature">
+                                <i className="fas fa-bath"></i>
+                                <span className="feature-num">{propiedad.cantidad_banos || 0}</span>
+                                <span className="feature-label">Baños</span>
+                            </div>
+                            <div className="detalle-feature">
+                                <i className="fas fa-arrows-alt"></i>
+                                <span className="feature-num">{propiedad.cantidad_ambientes || 0}</span>
+                                <span className="feature-label">Ambientes</span>
+                            </div>
+                            <div className="detalle-feature">
+                                <i className="fas fa-users"></i>
+                                <span className="feature-num">{propiedad.capacidad || 0}</span>
+                                <span className="feature-label">Capacidad</span>
+                            </div>
+                        </div>
+
+                        <div className="propiedad-detalle-acciones">
+                            <button className="btn-detalle btn-detalle-primario">
+                                <i className="fas fa-calendar-check"></i> Reservar
+                            </button>
+                            <button className="btn-detalle btn-detalle-secundario">
+                                <i className="fas fa-question-circle"></i> Consultar
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         );
     }
 
-    // Listado de propiedades
+    const filtradas = propiedades.filter(p =>
+        (p.titulo || '').toLowerCase().includes(search.toLowerCase()) ||
+        (p.direccion || '').toLowerCase().includes(search.toLowerCase())
+    );
+
     return (
-        <div>
-            <h1 style={{ fontSize: '32px', fontWeight: '700', color: '#0F172A', marginBottom: '8px' }}>🏠 Propiedades</h1>
-            <p style={{ color: '#475569', marginBottom: '24px' }}>Encontrá la propiedad que estás buscando</p>
-
-            <div className="search-bar">
-                <input type="text" placeholder="Buscar por dirección..." id="searchInput" />
-                <button className="btn-search" onClick={() => {
-                    const search = document.getElementById('searchInput').value.toLowerCase();
-                    const grid = document.getElementById('gridPropiedades');
-                    const filtradas = propiedades.filter(p => 
-                        p.titulo?.toLowerCase().includes(search) ||
-                        p.direccion?.toLowerCase().includes(search)
-                    );
-                    if (filtradas.length === 0) {
-                        grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:#94A3B8;padding:40px;">No se encontraron propiedades</p>`;
-                    } else {
-                        grid.innerHTML = filtradas.map(p => 
-                            `<div class="propiedad-card" onclick="window.location.href='/propiedades/${p.id}'">
-                                <div class="imagen">🏠</div>
-                                <div class="info">
-                                    <h3>${p.titulo || 'Propiedad sin título'}</h3>
-                                    <div class="precio">$${p.precio?.toLocaleString() || '0'}</div>
-                                    <div class="direccion">${p.direccion || 'Dirección no especificada'}</div>
-                                    <div class="features">
-                                        <span><i class="fas fa-bed"></i> ${p.habitaciones || 'N/A'}</span>
-                                        <span><i class="fas fa-bath"></i> ${p.banos || 'N/A'}</span>
-                                        <span><i class="fas fa-car"></i> ${p.estacionamiento || 'N/A'}</span>
-                                    </div>
-                                </div>
-                            </div>`
-                        ).join('');
-                    }
-                }}>Buscar</button>
+        <div className="propiedades-page container">
+            <div className="section-header">
+                <span className="section-badge">Propiedades</span>
+                <h2>🏠 Todas las propiedades</h2>
+                <p>Encontrá la propiedad que estás buscando</p>
             </div>
 
-            <div id="gridPropiedades" className="grid-propiedades">
-                {propiedades.map(propiedad => (
-                    <PropiedadCard key={propiedad.id} propiedad={propiedad} />
-                ))}
+            <div className="search-box propiedades-search">
+                <input
+                    type="text"
+                    placeholder="Buscar por título o dirección..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                />
+                <button className="btn-search">
+                    <i className="fas fa-search"></i> Buscar
+                </button>
             </div>
+
+            {filtradas.length > 0 ? (
+                <div className="propiedades-grid">
+                    {filtradas.map(propiedad => (
+                        <PropiedadCard key={propiedad.id} propiedad={propiedad} />
+                    ))}
+                </div>
+            ) : (
+                <p className="empty-message" style={{ padding: '40px 0' }}>
+                    No se encontraron propiedades
+                </p>
+            )}
         </div>
     );
 }
