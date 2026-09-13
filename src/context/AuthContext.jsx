@@ -1,7 +1,7 @@
 // Este archivo maneja la autenticación en toda la app.
 // Es como un "centro de control" que sabe si el usuario está logueado o no.
 
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { getPerfil } from '../services/api';
 
 // Creo el contexto que van a usar todos los componentes
@@ -57,17 +57,31 @@ export function AuthProvider({ children }) {
         setUsuario(null);
     };
 
+    // Función para refrescar los datos del usuario sin recargar la página
+    const refreshUser = useCallback(async () => {
+        if (!token) return;
+        try {
+            const response = await getPerfil(token);
+            if (response.success) {
+                setUsuario(response.data);
+            }
+        } catch (error) {
+            console.error('Error al refrescar usuario:', error);
+        }
+    }, [token]);
+
     // Esto es lo que pueden usar los componentes
     const isAuthenticated = !!token;
 
     return (
-        <AuthContext.Provider value={{ 
+        <AuthContext.Provider value={{
             token,
             usuario,
             loading,
             login,
             logout,
-            isAuthenticated
+            isAuthenticated,
+            refreshUser
         }}>
             {children}
         </AuthContext.Provider>

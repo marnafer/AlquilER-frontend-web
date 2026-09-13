@@ -10,7 +10,8 @@ function Dashboard() {
     const [stats, setStats] = useState({
         propiedades: 0,
         reservas: 0,
-        favoritos: 0
+        favoritos: 0,
+        consultas: 0
     });
     const [reservasRecientes, setReservasRecientes] = useState([]);
 
@@ -22,17 +23,20 @@ function Dashboard() {
                 getFavoritos(token)
             ]);
 
-            const props = propRes.data || propRes || [];
-            const reservas = reservasRes.data || reservasRes || [];
-            const favoritos = favoritosRes.data || favoritosRes || [];
+            const props = propRes?.data?.items || propRes?.data || propRes || [];
+            const reservas = reservasRes?.data?.items || reservasRes?.data || reservasRes || [];
+            const favoritos = favoritosRes?.data?.items || favoritosRes?.data || favoritosRes || [];
 
             setStats({
-                propiedades: props.length,
-                reservas: reservas.length,
-                favoritos: favoritos.length
+                propiedades: Array.isArray(props) ? props.length : 0,
+                reservas: Array.isArray(reservas) ? reservas.length : 0,
+                favoritos: Array.isArray(favoritos) ? favoritos.length : 0,
+                consultas: 0
             });
 
-            setReservasRecientes(reservas.slice(0, 3));
+            setReservasRecientes(
+                Array.isArray(reservas) ? reservas.slice(0, 4) : []
+            );
         } catch (error) {
             console.error('Error cargando datos del dashboard:', error);
         } finally {
@@ -46,83 +50,183 @@ function Dashboard() {
 
     if (loading) return <Loader />;
 
+    const inicial = (usuario?.nombre?.[0] || 'U').toUpperCase();
+
     return (
         <div className="dashboard-page">
-            <div className="dashboard-header">
-                <h1>Dashboard</h1>
-                <p>Bienvenido, {usuario?.nombre || 'Usuario'}</p>
-            </div>
+            <div className="container">
 
-            {/* Estadísticas */}
-            <div className="dashboard-stats">
-                <div className="stat-card">
-                    <span className="stat-icon">🏠</span>
-                    <div>
-                        <span className="stat-number">{stats.propiedades}</span>
-                        <span className="stat-label">Propiedades</span>
+                {/* HERO / BIENVENIDA */}
+                <section className="dash-hero">
+                    <div className="dash-hero-content">
+                        <div className="dash-avatar">{inicial}</div>
+                        <div className="dash-hero-text">
+                            <span className="dash-hero-badge">
+                                <i className="fas fa-bolt"></i> Panel de control
+                            </span>
+                            <h1>
+                                Hola, <span>{usuario?.nombre || 'Usuario'}</span> 👋
+                            </h1>
+                            <p>
+                                Este es tu resumen de actividad en AlquilER.
+                                {usuario?.rol === 'propietario'
+                                    ? ' Administrá tus propiedades y reservas.'
+                                    : ' Gestioná tus favoritos y reservas.'}
+                            </p>
+                        </div>
                     </div>
-                </div>
-                <div className="stat-card">
-                    <span className="stat-icon">📅</span>
-                    <div>
-                        <span className="stat-number">{stats.reservas}</span>
-                        <span className="stat-label">Reservas</span>
-                    </div>
-                </div>
-                <div className="stat-card">
-                    <span className="stat-icon">❤️</span>
-                    <div>
-                        <span className="stat-number">{stats.favoritos}</span>
-                        <span className="stat-label">Favoritos</span>
-                    </div>
-                </div>
-            </div>
+                </section>
 
-            {/* Acciones rápidas y reservas recientes */}
-            <div className="dashboard-grid">
-                <div className="dashboard-card">
-                    <h3>Acciones rápidas</h3>
-                    <div className="actions-list">
-                        <Link to="/propiedades/crear" className="action-btn primary">
-                            + Publicar propiedad
-                        </Link>
-                        <Link to="/propiedades" className="action-btn">
-                            🔍 Buscar propiedades
-                        </Link>
-                        <Link to="/perfil" className="action-btn">
-                            👤 Mi perfil
-                        </Link>
-                        <Link to="/favoritos" className="action-btn">
-                            ❤️ Mis favoritos
-                        </Link>
+                {/* ESTADÍSTICAS */}
+                <section className="dash-stats">
+                    <div className="dash-stat-card">
+                        <div className="dash-stat-icon teal">
+                            <i className="fas fa-building"></i>
+                        </div>
+                        <div className="dash-stat-info">
+                            <span className="dash-stat-number">{stats.propiedades}</span>
+                            <span className="dash-stat-label">Propiedades</span>
+                        </div>
                     </div>
-                </div>
 
-                <div className="dashboard-card">
-                    <h3>Últimas reservas</h3>
-                    {reservasRecientes.length > 0 ? (
-                        <ul className="reservas-list">
-                            {reservasRecientes.map((reserva) => (
-                                <li key={reserva.id} className="reserva-item">
-                                    <div>
-                                        <span className="reserva-titulo">
-                                            {reserva.propiedad_titulo || 'Propiedad'}
-                                        </span>
-                                        <span className="reserva-fecha">
-                                            {reserva.fecha_desde} → {reserva.fecha_hasta}
-                                        </span>
-                                    </div>
-                                    <span className={`reserva-estado ${reserva.estado || 'pendiente'}`}>
-                                        {reserva.estado || 'Pendiente'}
+                    <div className="dash-stat-card">
+                        <div className="dash-stat-icon emerald">
+                            <i className="fas fa-calendar-check"></i>
+                        </div>
+                        <div className="dash-stat-info">
+                            <span className="dash-stat-number">{stats.reservas}</span>
+                            <span className="dash-stat-label">Reservas</span>
+                        </div>
+                    </div>
+
+                    <div className="dash-stat-card">
+                        <div className="dash-stat-icon rose">
+                            <i className="fas fa-heart"></i>
+                        </div>
+                        <div className="dash-stat-info">
+                            <span className="dash-stat-number">{stats.favoritos}</span>
+                            <span className="dash-stat-label">Favoritos</span>
+                        </div>
+                    </div>
+
+                    <div className="dash-stat-card">
+                        <div className="dash-stat-icon amber">
+                            <i className="fas fa-comments"></i>
+                        </div>
+                        <div className="dash-stat-info">
+                            <span className="dash-stat-number">{stats.consultas}</span>
+                            <span className="dash-stat-label">Consultas</span>
+                        </div>
+                    </div>
+                </section>
+
+                {/* GRID PRINCIPAL */}
+                <section className="dash-grid">
+
+                    {/* ACCIONES RÁPIDAS */}
+                    <div className="dash-card">
+                        <div className="dash-card-header">
+                            <h3>
+                                <i className="fas fa-rocket"></i> Acciones rápidas
+                            </h3>
+                        </div>
+                        <div className="dash-actions">
+                            {usuario?.rol === 'propietario' && (
+                                <Link to="/propiedades/crear" className="dash-action primary">
+                                    <span className="dash-action-icon">
+                                        <i className="fas fa-plus"></i>
                                     </span>
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p className="empty-message">No tenés reservas aún</p>
-                    )}
-                    <Link to="/reservas" className="ver-todas">Ver todas las reservas</Link>
-                </div>
+                                    <div className="dash-action-text">
+                                        <strong>Publicar propiedad</strong>
+                                        <small>Sumá un nuevo alquiler</small>
+                                    </div>
+                                    <i className="fas fa-chevron-right dash-action-arrow"></i>
+                                </Link>
+                            )}
+                            <Link to="/propiedades" className="dash-action">
+                                <span className="dash-action-icon">
+                                    <i className="fas fa-search"></i>
+                                </span>
+                                <div className="dash-action-text">
+                                    <strong>Explorar propiedades</strong>
+                                    <small>Encontrá tu próximo hogar</small>
+                                </div>
+                                <i className="fas fa-chevron-right dash-action-arrow"></i>
+                            </Link>
+                            <Link to="/favoritos" className="dash-action">
+                                <span className="dash-action-icon">
+                                    <i className="fas fa-heart"></i>
+                                </span>
+                                <div className="dash-action-text">
+                                    <strong>Mis favoritos</strong>
+                                    <small>Propiedades guardadas</small>
+                                </div>
+                                <i className="fas fa-chevron-right dash-action-arrow"></i>
+                            </Link>
+                            <Link to="/perfil" className="dash-action">
+                                <span className="dash-action-icon">
+                                    <i className="fas fa-user-edit"></i>
+                                </span>
+                                <div className="dash-action-text">
+                                    <strong>Mi perfil</strong>
+                                    <small>Actualizá tus datos</small>
+                                </div>
+                                <i className="fas fa-chevron-right dash-action-arrow"></i>
+                            </Link>
+                        </div>
+                    </div>
+
+                    {/* ÚLTIMAS RESERVAS */}
+                    <div className="dash-card">
+                        <div className="dash-card-header">
+                            <h3>
+                                <i className="fas fa-calendar-alt"></i> Últimas reservas
+                            </h3>
+                            {reservasRecientes.length > 0 && (
+                                <Link to="/reservas" className="dash-card-link">
+                                    Ver todas <i className="fas fa-arrow-right"></i>
+                                </Link>
+                            )}
+                        </div>
+
+                        {reservasRecientes.length > 0 ? (
+                            <ul className="dash-reservas">
+                                {reservasRecientes.map((reserva) => {
+                                    const estado = (reserva.estado || 'pendiente').toLowerCase();
+                                    return (
+                                        <li key={reserva.id} className="dash-reserva-item">
+                                            <div className="dash-reserva-icon">
+                                                <i className="fas fa-home"></i>
+                                            </div>
+                                            <div className="dash-reserva-info">
+                                                <strong>{reserva.propiedad_titulo || 'Propiedad'}</strong>
+                                                <span>
+                                                    <i className="far fa-calendar"></i>{' '}
+                                                    {reserva.fecha_desde || '—'} → {reserva.fecha_hasta || '—'}
+                                                </span>
+                                            </div>
+                                            <span className={`dash-reserva-badge ${estado}`}>
+                                                {estado}
+                                            </span>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        ) : (
+                            <div className="dash-empty">
+                                <div className="dash-empty-icon">
+                                    <i className="fas fa-calendar-times"></i>
+                                </div>
+                                <p>No tenés reservas aún</p>
+                                <Link to="/propiedades" className="dash-empty-btn">
+                                    Explorar propiedades
+                                </Link>
+                            </div>
+                        )}
+                    </div>
+
+                </section>
+
             </div>
         </div>
     );

@@ -6,6 +6,7 @@ import { useAuth } from './hooks/useAuth';
 // Componentes comunes
 import Header from './components/Header';
 import Footer from './components/Footer';
+import PropiedadDetalle from './components/PropiedadDetalle';
 // Páginas de la aplicación
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -17,16 +18,19 @@ import NotFound from './pages/NotFound';
 
 // Componente para proteger rutas que requieren autenticación
 function PrivateRoute({ children }) {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, loading } = useAuth();
+    // Mientras carga el perfil, no redirigimos (evita flash de redirect)
+    if (loading) return null;
     // Si no está autenticado, redirige al login
-    return isAuthenticated ? children : <Navigate to="/login" />;
+    return isAuthenticated ? children : <Navigate to="/login" replace />;
 }
 
 // Componente para rutas solo de invitados (no logueados)
 function GuestRoute({ children }) {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, loading } = useAuth();
+    if (loading) return null;
     // Si está autenticado, redirige al home
-    return !isAuthenticated ? children : <Navigate to="/" />;
+    return !isAuthenticated ? children : <Navigate to="/" replace />;
 }
 
 function AppRouter() {
@@ -36,37 +40,49 @@ function AppRouter() {
             <Header />
             <main className="main">
                 <Routes>
-                    {/* Rutas públicas */}
+                    {/* ===== RUTAS PÚBLICAS ===== */}
                     <Route path="/" element={<Home />} />
                     <Route path="/home" element={<Home />} />
                     <Route path="/propiedades" element={<Propiedades />} />
-                    <Route path="/propiedades/:id" element={<Propiedades />} />
-                    
-                    {/* Rutas para invitados (no logueados) */}
-                    <Route path="/login" element={
-                        <GuestRoute>
-                            <Login />
-                        </GuestRoute>
-                    } />
-                    <Route path="/register" element={
-                        <GuestRoute>
-                            <Register />
-                        </GuestRoute>
-                    } />
-                    
-                    {/* Rutas protegidas (requieren autenticación) */}
-                    <Route path="/perfil" element={
-                        <PrivateRoute>
-                            <Perfil />
-                        </PrivateRoute>
-                    } />
-                    <Route path="/dashboard" element={
-                        <PrivateRoute>
-                            <Dashboard />
-                        </PrivateRoute>
-                    } />
-                    
-                    {/* Ruta 404 - siempre al final */}
+                    <Route path="/propiedades/:id" element={<PropiedadDetalle />} />
+
+                    {/* ===== RUTAS PARA INVITADOS (no logueados) ===== */}
+                    <Route
+                        path="/login"
+                        element={
+                            <GuestRoute>
+                                <Login />
+                            </GuestRoute>
+                        }
+                    />
+                    <Route
+                        path="/register"
+                        element={
+                            <GuestRoute>
+                                <Register />
+                            </GuestRoute>
+                        }
+                    />
+
+                    {/* ===== RUTAS PROTEGIDAS (requieren autenticación) ===== */}
+                    <Route
+                        path="/perfil"
+                        element={
+                            <PrivateRoute>
+                                <Perfil />
+                            </PrivateRoute>
+                        }
+                    />
+                    <Route
+                        path="/dashboard"
+                        element={
+                            <PrivateRoute>
+                                <Dashboard />
+                            </PrivateRoute>
+                        }
+                    />
+
+                    {/* ===== RUTA 404 - siempre al final ===== */}
                     <Route path="*" element={<NotFound />} />
                 </Routes>
             </main>
