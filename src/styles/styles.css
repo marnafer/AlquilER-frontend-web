@@ -3213,6 +3213,209 @@ img {
     cursor: not-allowed;
 }
 
+/* ============================================
+   FORMULARIO DE PROPIEDAD (crear/editar)
+   ============================================ */
+.propform-page {
+    padding: 40px 0 80px;
+    background: #f0fdf4;
+    min-height: calc(100vh - 72px);
+}
+
+.propform-container {
+    max-width: 900px;
+}
+
+.propform-header {
+    margin-bottom: 32px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.propform-header .detalle-volver {
+    align-self: flex-start;
+    margin-bottom: 8px;
+}
+
+.propform-header h1 {
+    font-size: clamp(26px, 3.5vw, 36px);
+    font-weight: 800;
+    color: #0f172a;
+    margin: 8px 0 4px;
+}
+
+.propform-header p {
+    color: #64748b;
+    font-size: 15.5px;
+    margin: 0;
+    max-width: 600px;
+}
+
+.propform-card {
+    background: #fff;
+    border: 1px solid #eef2f7;
+    border-radius: 18px;
+    padding: 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04), 0 8px 24px -18px rgba(16, 24, 40, 0.15);
+}
+
+.propform-card-header {
+    margin-bottom: 22px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #eef2f7;
+}
+
+.propform-card-header h3 {
+    font-size: 17px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.propform-card-header h3 i {
+    color: #0f766e;
+    font-size: 15px;
+    background: #e6fbf4;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(13, 148, 136, 0.14);
+}
+
+.propform-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.propform-grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.propform-col-full {
+    grid-column: 1 / -1;
+}
+
+.propform-page .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.propform-page .form-group label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.propform-required {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+.propform-page .form-group input,
+.propform-page .form-group select,
+.propform-page .form-group textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14.5px;
+    font-family: inherit;
+    background: #fff;
+    color: #0f172a;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    resize: vertical;
+}
+
+.propform-page .form-group textarea {
+    min-height: 100px;
+}
+
+.propform-page .form-group input:focus,
+.propform-page .form-group select:focus,
+.propform-page .form-group textarea:focus {
+    outline: none;
+    border-color: #0d9488;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
+}
+
+.propform-page .form-group input.input-error,
+.propform-page .form-group select.input-error,
+.propform-page .form-group textarea.input-error {
+    border-color: #dc2626;
+    background: #fff5f6;
+}
+
+.propform-page .form-group input.input-error:focus,
+.propform-page .form-group select.input-error:focus,
+.propform-page .form-group textarea.input-error:focus {
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+.form-error {
+    color: #dc2626;
+    font-size: 12.5px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.form-error::before {
+    content: '\f071';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: 11px;
+}
+
+.form-help {
+    color: #94a3b8;
+    font-size: 12.5px;
+    font-weight: 500;
+}
+
+/* Input con prefijo $ */
+.propform-input-prefix {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.propform-input-prefix span {
+    position: absolute;
+    left: 14px;
+    color: #64748b;
+    font-weight: 700;
+    font-size: 14.5px;
+    pointer-events: none;
+}
+
+.propform-input-prefix input {
+    padding-left: 30px !important;
+}
+
+/* Acciones */
+.propform-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
 /* ========== RESPONSIVE ========== */
 @media (max-width: 1200px) {
     .servicios-grid {
@@ -3618,6 +3821,29 @@ img {
 
     .modal-actions {
         flex-direction: column-reverse;
+    }
+
+    /* Formulario de propiedad */
+    .propform-page {
+        padding: 24px 0 60px;
+    }
+
+    .propform-card {
+        padding: 20px 18px;
+    }
+
+    .propform-grid,
+    .propform-grid-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .propform-actions {
+        flex-direction: column-reverse;
+    }
+
+    .propform-actions .btn-detalle {
+        width: 100%;
+        justify-content: center;
     }
 }
 
