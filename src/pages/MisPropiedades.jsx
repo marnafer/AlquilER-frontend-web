@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { getPropiedades, deletePropiedad, getCategorias } from '../services/api';
+import { rutaImagenPropiedad } from '../utils/imagenes';
 import Loader from '../components/Loader';
 
 function MisPropiedades() {
@@ -198,7 +199,7 @@ function MisPropiedades() {
                                 <div className="misprops-card" key={prop.id}>
                                     <div className="misprops-card-image">
                                         <img
-                                            src={`/uploads/propiedades/${prop.id}.jpg`}
+                                            src={rutaImagenPropiedad(prop) || '/assets/img/logo.png'}
                                             alt={prop.titulo}
                                             onError={(e) => {
                                                 e.target.style.display = 'none';

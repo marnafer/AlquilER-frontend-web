@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { rutaImagenPropiedad } from '../utils/imagenes';
 
 function PropiedadCard({ propiedad, categoriaNombre, onFavorito }) {
     const [imgError, setImgError] = useState(false);
     const [esFavorito, setEsFavorito] = useState(false);
     const { isAuthenticated } = useAuth();
+
+    const imagen = rutaImagenPropiedad(propiedad);
 
     // Normalizar disponibilidad (por si el backend no la envía)
     const disponible = propiedad.disponible !== false;
@@ -21,13 +24,13 @@ function PropiedadCard({ propiedad, categoriaNombre, onFavorito }) {
     return (
         <div className="propiedad-card">
             <div className="propiedad-image">
-                {imgError ? (
+                {!imagen || imgError ? (
                     <div className="propiedad-placeholder">
                         <i className="fas fa-home"></i>
                     </div>
                 ) : (
                     <img
-                        src={`/uploads/propiedades/${propiedad.id}.jpg`}
+                        src={imagen}
                         alt={propiedad.titulo || 'Propiedad'}
                         onError={() => setImgError(true)}
                         loading="lazy"

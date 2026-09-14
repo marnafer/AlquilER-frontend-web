@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { getPropiedad, getCategorias } from '../services/api';
+import { rutaImagenPropiedad } from '../utils/imagenes';
 import Loader from './Loader';
 
 function PropiedadDetalle() {
@@ -48,6 +49,7 @@ function PropiedadDetalle() {
 
     const categoriaNombre = categorias.find(c => c.id === propiedad.categoria_id)?.nombre;
     const disponible = propiedad.disponible !== false;
+    const imagen = rutaImagenPropiedad(propiedad);
 
     return (
         <div className="props-page">
@@ -58,13 +60,13 @@ function PropiedadDetalle() {
 
                 <div className="propiedad-detalle">
                     <div className="propiedad-detalle-imagen">
-                        {imgError ? (
+                        {!imagen || imgError ? (
                             <div className="propiedad-placeholder">
                                 <i className="fas fa-home"></i>
                             </div>
                         ) : (
                             <img
-                                src={`/uploads/propiedades/${propiedad.id}.jpg`}
+                                src={imagen}
                                 alt={propiedad.titulo || 'Propiedad'}
                                 onError={() => setImgError(true)}
                             />

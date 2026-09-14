@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getPropiedades, getCategorias } from '../services/api';
+import { rutaImagenPropiedad } from '../utils/imagenes';
 import Loader from '../components/Loader';
 
 function Home() {
@@ -86,9 +87,9 @@ function Home() {
                             <div className="propiedad-card" key={prop.id}>
                                 <div className="propiedad-image">
                                     <img 
-                                        src={`/uploads/propiedades/${prop.id}.jpg`} 
+                                        src={rutaImagenPropiedad(prop) || '/assets/img/logo.png'} 
                                         alt={prop.titulo}
-                                        onError={(e) => e.target.src = '/assets/img/propiedad-default.jpg'}
+                                        onError={(e) => e.target.src = '/assets/img/logo.png'}
                                     />
                                     <span className="propiedad-badge">Destacado</span>
                                 </div>
