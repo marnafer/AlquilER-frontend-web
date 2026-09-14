@@ -13,13 +13,13 @@ function MisPropiedades() {
 
     useEffect(() => {
         cargarPropiedades();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [usuario]);
 
     const cargarPropiedades = async () => {
         if (!usuario) return;
         try {
             const todas = await getPropiedades();
-            // Filtramos solo las del usuario logueado
             const mias = todas.filter(
                 p => String(p.usuario_id) === String(usuario.id)
             );
@@ -61,7 +61,6 @@ function MisPropiedades() {
 
     if (loading) return <Loader />;
 
-    // Estadísticas simples
     const totalDisponibles = propiedades.filter(p => p.disponible).length;
     const totalAlquiladas = propiedades.filter(p => !p.disponible).length;
 
@@ -166,7 +165,7 @@ function MisPropiedades() {
                                             <i className="fas fa-eye"></i> Ver
                                         </Link>
                                         <Link
-                                            to={`/propiedades/editar/${prop.id}`}
+                                            to={`/propiedades/${prop.id}/editar`}
                                             className="misprops-btn editar"
                                         >
                                             <i className="fas fa-pen"></i> Editar

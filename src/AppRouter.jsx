@@ -26,9 +26,7 @@ import NotFound from './pages/NotFound';
 // Componente para proteger rutas que requieren autenticación
 function PrivateRoute({ children }) {
     const { isAuthenticated, loading } = useAuth();
-    // Mientras carga el perfil, no redirigimos (evita flash de redirect)
     if (loading) return null;
-    // Si no está autenticado, redirige al login
     return isAuthenticated ? children : <Navigate to="/login" replace />;
 }
 
@@ -36,7 +34,6 @@ function PrivateRoute({ children }) {
 function GuestRoute({ children }) {
     const { isAuthenticated, loading } = useAuth();
     if (loading) return null;
-    // Si está autenticado, redirige al home
     return !isAuthenticated ? children : <Navigate to="/" replace />;
 }
 
@@ -54,7 +51,6 @@ function OwnerRoute({ children }) {
 function AppRouter() {
     return (
         <>
-            {/* Header se muestra en todas las páginas */}
             <Header />
             <main className="main">
                 <Routes>
@@ -68,7 +64,6 @@ function AppRouter() {
                     {/* ============================================
                         RUTAS ESPECÍFICAS DE PROPIEDADES
                         ⚠️ IMPORTANTE: van ANTES de /propiedades/:id
-                        para que React Router no las confunda
                        ============================================ */}
 
                     {/* Crear propiedad (solo propietarios) */}
@@ -83,7 +78,7 @@ function AppRouter() {
 
                     {/* Editar propiedad (solo propietarios) */}
                     <Route
-                        path="/propiedades/editar/:id"
+                        path="/propiedades/:id/editar"
                         element={
                             <OwnerRoute>
                                 <PropiedadForm />
@@ -121,7 +116,6 @@ function AppRouter() {
                         RUTAS PROTEGIDAS (requieren autenticación)
                        ============================================ */}
 
-                    {/* Perfil y Dashboard */}
                     <Route
                         path="/perfil"
                         element={
@@ -138,8 +132,6 @@ function AppRouter() {
                             </PrivateRoute>
                         }
                     />
-
-                    {/* Favoritos */}
                     <Route
                         path="/favoritos"
                         element={
@@ -148,8 +140,6 @@ function AppRouter() {
                             </PrivateRoute>
                         }
                     />
-
-                    {/* Mis propiedades (solo propietarios) */}
                     <Route
                         path="/mis-propiedades"
                         element={
@@ -165,7 +155,6 @@ function AppRouter() {
                     <Route path="*" element={<NotFound />} />
                 </Routes>
             </main>
-            {/* Footer se muestra en todas las páginas */}
             <Footer />
         </>
     );
