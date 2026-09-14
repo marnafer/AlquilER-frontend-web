@@ -33,7 +33,8 @@ export async function register(userData) {
             email: userData.email,
             telefono: userData.telefono || '',
             domicilio: userData.domicilio || '',
-            contrasena: userData.contrasena || userData.password
+            contrasena: userData.contrasena || userData.password,
+            rol: userData.rol || 'inquilino'
         };
 
         const response = await fetch(`${API_URL}/api/autenticador/register`, {

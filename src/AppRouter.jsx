@@ -7,13 +7,15 @@ import { useAuth } from './hooks/useAuth';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import PropiedadDetalle from './components/PropiedadDetalle';
-// Páginas de la aplicación
+// Páginas implementadas
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Perfil from './pages/Perfil';
 import Propiedades from './pages/Propiedades';
 import Dashboard from './pages/Dashboard';
+import Favoritos from './pages/Favoritos';
+import MisPropiedades from './pages/MisPropiedades';
 import NotFound from './pages/NotFound';
 
 // Componente para proteger rutas que requieren autenticación
@@ -40,13 +42,17 @@ function AppRouter() {
             <Header />
             <main className="main">
                 <Routes>
-                    {/* ===== RUTAS PÚBLICAS ===== */}
+                    {/* ============================================
+                        RUTAS PÚBLICAS
+                       ============================================ */}
                     <Route path="/" element={<Home />} />
                     <Route path="/home" element={<Home />} />
                     <Route path="/propiedades" element={<Propiedades />} />
                     <Route path="/propiedades/:id" element={<PropiedadDetalle />} />
 
-                    {/* ===== RUTAS PARA INVITADOS (no logueados) ===== */}
+                    {/* ============================================
+                        RUTAS PARA INVITADOS (no logueados)
+                       ============================================ */}
                     <Route
                         path="/login"
                         element={
@@ -64,7 +70,11 @@ function AppRouter() {
                         }
                     />
 
-                    {/* ===== RUTAS PROTEGIDAS (requieren autenticación) ===== */}
+                    {/* ============================================
+                        RUTAS PROTEGIDAS (requieren autenticación)
+                       ============================================ */}
+
+                    {/* Perfil y Dashboard */}
                     <Route
                         path="/perfil"
                         element={
@@ -82,7 +92,29 @@ function AppRouter() {
                         }
                     />
 
-                    {/* ===== RUTA 404 - siempre al final ===== */}
+                    {/* Favoritos */}
+                    <Route
+                        path="/favoritos"
+                        element={
+                            <PrivateRoute>
+                                <Favoritos />
+                            </PrivateRoute>
+                        }
+                    />
+
+                    {/* Mis propiedades (propietarios) */}
+                    <Route
+                        path="/mis-propiedades"
+                        element={
+                            <PrivateRoute>
+                                <MisPropiedades />
+                            </PrivateRoute>
+                        }
+                    />
+
+                    {/* ============================================
+                        RUTA 404 - siempre al final
+                       ============================================ */}
                     <Route path="*" element={<NotFound />} />
                 </Routes>
             </main>
