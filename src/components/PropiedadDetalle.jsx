@@ -48,9 +48,7 @@ function PropiedadDetalle() {
         }
     };
 
-    if (loading) return <Loader />;
-    if (!propiedad) {
-const abrirModalConsulta = () => {
+    const abrirModalConsulta = () => {
         setErrorConsulta('');
         setValidacionConsulta({});
         setExitoConsulta('');
@@ -95,6 +93,9 @@ const abrirModalConsulta = () => {
             setEnviandoConsulta(false);
         }
     };
+
+    if (loading) return <Loader />;
+    if (!propiedad) {
 
     return (
             <div className="container propiedades-page">
