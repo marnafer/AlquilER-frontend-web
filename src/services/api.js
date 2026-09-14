@@ -125,6 +125,22 @@ export async function getPropiedades() {
     }
 }
 
+export async function getMisPropiedades(token) {
+    try {
+        const response = await fetch(`${API_URL}/api/propiedades/mis-propiedades`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await response.json();
+        if (result.success && result.data && result.data.items) {
+            return result.data.items;
+        }
+        return result.data || [];
+    } catch (error) {
+        console.error('Error en getMisPropiedades:', error);
+        return [];
+    }
+}
+
 export async function getPropiedad(id) {
     try {
         const response = await fetch(`${API_URL}/api/propiedades/${id}`);

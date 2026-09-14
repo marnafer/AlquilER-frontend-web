@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { getPropiedades, deletePropiedad, getCategorias } from '../services/api';
+import { getMisPropiedades, deletePropiedad, getCategorias } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
 import Loader from '../components/Loader';
 
@@ -19,7 +19,7 @@ function MisPropiedades() {
     const cargarDatos = useCallback(async () => {
         try {
             const [props, cats] = await Promise.all([
-                getPropiedades(),
+                getMisPropiedades(token),
                 getCategorias()
             ]);
 
@@ -27,14 +27,7 @@ function MisPropiedades() {
             const lista = Array.isArray(props) ? props : (props?.data || props?.items || []);
             const listaCats = Array.isArray(cats) ? cats : (cats?.data || cats?.items || []);
 
-            // Filtrar por propietario
-            const usuarioId = usuario?.id;
-            const mias = lista.filter(p => {
-                const pid = p.usuario_id || p.propietario_id || p.user_id;
-                return usuarioId && String(pid) === String(usuarioId);
-            });
-
-            setPropiedades(mias);
+            setPropiedades(lista);
             setCategorias(listaCats);
         } catch (error) {
             console.error('Error cargando propiedades:', error);
@@ -42,7 +35,7 @@ function MisPropiedades() {
         } finally {
             setLoading(false);
         }
-    }, [usuario?.id]);
+    }, [token]);
 
     useEffect(() => {
         cargarDatos();
