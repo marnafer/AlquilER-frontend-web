@@ -1,12 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import {
-    getCategorias,
-    getLocalidades,
-    getPropiedad,
-    createPropiedad,
-    updatePropiedad
+import { 
+    getCategorias, 
+    getLocalidades, 
+    createPropiedad, 
+    updatePropiedad, 
+    getPropiedad, 
+    subirImagenPropiedad, 
+    establecerImagenPrincipal, 
+    eliminarImagenPropiedad, 
+    API_URL 
 } from '../services/api';
 import Loader from '../components/Loader';
 
@@ -35,10 +39,17 @@ function PropiedadForm() {
     const { token } = useAuth();
 
     // Estados de datos
-    const [loading, setLoading] = useState(true);
+const [loading, setLoading] = useState(true);
     const [guardando, setGuardando] = useState(false);
+    const [error, setError] = useState('');
     const [categorias, setCategorias] = useState([]);
     const [localidades, setLocalidades] = useState([]);
+
+    const [imagenes, setImagenes] = useState([]);
+    const [archivoImagen, setArchivoImagen] = useState(null);
+    const [subiendoImagen, setSubiendoImagen] = useState(false);
+    const [imagenError, setImagenError] = useState('');
+    const imagenInputRef = useRef(null);
 
     // Estados del formulario
     const [formData, setFormData] = useState(FORM_INICIAL);
@@ -94,10 +105,73 @@ function PropiedadForm() {
                 categoria_id: prop.categoria_id ?? '',
                 localidad_id: prop.localidad_id ?? ''
             });
+            setImagenes(Array.isArray(prop.imagenes) ? prop.imagenes : []);
         } catch (err) {
             setErrorGeneral('Error al cargar la propiedad.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    // ============================================
+    // MANEJO DE IMÁGENES
+    // ============================================
+    const urlImagen = (imagen) => {
+        if (!imagen?.ruta) return '';
+        return imagen.ruta.startsWith('http') ? imagen.ruta : `${API_URL}${imagen.ruta}`;
+    };
+
+    const cargarImagenes = async () => {
+        const prop = await getPropiedad(id);
+        if (prop) setImagenes(Array.isArray(prop.imagenes) ? prop.imagenes : []);
+    };
+
+    const handleArchivoImagen = (e) => {
+        setArchivoImagen(e.target.files[0] || null);
+        setImagenError('');
+    };
+
+    const handleSubirImagen = async () => {
+        if (!archivoImagen) {
+            setImagenError('Seleccioná un archivo de imagen primero.');
+            return;
+        }
+        setSubiendoImagen(true);
+        setImagenError('');
+        try {
+            const result = await subirImagenPropiedad(id, archivoImagen, token);
+            if (result.success) {
+                setArchivoImagen(null);
+                if (imagenInputRef.current) imagenInputRef.current.value = '';
+                await cargarImagenes();
+            } else {
+                setImagenError(result.message || result.error || 'No se pudo subir la imagen.');
+            }
+        } catch (err) {
+            setImagenError('Error de conexión al subir la imagen.');
+        } finally {
+            setSubiendoImagen(false);
+        }
+    };
+
+    const handleSetPrincipal = async (imagenId) => {
+        setImagenError('');
+        const result = await establecerImagenPrincipal(imagenId, token);
+        if (result.success) {
+            await cargarImagenes();
+        } else {
+            setImagenError(result.message || result.error || 'No se pudo actualizar la imagen principal.');
+        }
+    };
+
+    const handleEliminarImagen = async (imagenId) => {
+        if (!window.confirm('¿Eliminar esta imagen?')) return;
+        setImagenError('');
+        const result = await eliminarImagenPropiedad(imagenId, token);
+        if (result.success) {
+            await cargarImagenes();
+        } else {
+            setImagenError(result.message || result.error || 'No se pudo eliminar la imagen.');
         }
     };
 
@@ -525,6 +599,127 @@ function PropiedadForm() {
                             </div>
                         </div>
                     </section>
+
+                    {/* ============================================
+                        SECCIÓN 4: IMÁGENES (SOLO EDICIÓN)
+                       ============================================ */}
+                    {esEdicion && (
+                        <section className="propform-card">
+                            <div className="propform-card-header">
+                                <h3>
+                                    <i className="fas fa-images"></i> Imágenes de la propiedad
+                                </h3>
+                            </div>
+
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: 12,
+                                    marginBottom: 18
+                                }}
+                            >
+                                {imagenes.length === 0 && (
+                                    <p className="form-help">
+                                        Todavía no hay imágenes. Subí la primera para que aparezca en el catálogo.
+                                    </p>
+                                )}
+                                {imagenes.map(img => (
+                                    <div
+                                        key={img.id}
+                                        style={{
+                                            width: 160,
+                                            border: Number(img.es_principal) === 1
+                                                ? '3px solid #16a34a'
+                                                : '1px solid #ddd',
+                                            borderRadius: 8,
+                                            overflow: 'hidden',
+                                            position: 'relative'
+                                        }}
+                                    >
+                                        <img
+                                            src={urlImagen(img)}
+                                            alt={img.descripcion || 'Imagen de la propiedad'}
+                                            style={{ width: '100%', height: 110, objectFit: 'cover', display: 'block' }}
+                                        />
+                                        <div style={{ padding: 8 }}>
+                                            {Number(img.es_principal) === 1 ? (
+                                                <span
+                                                    className="propform-gallery-principal"
+                                                    style={{
+                                                        color: '#16a34a',
+                                                        fontWeight: 700,
+                                                        fontSize: 13,
+                                                        display: 'block',
+                                                        marginBottom: 4
+                                                    }}
+                                                >
+                                                    <i className="fas fa-star" style={{ color: '#f59e0b' }}></i> Principal
+                                                </span>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    className="btn-detalle btn-detalle-secundario"
+                                                    style={{ marginBottom: 4 }}
+                                                    onClick={() => handleSetPrincipal(img.id)}
+                                                >
+                                                    <i className="fas fa-star"></i> Principal
+                                                </button>
+                                            )}
+                                            <button
+                                                type="button"
+                                                className="btn-detalle btn-detalle-danger"
+                                                onClick={() => handleEliminarImagen(img.id)}
+                                            >
+                                                <i className="fas fa-trash-alt"></i> Eliminar
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="imagen-file-input">Agregar imagen</label>
+                                <input
+                                    id="imagen-file-input"
+                                    className="imagen-input"
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/gif,image/webp"
+                                    onChange={handleArchivoImagen}
+                                    ref={imagenInputRef}
+                                />
+                                <span className="form-help">
+                                    Máx. 5 MB. Formatos: JPG, PNG, GIF, WEBP.
+                                </span>
+                                {archivoImagen && (
+                                    <span className="form-help">
+                                        Archivo seleccionado: {archivoImagen.name} ({(archivoImagen.size / 1024).toFixed(0)} KB)
+                                    </span>
+                                )}
+                                {imagenError && (
+                                    <span className="form-error">{imagenError}</span>
+                                )}
+                                <div style={{ marginTop: 10 }}>
+                                    <button
+                                        type="button"
+                                        className="btn-detalle btn-detalle-primario"
+                                        onClick={handleSubirImagen}
+                                        disabled={subiendoImagen || !archivoImagen}
+                                    >
+                                        {subiendoImagen ? (
+                                            <>
+                                                <i className="fas fa-spinner fa-spin"></i> Subiendo...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <i className="fas fa-upload"></i> Subir imagen
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+                    )}
 
                     {/* ============================================
                         ACCIONES

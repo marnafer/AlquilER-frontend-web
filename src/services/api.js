@@ -199,6 +199,46 @@ export async function deletePropiedad(id, token) {
     }
 }
 
+export async function subirImagenPropiedad(propiedadId, file, token) {
+    try {
+        const formData = new FormData();
+        formData.append('propiedad_id', String(propiedadId));
+        formData.append('imagen', file);
+        const response = await fetch(`${API_URL}/api/propiedad-imagenes`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function establecerImagenPrincipal(id, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/propiedad-imagenes/${id}/principal`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function eliminarImagenPropiedad(id, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/propiedad-imagenes/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
 // ============================================
 // CATÁLOGOS (CATEGORÍAS, LOCALIDADES, PROVINCIAS, SERVICIOS)
 // ============================================
