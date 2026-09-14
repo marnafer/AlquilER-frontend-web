@@ -16,7 +16,12 @@ import Propiedades from './pages/Propiedades';
 import Dashboard from './pages/Dashboard';
 import Favoritos from './pages/Favoritos';
 import MisPropiedades from './pages/MisPropiedades';
+import PropiedadForm from './pages/PropiedadForm';
 import NotFound from './pages/NotFound';
+
+// ============================================
+// RUTAS PROTEGIDAS
+// ============================================
 
 // Componente para proteger rutas que requieren autenticación
 function PrivateRoute({ children }) {
@@ -35,6 +40,17 @@ function GuestRoute({ children }) {
     return !isAuthenticated ? children : <Navigate to="/" replace />;
 }
 
+// Componente para rutas exclusivas de propietarios (y admins)
+function OwnerRoute({ children }) {
+    const { isAuthenticated, loading, usuario } = useAuth();
+    if (loading) return null;
+    if (!isAuthenticated) return <Navigate to="/login" replace />;
+    if (usuario?.rol !== 'propietario' && usuario?.rol !== 'administrador') {
+        return <Navigate to="/" replace />;
+    }
+    return children;
+}
+
 function AppRouter() {
     return (
         <>
@@ -48,6 +64,37 @@ function AppRouter() {
                     <Route path="/" element={<Home />} />
                     <Route path="/home" element={<Home />} />
                     <Route path="/propiedades" element={<Propiedades />} />
+
+                    {/* ============================================
+                        RUTAS ESPECÍFICAS DE PROPIEDADES
+                        ⚠️ IMPORTANTE: van ANTES de /propiedades/:id
+                        para que React Router no las confunda
+                       ============================================ */}
+
+                    {/* Crear propiedad (solo propietarios) */}
+                    <Route
+                        path="/propiedades/crear"
+                        element={
+                            <OwnerRoute>
+                                <PropiedadForm />
+                            </OwnerRoute>
+                        }
+                    />
+
+                    {/* Editar propiedad (solo propietarios) */}
+                    <Route
+                        path="/propiedades/editar/:id"
+                        element={
+                            <OwnerRoute>
+                                <PropiedadForm />
+                            </OwnerRoute>
+                        }
+                    />
+
+                    {/* ============================================
+                        DETALLE DE PROPIEDAD (ruta dinámica)
+                        ⚠️ SIEMPRE AL FINAL de las rutas de /propiedades
+                       ============================================ */}
                     <Route path="/propiedades/:id" element={<PropiedadDetalle />} />
 
                     {/* ============================================
@@ -102,13 +149,13 @@ function AppRouter() {
                         }
                     />
 
-                    {/* Mis propiedades (propietarios) */}
+                    {/* Mis propiedades (solo propietarios) */}
                     <Route
                         path="/mis-propiedades"
                         element={
-                            <PrivateRoute>
+                            <OwnerRoute>
                                 <MisPropiedades />
-                            </PrivateRoute>
+                            </OwnerRoute>
                         }
                     />
 

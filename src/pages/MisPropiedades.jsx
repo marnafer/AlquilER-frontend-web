@@ -1,109 +1,69 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { getMisPropiedades, deletePropiedad, getCategorias } from '../services/api';
-import { rutaImagenPropiedad } from '../utils/imagenes';
+import { getPropiedades, deletePropiedad } from '../services/api';
 import Loader from '../components/Loader';
 
 function MisPropiedades() {
-    const { usuario, token } = useAuth();
-    const navigate = useNavigate();
-
-    const [propiedades, setPropiedades] = useState([]);
-    const [categorias, setCategorias] = useState([]);
+    const { token, usuario } = useAuth();
     const [loading, setLoading] = useState(true);
-    const [eliminando, setEliminando] = useState(null);
-    const [mensaje, setMensaje] = useState({ type: '', text: '' });
-    const [confirmarEliminar, setConfirmarEliminar] = useState(null);
+    const [propiedades, setPropiedades] = useState([]);
+    const [eliminando, setEliminando] = useState(false);
+    const [propiedadAEliminar, setPropiedadAEliminar] = useState(null);
 
-    const cargarDatos = useCallback(async () => {
+    useEffect(() => {
+        cargarPropiedades();
+    }, [usuario]);
+
+    const cargarPropiedades = async () => {
+        if (!usuario) return;
         try {
-            const [props, cats] = await Promise.all([
-                getMisPropiedades(token),
-                getCategorias()
-            ]);
-
-            // Normalizar respuesta
-            const lista = Array.isArray(props) ? props : (props?.data || props?.items || []);
-            const listaCats = Array.isArray(cats) ? cats : (cats?.data || cats?.items || []);
-
-            setPropiedades(lista);
-            setCategorias(listaCats);
+            const todas = await getPropiedades();
+            // Filtramos solo las del usuario logueado
+            const mias = todas.filter(
+                p => String(p.usuario_id) === String(usuario.id)
+            );
+            setPropiedades(mias);
         } catch (error) {
             console.error('Error cargando propiedades:', error);
-            setMensaje({ type: 'error', text: 'No pudimos cargar tus propiedades' });
         } finally {
             setLoading(false);
         }
-    }, [token]);
+    };
 
-    useEffect(() => {
-        cargarDatos();
-    }, [cargarDatos]);
+    const handleEliminarClick = (propiedad) => {
+        setPropiedadAEliminar(propiedad);
+    };
 
-    // Auto-ocultar mensajes
-    useEffect(() => {
-        if (mensaje.text) {
-            const timer = setTimeout(() => setMensaje({ type: '', text: '' }), 3500);
-            return () => clearTimeout(timer);
-        }
-    }, [mensaje]);
+    const cancelarEliminar = () => {
+        setPropiedadAEliminar(null);
+    };
 
-    const categoriasMap = categorias.reduce((acc, cat) => {
-        acc[cat.id] = cat.nombre;
-        return acc;
-    }, {});
-
-    const handleEliminar = async (id) => {
-        setEliminando(id);
+    const confirmarEliminar = async () => {
+        if (!propiedadAEliminar) return;
+        setEliminando(true);
         try {
-            const result = await deletePropiedad(id, token);
-            if (result?.success !== false) {
-                setPropiedades(prev => prev.filter(p => p.id !== id));
-                setMensaje({ type: 'success', text: 'Propiedad eliminada correctamente' });
-                setConfirmarEliminar(null);
+            const result = await deletePropiedad(propiedadAEliminar.id, token);
+            if (result.success) {
+                setPropiedades(prev =>
+                    prev.filter(p => p.id !== propiedadAEliminar.id)
+                );
+                setPropiedadAEliminar(null);
             } else {
-                setMensaje({ type: 'error', text: result?.message || 'No se pudo eliminar' });
+                alert(result.message || result.error || 'No se pudo eliminar');
             }
         } catch (error) {
-            console.error('Error eliminando:', error);
-            setMensaje({ type: 'error', text: 'Error de conexión' });
+            alert('Error de conexión al eliminar');
         } finally {
-            setEliminando(null);
+            setEliminando(false);
         }
     };
 
-    // Solo propietarios pueden ver esta página
-    if (usuario && usuario.rol !== 'propietario') {
-        return (
-            <div className="misprops-page">
-                <div className="container">
-                    <div className="propiedades-empty">
-                        <div className="empty-icon">
-                            <i className="fas fa-lock"></i>
-                        </div>
-                        <h3>Solo para propietarios</h3>
-                        <p>
-                            Esta sección está reservada para usuarios con rol de propietario.
-                            Si querés publicar propiedades, cambiá tu tipo de usuario.
-                        </p>
-                        <Link
-                            to="/perfil"
-                            className="btn-ver-todas"
-                            style={{ marginTop: '20px', display: 'inline-block' }}
-                        >
-                            Ir a mi perfil
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
     if (loading) return <Loader />;
 
-    const totalDisponibles = propiedades.filter(p => p.disponible !== false).length;
-    const totalAlquiladas = propiedades.length - totalDisponibles;
+    // Estadísticas simples
+    const totalDisponibles = propiedades.filter(p => p.disponible).length;
+    const totalAlquiladas = propiedades.filter(p => !p.disponible).length;
 
     return (
         <div className="misprops-page">
@@ -113,14 +73,14 @@ function MisPropiedades() {
                 <section className="misprops-hero">
                     <div className="misprops-hero-content">
                         <span className="misprops-hero-badge">
-                            <i className="fas fa-building"></i> Panel de propietario
+                            <i className="fas fa-building"></i> Panel del propietario
                         </span>
                         <h1>
-                            Mis <span>propiedades</span>
+                            Mis <span>Propiedades</span>
                         </h1>
                         <p>
-                            Gestioná tus publicaciones: editá, actualizá el estado o eliminá
-                            las que ya no estén disponibles.
+                            Administrá tus propiedades publicadas, editá su información
+                            o dá de baja las que ya no ofrezcas.
                         </p>
                     </div>
                     <div className="misprops-hero-actions">
@@ -130,149 +90,112 @@ function MisPropiedades() {
                     </div>
                 </section>
 
-                {/* MENSAJE */}
-                {mensaje.text && (
-                    <div
-                        className={`alert alert-${mensaje.type === 'success' ? 'success' : 'error'}`}
-                        style={{ marginBottom: '24px' }}
-                    >
-                        <i
-                            className={`fas ${
-                                mensaje.type === 'success'
-                                    ? 'fa-check-circle'
-                                    : 'fa-exclamation-circle'
-                            }`}
-                            style={{ marginRight: '8px' }}
-                        ></i>
-                        {mensaje.text}
-                    </div>
-                )}
-
-                {/* MINI STATS */}
-                {propiedades.length > 0 && (
-                    <div className="misprops-stats">
-                        <div className="misprops-stat">
-                            <div className="misprops-stat-icon teal">
-                                <i className="fas fa-home"></i>
-                            </div>
-                            <div>
-                                <span className="misprops-stat-num">{propiedades.length}</span>
-                                <span className="misprops-stat-label">Total</span>
-                            </div>
+                {/* ESTADÍSTICAS */}
+                <section className="misprops-stats">
+                    <div className="misprops-stat">
+                        <div className="misprops-stat-icon teal">
+                            <i className="fas fa-building"></i>
                         </div>
-                        <div className="misprops-stat">
-                            <div className="misprops-stat-icon emerald">
-                                <i className="fas fa-check-circle"></i>
-                            </div>
-                            <div>
-                                <span className="misprops-stat-num">{totalDisponibles}</span>
-                                <span className="misprops-stat-label">Disponibles</span>
-                            </div>
-                        </div>
-                        <div className="misprops-stat">
-                            <div className="misprops-stat-icon slate">
-                                <i className="fas fa-ban"></i>
-                            </div>
-                            <div>
-                                <span className="misprops-stat-num">{totalAlquiladas}</span>
-                                <span className="misprops-stat-label">Alquiladas</span>
-                            </div>
+                        <div>
+                            <span className="misprops-stat-num">{propiedades.length}</span>
+                            <span className="misprops-stat-label">Total</span>
                         </div>
                     </div>
-                )}
+                    <div className="misprops-stat">
+                        <div className="misprops-stat-icon emerald">
+                            <i className="fas fa-check-circle"></i>
+                        </div>
+                        <div>
+                            <span className="misprops-stat-num">{totalDisponibles}</span>
+                            <span className="misprops-stat-label">Disponibles</span>
+                        </div>
+                    </div>
+                    <div className="misprops-stat">
+                        <div className="misprops-stat-icon slate">
+                            <i className="fas fa-key"></i>
+                        </div>
+                        <div>
+                            <span className="misprops-stat-num">{totalAlquiladas}</span>
+                            <span className="misprops-stat-label">Alquiladas</span>
+                        </div>
+                    </div>
+                </section>
 
-                {/* LISTADO */}
+                {/* GRID O EMPTY STATE */}
                 {propiedades.length > 0 ? (
-                    <div className="misprops-grid">
-                        {propiedades.map(prop => {
-                            const disponible = prop.disponible !== false;
-                            const categoriaNombre = categoriasMap[prop.categoria_id];
+                    <section className="misprops-grid">
+                        {propiedades.map(prop => (
+                            <div className="misprops-card" key={prop.id}>
+                                <div className="misprops-card-image">
+                                    <img
+                                        src={`/uploads/propiedades/${prop.id}.jpg`}
+                                        alt={prop.titulo}
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                            e.target.parentElement.classList.add('sin-imagen');
+                                        }}
+                                    />
+                                    <span className={`misprops-estado ${prop.disponible ? 'disponible' : 'alquilada'}`}>
+                                        {prop.disponible ? 'Disponible' : 'Alquilada'}
+                                    </span>
+                                </div>
 
-                            return (
-                                <div className="misprops-card" key={prop.id}>
-                                    <div className="misprops-card-image">
-                                        <img
-                                            src={rutaImagenPropiedad(prop) || '/assets/img/logo.png'}
-                                            alt={prop.titulo}
-                                            onError={(e) => {
-                                                e.target.style.display = 'none';
-                                                e.target.parentElement.classList.add('sin-imagen');
-                                            }}
-                                        />
-                                        <span
-                                            className={`misprops-estado ${disponible ? 'disponible' : 'alquilada'}`}
-                                        >
-                                            {disponible ? 'Disponible' : 'Alquilada'}
-                                        </span>
-                                        {categoriaNombre && (
-                                            <span className="misprops-categoria">
-                                                <i className="fas fa-tag"></i> {categoriaNombre}
-                                            </span>
-                                        )}
+                                <div className="misprops-card-body">
+                                    <h3>{prop.titulo || 'Sin título'}</h3>
+                                    <p className="misprops-direccion">
+                                        <i className="fas fa-map-marker-alt"></i>{' '}
+                                        {prop.direccion || 'Sin dirección'}
+                                    </p>
+
+                                    <div className="misprops-meta">
+                                        <div className="misprops-precio">
+                                            ${Number(prop.precio || 0).toLocaleString()}
+                                            <span>/mes</span>
+                                        </div>
+                                        <div className="misprops-features">
+                                            <span><i className="fas fa-bed"></i> {prop.cantidad_dormitorios || 0}</span>
+                                            <span><i className="fas fa-bath"></i> {prop.cantidad_banos || 0}</span>
+                                        </div>
                                     </div>
 
-                                    <div className="misprops-card-body">
-                                        <h3>{prop.titulo || 'Sin título'}</h3>
-                                        <p className="misprops-direccion">
-                                            <i className="fas fa-map-marker-alt"></i>{' '}
-                                            {prop.direccion || 'Sin dirección'}
-                                        </p>
-
-                                        <div className="misprops-meta">
-                                            <div className="misprops-precio">
-                                                ${Number(prop.precio || 0).toLocaleString()}
-                                                <span>/mes</span>
-                                            </div>
-                                            <div className="misprops-features">
-                                                <span><i className="fas fa-bed"></i> {prop.cantidad_dormitorios || 0}</span>
-                                                <span><i className="fas fa-bath"></i> {prop.cantidad_banos || 0}</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="misprops-actions">
-                                            <Link
-                                                to={`/propiedades/${prop.id}`}
-                                                className="misprops-btn ver"
-                                                title="Ver detalle"
-                                            >
-                                                <i className="fas fa-eye"></i> Ver
-                                            </Link>
-                                            <Link
-                                                to={`/propiedades/${prop.id}/editar`}
-                                                className="misprops-btn editar"
-                                                title="Editar"
-                                            >
-                                                <i className="fas fa-pen"></i> Editar
-                                            </Link>
-                                            <button
-                                                className="misprops-btn eliminar"
-                                                onClick={() => setConfirmarEliminar(prop)}
-                                                title="Eliminar"
-                                            >
-                                                <i className="fas fa-trash-alt"></i>
-                                            </button>
-                                        </div>
+                                    <div className="misprops-actions">
+                                        <Link
+                                            to={`/propiedades/${prop.id}`}
+                                            className="misprops-btn ver"
+                                        >
+                                            <i className="fas fa-eye"></i> Ver
+                                        </Link>
+                                        <Link
+                                            to={`/propiedades/editar/${prop.id}`}
+                                            className="misprops-btn editar"
+                                        >
+                                            <i className="fas fa-pen"></i> Editar
+                                        </Link>
+                                        <button
+                                            className="misprops-btn eliminar"
+                                            onClick={() => handleEliminarClick(prop)}
+                                            title="Eliminar"
+                                        >
+                                            <i className="fas fa-trash"></i>
+                                        </button>
                                     </div>
                                 </div>
-                            );
-                        })}
-                    </div>
+                            </div>
+                        ))}
+                    </section>
                 ) : (
                     <div className="propiedades-empty">
                         <div className="empty-icon">
-                            <i className="fas fa-home"></i>
+                            <i className="fas fa-building"></i>
                         </div>
                         <h3>Todavía no publicaste propiedades</h3>
-                        <p>
-                            Publicá tu primera propiedad y empezá a recibir consultas
-                            de posibles inquilinos.
-                        </p>
+                        <p>Publicá tu primera propiedad y empezá a recibir consultas.</p>
                         <Link
                             to="/propiedades/crear"
                             className="btn-ver-todas"
                             style={{ marginTop: '20px', display: 'inline-block' }}
                         >
-                            <i className="fas fa-plus"></i> Publicar mi primera propiedad
+                            <i className="fas fa-plus"></i> Publicar propiedad
                         </Link>
                     </div>
                 )}
@@ -280,31 +203,28 @@ function MisPropiedades() {
             </div>
 
             {/* MODAL DE CONFIRMACIÓN */}
-            {confirmarEliminar && (
-                <div
-                    className="modal-backdrop-custom"
-                    onClick={() => !eliminando && setConfirmarEliminar(null)}
-                >
+            {propiedadAEliminar && (
+                <div className="modal-backdrop-custom" onClick={cancelarEliminar}>
                     <div className="modal-custom" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-icon-danger">
-                            <i className="fas fa-exclamation-triangle"></i>
+                            <i className="fas fa-trash-alt"></i>
                         </div>
                         <h3>¿Eliminar propiedad?</h3>
                         <p>
-                            Estás por eliminar <strong>{confirmarEliminar.titulo}</strong>.
+                            Estás por eliminar <strong>{propiedadAEliminar.titulo}</strong>.
                             Esta acción no se puede deshacer.
                         </p>
                         <div className="modal-actions">
                             <button
                                 className="btn-detalle btn-detalle-secundario"
-                                onClick={() => setConfirmarEliminar(null)}
+                                onClick={cancelarEliminar}
                                 disabled={eliminando}
                             >
                                 Cancelar
                             </button>
                             <button
                                 className="btn-detalle btn-detalle-danger"
-                                onClick={() => handleEliminar(confirmarEliminar.id)}
+                                onClick={confirmarEliminar}
                                 disabled={eliminando}
                             >
                                 {eliminando ? (
@@ -313,7 +233,7 @@ function MisPropiedades() {
                                     </>
                                 ) : (
                                     <>
-                                        <i className="fas fa-trash-alt"></i> Sí, eliminar
+                                        <i className="fas fa-trash"></i> Sí, eliminar
                                     </>
                                 )}
                             </button>
