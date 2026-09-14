@@ -169,16 +169,30 @@ function Register() {
                 </div>
 
                 <div className="form-group">
-                    <label htmlFor="rol">Tipo de usuario</label>
-                    <select
-                        id="rol"
-                        name="rol"
-                        value={formData.rol}
-                        onChange={handleChange}
-                    >
-                        <option value="inquilino">Inquilino - Busco alquilar</option>
-                        <option value="propietario">Propietario - Quiero alquilar mi propiedad</option>
-                    </select>
+                    <label>Quiero usar AlquilER para...</label>
+                    <div className="rol-cards">
+                        <button
+                            type="button"
+                            className={`rol-card ${formData.rol === 'inquilino' ? 'active' : ''}`}
+                            onClick={() => setFormData(prev => ({ ...prev, rol: 'inquilino' }))}
+                        >
+                            <i className="fas fa-search"></i>
+                            <span className="rol-card-titulo">Buscar alquiler</span>
+                            <span className="rol-card-texto">Encontrá una propiedad para alquilar</span>
+                        </button>
+                        <button
+                            type="button"
+                            className={`rol-card ${formData.rol === 'propietario' ? 'active' : ''}`}
+                            onClick={() => setFormData(prev => ({ ...prev, rol: 'propietario' }))}
+                        >
+                            <i className="fas fa-home"></i>
+                            <span className="rol-card-titulo">Poner en alquiler</span>
+                            <span className="rol-card-texto">Publicá tus propiedades y gestioná consultas</span>
+                        </button>
+                    </div>
+                    <span className="rol-card-ayuda">
+                        <i className="fas fa-shield-halved"></i> Los perfiles de administración se gestionan aparte.
+                    </span>
                 </div>
 
                 <button type="submit" className="btn-primary" style={{ width: '100%' }} disabled={loading}>
