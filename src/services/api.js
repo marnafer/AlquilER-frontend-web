@@ -475,9 +475,49 @@ export async function getConsultas(token) {
     }
 }
 
-export async function getConsultasByPropiedad(propiedadId) {
+export async function getConsultasByPropiedad(propiedadId, token) {
     try {
-        const response = await fetch(`${API_URL}/api/consultas/propiedad/${propiedadId}`);
+        const response = await fetch(`${API_URL}/api/consultas/propiedad/${propiedadId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function getConsultasByUsuario(usuarioId, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/consultas/usuario/${usuarioId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function getMensajesConsulta(consultaId, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/consultas/${consultaId}/mensajes`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function enviarMensajeConsulta(consultaId, mensaje, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/consultas/${consultaId}/mensajes`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ mensaje })
+        });
         return await response.json();
     } catch (error) {
         return { success: false, error: error.message };

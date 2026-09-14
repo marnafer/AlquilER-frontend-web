@@ -17,6 +17,7 @@ import Dashboard from './pages/Dashboard';
 import Favoritos from './pages/Favoritos';
 import MisPropiedades from './pages/MisPropiedades';
 import MisReservas from './pages/MisReservas';
+import MisConsultas from './pages/MisConsultas';
 import PropiedadForm from './pages/PropiedadForm';
 import NotFound from './pages/NotFound';
 
@@ -146,6 +147,14 @@ function AppRouter() {
                         element={
                             <PrivateRoute>
                                 <MisReservas />
+                            </PrivateRoute>
+                        }
+                    />
+                    <Route
+                        path="/consultas"
+                        element={
+                            <PrivateRoute>
+                                <MisConsultas />
                             </PrivateRoute>
                         }
                     />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { getPropiedad, getCategorias, createReserva } from '../services/api';
+import { getPropiedad, getCategorias, createReserva, createConsulta } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
 import { useAuth } from '../hooks/useAuth';
 import Loader from './Loader';
@@ -20,6 +20,13 @@ function PropiedadDetalle() {
     const [errorReserva, setErrorReserva] = useState('');
     const [exitoReserva, setExitoReserva] = useState('');
     const [validacion, setValidacion] = useState({});
+
+    const [mostrarModalConsulta, setMostrarModalConsulta] = useState(false);
+    const [mensajeConsulta, setMensajeConsulta] = useState('');
+    const [enviandoConsulta, setEnviandoConsulta] = useState(false);
+    const [errorConsulta, setErrorConsulta] = useState('');
+    const [exitoConsulta, setExitoConsulta] = useState('');
+    const [validacionConsulta, setValidacionConsulta] = useState({});
 
     useEffect(() => {
         cargarDatos();
@@ -43,7 +50,53 @@ function PropiedadDetalle() {
 
     if (loading) return <Loader />;
     if (!propiedad) {
-        return (
+const abrirModalConsulta = () => {
+        setErrorConsulta('');
+        setValidacionConsulta({});
+        setExitoConsulta('');
+        setMensajeConsulta('');
+        setMostrarModalConsulta(true);
+    };
+
+    const enviarConsulta = async (e) => {
+        e.preventDefault();
+        setErrorConsulta('');
+        setExitoConsulta('');
+        setValidacionConsulta({});
+
+        const errores = {};
+        const texto = mensajeConsulta.trim();
+        if (!texto) errores.mensaje = 'El mensaje es requerido';
+        else if (texto.length < 5) errores.mensaje = 'El mensaje debe tener al menos 5 caracteres';
+        if (Object.keys(errores).length) {
+            setValidacionConsulta(errores);
+            return;
+        }
+
+        setEnviandoConsulta(true);
+        try {
+            const result = await createConsulta({
+                propiedad_id: Number(propiedad.id),
+                mensaje: texto
+            }, token);
+            if (result.success) {
+                setMostrarModalConsulta(false);
+                setMensajeConsulta('');
+                setExitoConsulta('Consulta enviada correctamente. El propietario la podrá ver en su panel de consultas.');
+            } else {
+                if (result.validation_errors) setValidacionConsulta(result.validation_errors);
+                setErrorConsulta(
+                    result.error || result.message || 'No se pudo enviar la consulta.'
+                );
+            }
+        } catch (err) {
+            setErrorConsulta('Error de conexión al enviar la consulta.');
+        } finally {
+            setEnviandoConsulta(false);
+        }
+    };
+
+    return (
             <div className="container propiedades-page">
                 <div className="propiedades-empty">
                     <div className="empty-icon"><i className="fas fa-home"></i></div>
@@ -193,6 +246,19 @@ function PropiedadDetalle() {
                             </div>
                         )}
 
+                        {exitoConsulta && (
+                            <div style={{
+                                background: '#d1fae5',
+                                color: '#065f46',
+                                padding: '12px 16px',
+                                borderRadius: 12,
+                                fontSize: 14,
+                                marginBottom: 16
+                            }}>
+                                <i className="fas fa-check-circle"></i> {exitoConsulta}
+                            </div>
+                        )}
+
                         <div className="propiedad-detalle-acciones">
                             {!isAuthenticated ? (
                                 <Link
@@ -214,9 +280,24 @@ function PropiedadDetalle() {
                                         : (disponible ? 'Reservar ahora' : 'No disponible')}
                                 </button>
                             )}
-                            <button className="btn-detalle btn-detalle-secundario">
-                                <i className="fas fa-question-circle"></i> Consultar
-                            </button>
+                            {!isAuthenticated ? (
+                                <Link
+                                    to="/login"
+                                    className="btn-detalle btn-detalle-secundario"
+                                >
+                                    <i className="fas fa-question-circle"></i> Consultar
+                                </Link>
+                            ) : (
+                                <button
+                                    className="btn-detalle btn-detalle-secundario"
+                                    disabled={esDuenio}
+                                    onClick={abrirModalConsulta}
+                                    title={esDuenio ? 'No podés consultar tu propia propiedad' : ''}
+                                >
+                                    <i className="fas fa-question-circle"></i>{' '}
+                                    {esDuenio ? 'Es tu propiedad' : 'Consultar'}
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -319,6 +400,87 @@ function PropiedadDetalle() {
                                     ) : (
                                         <>
                                             <i className="fas fa-paper-plane"></i> Solicitar reserva
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        {/* MODAL DE CONSULTA */}
+            {mostrarModalConsulta && (
+                <div className="modal-backdrop-custom" onClick={() => !enviandoConsulta && setMostrarModalConsulta(false)}>
+                    <div
+                        className="modal-custom"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ textAlign: 'left', maxWidth: 460 }}
+                    >
+                        <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <i className="fas fa-question-circle" style={{ color: '#0f766e' }}></i>
+                            Consultar {propiedad.titulo || 'propiedad'}
+                        </h3>
+                        <p style={{ marginBottom: 16 }}>
+                            Escribile una consulta al propietario. Te responderá en tu panel de consultas.
+                        </p>
+
+                        <form onSubmit={enviarConsulta} noValidate>
+                            <div className="form-group" style={{ marginBottom: 14 }}>
+                                <label htmlFor="mensaje-consulta">
+                                    Mensaje <span style={{ color: '#dc2626' }}>*</span>
+                                </label>
+                                <textarea
+                                    id="mensaje-consulta"
+                                    rows="4"
+                                    placeholder="Ej: ¿El precio incluye expensas? ¿Permite mascotas?"
+                                    value={mensajeConsulta}
+                                    onChange={(e) => setMensajeConsulta(e.target.value)}
+                                    className={validacionConsulta.mensaje ? 'input-error' : ''}
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px 12px',
+                                        borderRadius: 10,
+                                        border: `1px solid ${validacionConsulta.mensaje ? '#dc2626' : '#cbd5e1'}`,
+                                        fontFamily: 'inherit',
+                                        fontSize: 14,
+                                        resize: 'vertical'
+                                    }}
+                                />
+                                {validacionConsulta.mensaje && (
+                                    <span className="form-error">
+                                        {validacionConsulta.mensaje}
+                                    </span>
+                                )}
+                            </div>
+
+                            {errorConsulta && (
+                                <div className="alert alert-error" role="alert" style={{ marginBottom: 16 }}>
+                                    <i className="fas fa-exclamation-circle" style={{ marginRight: 8 }}></i>
+                                    {errorConsulta}
+                                </div>
+                            )}
+
+                            <div className="modal-actions">
+                                <button
+                                    type="button"
+                                    className="btn-detalle btn-detalle-secundario"
+                                    onClick={() => setMostrarModalConsulta(false)}
+                                    disabled={enviandoConsulta}
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="btn-detalle btn-detalle-primario"
+                                    disabled={enviandoConsulta}
+                                >
+                                    {enviandoConsulta ? (
+                                        <>
+                                            <i className="fas fa-spinner fa-spin"></i> Enviando...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <i className="fas fa-paper-plane"></i> Enviar consulta
                                         </>
                                     )}
                                 </button>
