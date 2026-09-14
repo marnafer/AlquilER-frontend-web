@@ -54,6 +54,16 @@ function Favoritos() {
         }
     };
 
+    const handleCardFavorito = (propiedadId, esFavorito) => {
+        if (esFavorito) return;
+        setFavoritos(prev =>
+            prev.filter(fav => {
+                const favId = fav.propiedad_id || fav?.propiedad?.id;
+                return String(favId) !== String(propiedadId);
+            })
+        );
+    };
+
     if (loading) return <Loader />;
 
     return (
@@ -93,12 +103,15 @@ function Favoritos() {
                                 // La propiedad puede venir anidada o plana
                                 const prop = fav.propiedad || fav;
                                 const propiedadId = prop.id || fav.propiedad_id;
+                                const categoriaNombre = prop.categoria_nombre || prop.categoria?.nombre;
 
                                 return (
                                     <div key={propiedadId} className="fav-item-wrapper">
                                         <PropiedadCard
                                             propiedad={{ ...prop, id: propiedadId }}
-                                            categoriaNombre={prop.categoria_nombre}
+                                            categoriaNombre={categoriaNombre}
+                                            esFavoritoInicial={true}
+                                            onFavorito={handleCardFavorito}
                                         />
                                         <button
                                             className="fav-remove-btn"

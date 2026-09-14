@@ -199,10 +199,10 @@ function Dashboard() {
                                                 <i className="fas fa-home"></i>
                                             </div>
                                             <div className="dash-reserva-info">
-                                                <strong>{reserva.propiedad_titulo || 'Propiedad'}</strong>
+                                                <strong>{reserva.propiedad?.titulo || 'Propiedad'}</strong>
                                                 <span>
                                                     <i className="far fa-calendar"></i>{' '}
-                                                    {reserva.fecha_desde || '—'} → {reserva.fecha_hasta || '—'}
+                                                    {(reserva.fecha_inicio_alquiler || '').slice(0, 10) || '—'} → {(reserva.fecha_fin_alquiler || '').slice(0, 10) || '—'}
                                                 </span>
                                             </div>
                                             <span className={`dash-reserva-badge ${estado}`}>

@@ -81,6 +81,9 @@ function Header() {
                                 <NavDropdown.Item as={Link} to="/favoritos" onClick={() => setExpanded(false)}>
                                     <i className="fas fa-heart"></i> Favoritos
                                 </NavDropdown.Item>
+                                <NavDropdown.Item as={Link} to="/reservas" onClick={() => setExpanded(false)}>
+                                    <i className="fas fa-calendar-check"></i> Mis Reservas
+                                </NavDropdown.Item>
                                 <NavDropdown.Divider />
                                 <NavDropdown.Item onClick={handleLogout} className="text-danger">
                                     <i className="fas fa-sign-out-alt"></i> Cerrar Sesión

@@ -1,15 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { getPropiedad, getCategorias } from '../services/api';
+import { getPropiedad, getCategorias, createReserva } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
+import { useAuth } from '../hooks/useAuth';
 import Loader from './Loader';
 
 function PropiedadDetalle() {
     const { id } = useParams();
+    const { usuario, token, isAuthenticated } = useAuth();
     const [propiedad, setPropiedad] = useState(null);
     const [categorias, setCategorias] = useState([]);
     const [loading, setLoading] = useState(true);
     const [imgError, setImgError] = useState(false);
+
+    const [mostrarModal, setMostrarModal] = useState(false);
+    const [fechaInicio, setFechaInicio] = useState('');
+    const [fechaFin, setFechaFin] = useState('');
+    const [enviando, setEnviando] = useState(false);
+    const [errorReserva, setErrorReserva] = useState('');
+    const [exitoReserva, setExitoReserva] = useState('');
+    const [validacion, setValidacion] = useState({});
 
     useEffect(() => {
         cargarDatos();
@@ -50,6 +60,56 @@ function PropiedadDetalle() {
     const categoriaNombre = categorias.find(c => c.id === propiedad.categoria_id)?.nombre;
     const disponible = propiedad.disponible !== false;
     const imagen = rutaImagenPropiedad(propiedad);
+    const esDuenio = usuario && String(usuario.id) === String(propiedad.usuario_id);
+    const hoy = new Date().toISOString().slice(0, 10);
+
+    const abrirModal = () => {
+        setErrorReserva('');
+        setValidacion({});
+        setMostrarModal(true);
+    };
+
+    const enviarReserva = async (e) => {
+        e.preventDefault();
+        setErrorReserva('');
+        setExitoReserva('');
+        setValidacion({});
+
+        const errores = {};
+        if (!fechaInicio) errores.fechaInicio = 'La fecha de inicio es requerida';
+        if (!fechaFin) errores.fechaFin = 'La fecha de fin es requerida';
+        if (fechaInicio && fechaFin && fechaFin <= fechaInicio) {
+            errores.fechaFin = 'La fecha de fin debe ser posterior a la de inicio';
+        }
+        if (Object.keys(errores).length) {
+            setValidacion(errores);
+            return;
+        }
+
+        setEnviando(true);
+        try {
+            const result = await createReserva({
+                propiedad_id: Number(propiedad.id),
+                fecha_inicio_alquiler: fechaInicio,
+                fecha_fin_alquiler: fechaFin
+            }, token);
+            if (result.success) {
+                setMostrarModal(false);
+                setFechaInicio('');
+                setFechaFin('');
+                setExitoReserva('Reserva solicitada correctamente. El propietario la revisará en tu panel de reservas.');
+            } else {
+                if (result.validation_errors) setValidacion(result.validation_errors);
+                setErrorReserva(
+                    result.message || result.error || 'No se pudo crear la reserva.'
+                );
+            }
+        } catch (err) {
+            setErrorReserva('Error de conexión al crear la reserva.');
+        } finally {
+            setEnviando(false);
+        }
+    };
 
     return (
         <div className="props-page">
@@ -120,11 +180,40 @@ function PropiedadDetalle() {
                             {propiedad.descripcion || 'Sin descripción'}
                         </p>
 
+                        {exitoReserva && (
+                            <div style={{
+                                background: '#d1fae5',
+                                color: '#065f46',
+                                padding: '12px 16px',
+                                borderRadius: 12,
+                                fontSize: 14,
+                                marginBottom: 16
+                            }}>
+                                <i className="fas fa-check-circle"></i> {exitoReserva}
+                            </div>
+                        )}
+
                         <div className="propiedad-detalle-acciones">
-                            <button className="btn-detalle btn-detalle-primario" disabled={!disponible}>
-                                <i className="fas fa-calendar-check"></i>{' '}
-                                {disponible ? 'Reservar ahora' : 'No disponible'}
-                            </button>
+                            {!isAuthenticated ? (
+                                <Link
+                                    to="/login"
+                                    className="btn-detalle btn-detalle-primario"
+                                >
+                                    <i className="fas fa-calendar-check"></i> Reservar ahora
+                                </Link>
+                            ) : (
+                                <button
+                                    className="btn-detalle btn-detalle-primario"
+                                    disabled={!disponible || esDuenio}
+                                    onClick={abrirModal}
+                                    title={esDuenio ? 'No podés reservar tu propia propiedad' : ''}
+                                >
+                                    <i className="fas fa-calendar-check"></i>{' '}
+                                    {esDuenio
+                                        ? 'Es tu propiedad'
+                                        : (disponible ? 'Reservar ahora' : 'No disponible')}
+                                </button>
+                            )}
                             <button className="btn-detalle btn-detalle-secundario">
                                 <i className="fas fa-question-circle"></i> Consultar
                             </button>
@@ -132,6 +221,112 @@ function PropiedadDetalle() {
                     </div>
                 </div>
             </div>
+
+            {/* MODAL DE RESERVA */}
+            {mostrarModal && (
+                <div className="modal-backdrop-custom" onClick={() => !enviando && setMostrarModal(false)}>
+                    <div
+                        className="modal-custom"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ textAlign: 'left', maxWidth: 460 }}
+                    >
+                        <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <i className="fas fa-calendar-check" style={{ color: '#0f766e' }}></i>
+                            Reservar {propiedad.titulo || 'propiedad'}
+                        </h3>
+                        <p style={{ marginBottom: 16 }}>
+                            Elegí las fechas de tu alquiler. El propietario tendrá que aprobar tu solicitud.
+                        </p>
+
+                        <form onSubmit={enviarReserva} noValidate>
+                            <div className="form-group" style={{ marginBottom: 14 }}>
+                                <label htmlFor="fecha-inicio">
+                                    Fecha de inicio <span style={{ color: '#dc2626' }}>*</span>
+                                </label>
+                                <input
+                                    type="date"
+                                    id="fecha-inicio"
+                                    name="fecha-inicio"
+                                    min={hoy}
+                                    value={fechaInicio}
+                                    onChange={(e) => setFechaInicio(e.target.value)}
+                                    className={validacion.fechaInicio || validacion.fecha_inicio_alquiler ? 'input-error' : ''}
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px 12px',
+                                        borderRadius: 10,
+                                        border: `1px solid ${(validacion.fechaInicio || validacion.fecha_inicio_alquiler) ? '#dc2626' : '#cbd5e1'}`
+                                    }}
+                                />
+                                {(validacion.fechaInicio || validacion.fecha_inicio_alquiler) && (
+                                    <span className="form-error">
+                                        {validacion.fechaInicio || validacion.fecha_inicio_alquiler}
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="form-group" style={{ marginBottom: 14 }}>
+                                <label htmlFor="fecha-fin">
+                                    Fecha de fin <span style={{ color: '#dc2626' }}>*</span>
+                                </label>
+                                <input
+                                    type="date"
+                                    id="fecha-fin"
+                                    name="fecha-fin"
+                                    min={fechaInicio || hoy}
+                                    value={fechaFin}
+                                    onChange={(e) => setFechaFin(e.target.value)}
+                                    className={validacion.fechaFin || validacion.fecha_fin_alquiler ? 'input-error' : ''}
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px 12px',
+                                        borderRadius: 10,
+                                        border: `1px solid ${(validacion.fechaFin || validacion.fecha_fin_alquiler) ? '#dc2626' : '#cbd5e1'}`
+                                    }}
+                                />
+                                {(validacion.fechaFin || validacion.fecha_fin_alquiler) && (
+                                    <span className="form-error">
+                                        {validacion.fechaFin || validacion.fecha_fin_alquiler}
+                                    </span>
+                                )}
+                            </div>
+
+                            {errorReserva && (
+                                <div className="alert alert-error" role="alert" style={{ marginBottom: 16 }}>
+                                    <i className="fas fa-exclamation-circle" style={{ marginRight: 8 }}></i>
+                                    {errorReserva}
+                                </div>
+                            )}
+
+                            <div className="modal-actions">
+                                <button
+                                    type="button"
+                                    className="btn-detalle btn-detalle-secundario"
+                                    onClick={() => setMostrarModal(false)}
+                                    disabled={enviando}
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="btn-detalle btn-detalle-primario"
+                                    disabled={enviando}
+                                >
+                                    {enviando ? (
+                                        <>
+                                            <i className="fas fa-spinner fa-spin"></i> Enviando...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <i className="fas fa-paper-plane"></i> Solicitar reserva
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

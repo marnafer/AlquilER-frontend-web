@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { getPropiedades, getCategorias } from '../services/api';
+import { getPropiedades, getCategorias, getFavoritos } from '../services/api';
+import { useAuth } from '../hooks/useAuth';
 import PropiedadCard from '../components/PropiedadCard';
 
 function Propiedades() {
+    const { token } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
     const [propiedades, setPropiedades] = useState([]);
     const [categorias, setCategorias] = useState([]);
+    const [favoritoIds, setFavoritoIds] = useState(() => new Set());
     const [loading, setLoading] = useState(true);
 
     // Filtros
@@ -47,6 +50,27 @@ function Propiedades() {
             setLoading(false);
         }
     };
+
+    // Cargar IDs favoritos del usuario autenticado
+    useEffect(() => {
+        if (!token) {
+            setFavoritoIds(new Set());
+            return;
+        }
+
+        let cancelado = false;
+        getFavoritos(token)
+            .then(result => {
+                if (cancelado) return;
+                const items = result?.data;
+                const ids = Array.isArray(items)
+                    ? items.map(fav => Number(fav.propiedad_id)).filter(Boolean)
+                    : [];
+                setFavoritoIds(new Set(ids));
+            })
+            .catch(error => console.error('Error cargando favoritos:', error));
+        return () => { cancelado = true; };
+    }, [token]);
 
     // Mapa de categorías
     const categoriasMap = useMemo(() => {
@@ -107,6 +131,18 @@ function Propiedades() {
         setPrecioMax('');
         setOrden('recientes');
         setPagina(1);
+    };
+
+    const handleFavorito = (propiedadId, esFavorito) => {
+        setFavoritoIds(prev => {
+            const next = new Set(prev);
+            if (esFavorito) {
+                next.add(Number(propiedadId));
+            } else {
+                next.delete(Number(propiedadId));
+            }
+            return next;
+        });
     };
 
     const hayFiltros = search || categoriaId || precioMax || orden !== 'recientes';
@@ -205,6 +241,8 @@ function Propiedades() {
                                     key={prop.id}
                                     propiedad={prop}
                                     categoriaNombre={categoriasMap[prop.categoria_id]}
+                                    esFavoritoInicial={favoritoIds.has(Number(prop.id))}
+                                    onFavorito={handleFavorito}
                                 />
                             ))}
                         </div>

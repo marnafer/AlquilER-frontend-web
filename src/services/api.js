@@ -397,6 +397,53 @@ export async function cancelarReserva(id, token) {
     }
 }
 
+export async function aprobarReserva(id, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/reservas/${id}/aprobar`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function rechazarReserva(id, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/reservas/${id}/rechazar`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function finalizarReserva(id, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/reservas/${id}/finalizar`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function getReservasByPropiedad(propiedadId, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/reservas/propiedad/${propiedadId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
 // ============================================
 // CONSULTAS
 // ============================================

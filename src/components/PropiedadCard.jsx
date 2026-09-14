@@ -1,12 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { addFavorito, removeFavorito } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
 
-function PropiedadCard({ propiedad, categoriaNombre, onFavorito }) {
+function PropiedadCard({ propiedad, categoriaNombre, esFavoritoInicial = false, onFavorito }) {
     const [imgError, setImgError] = useState(false);
-    const [esFavorito, setEsFavorito] = useState(false);
-    const { isAuthenticated } = useAuth();
+    const [esFavorito, setEsFavorito] = useState(() => Boolean(esFavoritoInicial));
+    const [favLoading, setFavLoading] = useState(false);
+    const { isAuthenticated, token } = useAuth();
+
+    useEffect(() => {
+        setEsFavorito(Boolean(esFavoritoInicial));
+    }, [esFavoritoInicial]);
 
     const imagen = rutaImagenPropiedad(propiedad);
 
@@ -16,9 +22,29 @@ function PropiedadCard({ propiedad, categoriaNombre, onFavorito }) {
     const handleFavorito = async (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (!isAuthenticated) return;
-        setEsFavorito(!esFavorito);
-        if (onFavorito) onFavorito(propiedad.id, !esFavorito);
+        if (!isAuthenticated || favLoading) return;
+
+        setFavLoading(true);
+        try {
+            if (esFavorito) {
+                const result = await removeFavorito(propiedad.id, token);
+                if (result?.success) {
+                    setEsFavorito(false);
+                    if (onFavorito) onFavorito(propiedad.id, false);
+                }
+            } else {
+                const result = await addFavorito(propiedad.id, token);
+                const yaEstaba = result?.error && String(result.error).toLowerCase().includes('ya está');
+                if (result?.success || yaEstaba) {
+                    setEsFavorito(true);
+                    if (onFavorito) onFavorito(propiedad.id, true);
+                }
+            }
+        } catch (error) {
+            console.error('Error actualizando favorito:', error);
+        } finally {
+            setFavLoading(false);
+        }
     };
 
     return (
@@ -46,7 +72,9 @@ function PropiedadCard({ propiedad, categoriaNombre, onFavorito }) {
                 {isAuthenticated && (
                     <button
                         className={`propiedad-fav ${esFavorito ? 'active' : ''}`}
-                        aria-label="Agregar a favoritos"
+                        aria-label={esFavorito ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                        aria-pressed={esFavorito}
+                        disabled={favLoading}
                         onClick={handleFavorito}
                     >
                         <i className={esFavorito ? 'fas fa-heart' : 'far fa-heart'}></i>
