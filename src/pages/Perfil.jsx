@@ -94,7 +94,8 @@ function Perfil() {
     }
 
     const inicial = (usuario.nombre?.[0] || 'U').toUpperCase();
-    const esPropietario = usuario.rol === 'propietario';
+    const esAdministrador = usuario.rol === 'administrador';
+    const rolLabel = esAdministrador ? 'Administrador' : 'Usuario';
 
     return (
         <div className="perfil-page">
@@ -108,8 +109,8 @@ function Perfil() {
                         </div>
                         <div className="perfil-hero-text">
                             <span className="perfil-rol-badge">
-                                <i className={`fas ${esPropietario ? 'fa-building' : 'fa-user'}`}></i>
-                                {esPropietario ? 'Propietario' : 'Inquilino'}
+                                <i className={`fas ${esAdministrador ? 'fa-shield-halved' : 'fa-user'}`}></i>
+                                {rolLabel}
                             </span>
                             <h1>{usuario.nombre} {usuario.apellido}</h1>
                             <p>
@@ -310,7 +311,7 @@ function Perfil() {
                                     <div className="perfil-dato-info">
                                         <span className="perfil-dato-label">Tipo de usuario</span>
                                         <span className="perfil-dato-valor">
-                                            {esPropietario ? 'Propietario' : 'Inquilino'}
+                                            {rolLabel}
                                         </span>
                                     </div>
                                 </div>
@@ -356,18 +357,16 @@ function Perfil() {
                                 </div>
                                 <i className="fas fa-chevron-right dash-action-arrow"></i>
                             </Link>
-                            {esPropietario && (
-                                <Link to="/propiedades/crear" className="dash-action primary">
-                                    <span className="dash-action-icon">
-                                        <i className="fas fa-plus"></i>
-                                    </span>
-                                    <div className="dash-action-text">
-                                        <strong>Publicar propiedad</strong>
-                                        <small>Sumá un nuevo alquiler</small>
-                                    </div>
-                                    <i className="fas fa-chevron-right dash-action-arrow"></i>
-                                </Link>
-                            )}
+                            <Link to="/propiedades/crear" className="dash-action primary">
+                                <span className="dash-action-icon">
+                                    <i className="fas fa-plus"></i>
+                                </span>
+                                <div className="dash-action-text">
+                                    <strong>Publicar propiedad</strong>
+                                    <small>Sumá un nuevo alquiler</small>
+                                </div>
+                                <i className="fas fa-chevron-right dash-action-arrow"></i>
+                            </Link>
                         </div>
                     </div>
 

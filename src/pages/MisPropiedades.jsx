@@ -72,7 +72,7 @@ function MisPropiedades() {
                 <section className="misprops-hero">
                     <div className="misprops-hero-content">
                         <span className="misprops-hero-badge">
-                            <i className="fas fa-building"></i> Panel del propietario
+                            <i className="fas fa-building"></i> Panel de mis propiedades
                         </span>
                         <h1>
                             Mis <span>Propiedades</span>

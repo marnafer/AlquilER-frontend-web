@@ -39,17 +39,6 @@ function GuestRoute({ children }) {
     return !isAuthenticated ? children : <Navigate to="/" replace />;
 }
 
-// Componente para rutas exclusivas de propietarios (y admins)
-function OwnerRoute({ children }) {
-    const { isAuthenticated, loading, usuario } = useAuth();
-    if (loading) return null;
-    if (!isAuthenticated) return <Navigate to="/login" replace />;
-    if (usuario?.rol !== 'propietario' && usuario?.rol !== 'administrador') {
-        return <Navigate to="/" replace />;
-    }
-    return children;
-}
-
 function AppRouter() {
     return (
         <>
@@ -68,23 +57,23 @@ function AppRouter() {
                         ⚠️ IMPORTANTE: van ANTES de /propiedades/:id
                        ============================================ */}
 
-                    {/* Crear propiedad (solo propietarios) */}
+                    {/* Crear propiedad (cualquier usuario) */}
                     <Route
                         path="/propiedades/crear"
                         element={
-                            <OwnerRoute>
+                            <PrivateRoute>
                                 <PropiedadForm />
-                            </OwnerRoute>
+                            </PrivateRoute>
                         }
                     />
 
-                    {/* Editar propiedad (solo propietarios) */}
+                    {/* Editar propiedad (cualquier usuario) */}
                     <Route
                         path="/propiedades/:id/editar"
                         element={
-                            <OwnerRoute>
+                            <PrivateRoute>
                                 <PropiedadForm />
-                            </OwnerRoute>
+                            </PrivateRoute>
                         }
                     />
 
@@ -161,9 +150,9 @@ function AppRouter() {
                     <Route
                         path="/mis-propiedades"
                         element={
-                            <OwnerRoute>
+                            <PrivateRoute>
                                 <MisPropiedades />
-                            </OwnerRoute>
+                            </PrivateRoute>
                         }
                     />
 

@@ -13,7 +13,6 @@ import Loader from '../components/Loader';
 
 function MisConsultas() {
     const { token, usuario } = useAuth();
-    const esPropietarioAdmin = !!usuario && ['propietario', 'administrador'].includes(usuario.rol);
 
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -40,20 +39,18 @@ function MisConsultas() {
             }));
 
             let recibidas = [];
-            if (esPropietarioAdmin) {
-                const props = await getMisPropiedades(token) || [];
-                const resultados = await Promise.all(
-                    props.map(p => getConsultasByPropiedad(p.id, token))
-                );
-                resultados.forEach((res, idx) => {
-                    const consultas = res?.data?.items || [];
-                    consultas.forEach(c => recibidas.push({
-                        consulta: c,
-                        origen: 'recibida',
-                        propiedad: props[idx]
-                    }));
-                });
-            }
+            const props = await getMisPropiedades(token) || [];
+            const resultados = await Promise.all(
+                props.map(p => getConsultasByPropiedad(p.id, token))
+            );
+            resultados.forEach((res, idx) => {
+                const consultas = res?.data?.items || [];
+                consultas.forEach(c => recibidas.push({
+                    consulta: c,
+                    origen: 'recibida',
+                    propiedad: props[idx]
+                }));
+            });
 
             setItems([...recibidas, ...enviadas]);
         } catch (e) {
@@ -61,7 +58,7 @@ function MisConsultas() {
         } finally {
             setLoading(false);
         }
-    }, [token, esPropietarioAdmin]);
+    }, [token]);
 
     useEffect(() => {
         cargar();
@@ -143,7 +140,7 @@ function MisConsultas() {
                         <span className="misconsultas-hero-badge">
                             <i className="fas fa-comments"></i> Consultas
                         </span>
-                        <h1>Mensajes con <span>propietarios</span></h1>
+                        <h1>Mensajes de <span>consultas</span></h1>
                         <p>
                             Consultá sobre una propiedad o respondé las consultas que recibiste.
                         </p>
@@ -165,14 +162,12 @@ function MisConsultas() {
                         >
                             Todas <span className="misconsultas-count">{items.length}</span>
                         </button>
-                        {esPropietarioAdmin && (
-                            <button
-                                className={`misconsultas-filtro ${filtro === 'recibida' ? 'active' : ''}`}
-                                onClick={() => setFiltro('recibida')}
-                            >
-                                Recibidas <span className="misconsultas-count">{recibidasCount}</span>
-                            </button>
-                        )}
+                        <button
+                            className={`misconsultas-filtro ${filtro === 'recibida' ? 'active' : ''}`}
+                            onClick={() => setFiltro('recibida')}
+                        >
+                            Recibidas <span className="misconsultas-count">{recibidasCount}</span>
+                        </button>
                         <button
                             className={`misconsultas-filtro ${filtro === 'enviada' ? 'active' : ''}`}
                             onClick={() => setFiltro('enviada')}
@@ -217,7 +212,7 @@ function MisConsultas() {
                                             <p className="misconsultas-item-detalle">
                                                 {item.origen === 'recibida'
                                                     ? `De ${nombreDe(c.usuario)}`
-                                                    : 'Para el propietario'}
+                                                    : 'Consulta enviada'}
                                             </p>
                                         </div>
                                         <i className="fas fa-chevron-right misconsultas-item-arrow"></i>
@@ -328,7 +323,7 @@ function MisConsultas() {
                         <h3>Todavía no tenés consultas</h3>
                         <p>
                             Consultá sobre una propiedad para iniciar una conversación
-                            con su propietario.
+                            sobre un alquiler.
                         </p>
                         <Link to="/propiedades" className="btn-ver-todas" style={{ marginTop: '20px', display: 'inline-block' }}>
                             <i className="fas fa-search"></i> Explorar propiedades

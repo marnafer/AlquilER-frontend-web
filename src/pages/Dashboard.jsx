@@ -69,9 +69,7 @@ function Dashboard() {
                             </h1>
                             <p>
                                 Este es tu resumen de actividad en AlquilER.
-                                {usuario?.rol === 'propietario'
-                                    ? ' Administrá tus propiedades y reservas.'
-                                    : ' Gestioná tus favoritos y reservas.'}
+                                Publicá propiedades, gestioná tus reservas y tus favoritos.
                             </p>
                         </div>
                     </div>
@@ -131,18 +129,16 @@ function Dashboard() {
                             </h3>
                         </div>
                         <div className="dash-actions">
-                            {usuario?.rol === 'propietario' && (
-                                <Link to="/propiedades/crear" className="dash-action primary">
-                                    <span className="dash-action-icon">
-                                        <i className="fas fa-plus"></i>
-                                    </span>
-                                    <div className="dash-action-text">
-                                        <strong>Publicar propiedad</strong>
-                                        <small>Sumá un nuevo alquiler</small>
-                                    </div>
-                                    <i className="fas fa-chevron-right dash-action-arrow"></i>
-                                </Link>
-                            )}
+                            <Link to="/propiedades/crear" className="dash-action primary">
+                                <span className="dash-action-icon">
+                                    <i className="fas fa-plus"></i>
+                                </span>
+                                <div className="dash-action-text">
+                                    <strong>Publicar propiedad</strong>
+                                    <small>Sumá un nuevo alquiler</small>
+                                </div>
+                                <i className="fas fa-chevron-right dash-action-arrow"></i>
+                            </Link>
                             <Link to="/propiedades" className="dash-action">
                                 <span className="dash-action-icon">
                                     <i className="fas fa-search"></i>

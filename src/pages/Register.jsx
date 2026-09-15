@@ -11,8 +11,7 @@ function Register() {
         password: '',
         password_confirm: '',
         telefono: '',
-        domicilio: '',
-        rol: 'inquilino'
+        domicilio: ''
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -44,8 +43,7 @@ function Register() {
             email: formData.email,
             password: formData.password,
             telefono: formData.telefono,
-            domicilio: formData.domicilio,
-            rol: formData.rol
+            domicilio: formData.domicilio
         };
 
         try {
@@ -67,7 +65,7 @@ function Register() {
     return (
         <div className="auth-container" style={{ maxWidth: '480px', margin: '40px auto', padding: '40px' }}>
             <h1 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '8px' }}>Crear cuenta</h1>
-            <p style={{ textAlign: 'center', color: '#64748b', marginBottom: '32px' }}>Registrate para empezar a alquilar</p>
+            <p style={{ textAlign: 'center', color: '#64748b', marginBottom: '32px' }}>Registrate para alquilar o publicar propiedades</p>
 
             {error && (
                 <div className="alert alert-error">
@@ -166,33 +164,6 @@ function Register() {
                         value={formData.domicilio}
                         onChange={handleChange}
                     />
-                </div>
-
-                <div className="form-group">
-                    <label>Quiero usar AlquilER para...</label>
-                    <div className="rol-cards">
-                        <button
-                            type="button"
-                            className={`rol-card ${formData.rol === 'inquilino' ? 'active' : ''}`}
-                            onClick={() => setFormData(prev => ({ ...prev, rol: 'inquilino' }))}
-                        >
-                            <i className="fas fa-search"></i>
-                            <span className="rol-card-titulo">Buscar alquiler</span>
-                            <span className="rol-card-texto">Encontrá una propiedad para alquilar</span>
-                        </button>
-                        <button
-                            type="button"
-                            className={`rol-card ${formData.rol === 'propietario' ? 'active' : ''}`}
-                            onClick={() => setFormData(prev => ({ ...prev, rol: 'propietario' }))}
-                        >
-                            <i className="fas fa-home"></i>
-                            <span className="rol-card-titulo">Poner en alquiler</span>
-                            <span className="rol-card-texto">Publicá tus propiedades y gestioná consultas</span>
-                        </button>
-                    </div>
-                    <span className="rol-card-ayuda">
-                        <i className="fas fa-shield-halved"></i> Los perfiles de administración se gestionan aparte.
-                    </span>
                 </div>
 
                 <button type="submit" className="btn-primary" style={{ width: '100%' }} disabled={loading}>

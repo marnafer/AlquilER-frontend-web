@@ -28,11 +28,11 @@ function Footer() {
                 </div>
 
                 <div className="footer-section">
-                    <h4>Para propietarios</h4>
+                    <h4>Gestión</h4>
                     <ul>
-                        <li><Link to="/publicar">Publicar propiedad</Link></li>
+                        <li><Link to="/propiedades/crear">Publicar propiedad</Link></li>
                         <li><Link to="/mis-propiedades">Mis propiedades</Link></li>
-                        <li><Link to="/reservas">Reservas recibidas</Link></li>
+                        <li><Link to="/reservas">Mis reservas</Link></li>
                     </ul>
                 </div>
 

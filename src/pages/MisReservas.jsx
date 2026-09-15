@@ -33,12 +33,12 @@ function MisReservas() {
     const [accionando, setAccionando] = useState(null);
     const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
 
-    const esGestion = usuario?.rol === 'propietario' || usuario?.rol === 'administrador';
+    const esGestion = true;
 
-    const esInquilinoDe = (reserva) => usuario && String(reserva.usuario_id) === String(usuario.id);
+    const esSolicitanteDe = (reserva) => usuario && String(reserva.usuario_id) === String(usuario.id);
 
     const puedeCancelar = (reserva) =>
-        esInquilinoDe(reserva) && ['pendiente', 'confirmada'].includes(reserva.estado);
+        esSolicitanteDe(reserva) && ['pendiente', 'confirmada'].includes(reserva.estado);
 
     const puedeAprobar = (reserva) =>
         esGestion && reserva.origen === 'recibida' && reserva.estado === 'pendiente';
@@ -148,9 +148,7 @@ function MisReservas() {
                             Mis <span>Reservas</span>
                         </h1>
                         <p>
-                            {esGestion
-                                ? 'Aprobá, rechazá o finalizá las solicitudes que recibís en tus propiedades.'
-                                : 'Seguí el estado de tus solicitudes de alquiler y cancelá las que ya no necesites.'}
+                            Aprobá, rechazá o finalizá las solicitudes que recibís en tus propiedades y seguí tus propios alquileres.
                         </p>
                     </div>
                 </section>
@@ -292,9 +290,7 @@ function MisReservas() {
                         </div>
                         <h3>Todavía no tenés reservas</h3>
                         <p>
-                            {esGestion
-                                ? 'Cuando alguien reserve una de tus propiedades, la vas a ver acá.'
-                                : 'Explorá el catálogo y reservá el alquiler que buscás.'}
+                            Las solicitudes en tus propiedades y tus propias reservas van a aparecer acá.
                         </p>
                         <Link
                             to="/propiedades"
