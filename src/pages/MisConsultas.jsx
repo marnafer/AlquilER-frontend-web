@@ -27,37 +27,65 @@ function MisConsultas() {
     const [errorRespuesta, setErrorRespuesta] = useState('');
     const [exitoRespuesta, setExitoRespuesta] = useState('');
 
+    const extraerItems = (res) => {
+        if (Array.isArray(res)) return res;
+        if (Array.isArray(res?.data)) return res.data;
+        if (Array.isArray(res?.data?.items)) return res.data.items;
+        return [];
+    };
+
     const cargar = useCallback(async () => {
         setLoading(true);
         setError('');
+        let problemas = 0;
+        let enviadas = [];
+        let recibidas = [];
+
         try {
             const enviadasRes = await getConsultas(token);
-            const enviadas = (enviadasRes?.data?.items || []).map(c => ({
+            enviadas = extraerItems(enviadasRes).map(c => ({
                 consulta: c,
                 origen: 'enviada',
                 propiedad: c.propiedad || null
             }));
-
-            let recibidas = [];
-            const props = await getMisPropiedades(token) || [];
-            const resultados = await Promise.all(
-                props.map(p => getConsultasByPropiedad(p.id, token))
-            );
-            resultados.forEach((res, idx) => {
-                const consultas = res?.data?.items || [];
-                consultas.forEach(c => recibidas.push({
-                    consulta: c,
-                    origen: 'recibida',
-                    propiedad: props[idx]
-                }));
-            });
-
-            setItems([...recibidas, ...enviadas]);
         } catch (e) {
-            setError('Error cargando las consultas. Intentalo de nuevo.');
-        } finally {
-            setLoading(false);
+            problemas++;
         }
+
+        try {
+            const propsRes = await getMisPropiedades(token);
+            const props = extraerItems(propsRes);
+            const resultados = await Promise.all(
+                props.map(async (p) => {
+                    try {
+                        const res = await getConsultasByPropiedad(p.id, token);
+                        return extraerItems(res).map(c => ({
+                            consulta: c,
+                            origen: 'recibida',
+                            propiedad: p
+                        }));
+                    } catch (e) {
+                        problemas++;
+                        return [];
+                    }
+                })
+            );
+            resultados.forEach(r => recibidas.push(...r));
+        } catch (e) {
+            problemas++;
+        }
+
+        if (problemas > 0) {
+            setError('Algunas consultas no pudieron cargarse. Probá de nuevo.');
+        }
+
+        setItems(
+            [...recibidas, ...enviadas].sort((a, b) =>
+                String(b.consulta?.fecha_consulta || '')
+                    .localeCompare(String(a.consulta?.fecha_consulta || ''))
+            )
+        );
+        setLoading(false);
     }, [token]);
 
     useEffect(() => {
@@ -72,7 +100,7 @@ function MisConsultas() {
         setCargandoMensajes(true);
         try {
             const res = await getMensajesConsulta(item.consulta.id, token);
-            setMensajes(res?.data?.items || []);
+            setMensajes(extraerItems(res));
         } catch (e) {
             setMensajes([]);
         } finally {
@@ -101,7 +129,7 @@ function MisConsultas() {
                 setRespuesta('');
                 setExitoRespuesta('Mensaje enviado correctamente.');
                 const res = await getMensajesConsulta(activa.consulta.id, token);
-                setMensajes(res?.data?.items || []);
+                setMensajes(extraerItems(res));
             } else {
                 setErrorRespuesta(
                     result.error || result.message || 'No se pudo enviar el mensaje.'
@@ -148,8 +176,17 @@ function MisConsultas() {
                 </section>
 
                 {error && (
-                    <div className="alert alert-error" role="alert" style={{ marginBottom: 16 }}>
-                        <i className="fas fa-exclamation-circle"></i> {error}
+                    <div className="alert alert-error" role="alert" style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span>
+                            <i className="fas fa-exclamation-circle"></i> {error}
+                        </span>
+                        <button
+                            onClick={cargar}
+                            className="btn-detalle btn-detalle-secundario"
+                            style={{ padding: '4px 12px', fontSize: 13 }}
+                        >
+                            <i className="fas fa-redo-alt"></i> Reintentar
+                        </button>
                     </div>
                 )}
 
