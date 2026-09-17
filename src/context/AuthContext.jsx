@@ -7,6 +7,44 @@ import { getPerfil } from '../services/api';
 // Creo el contexto que van a usar todos los componentes
 export const AuthContext = createContext();
 
+// Decodifica el payload de un JWT sin necesidad de librerías.
+const decodificarJwt = (jwt) => {
+    try {
+        let parte = jwt.split('.')[1];
+        parte = parte.replace(/-/g, '+').replace(/_/g, '/');
+        parte = parte.padEnd(parte.length + ((4 - (parte.length % 4)) % 4), '=');
+        return JSON.parse(atob(parte));
+    } catch (error) {
+        return null;
+    }
+};
+
+// Usuario mínimo reconstruido desde los claims del JWT (sub, email, rol_id).
+// Se usa como respaldo cuando el backend falla al traer el perfil (ej: 500).
+const usuarioDesdeJwt = (jwt) => {
+    const payload = decodificarJwt(jwt);
+    if (!payload || !payload.sub) return null;
+    const rolId = Number(payload.rol_id);
+    return {
+        id: Number(payload.sub),
+        email: payload.email || '',
+        rol_id: rolId === 2 ? 2 : 1,
+        rol: rolId === 2 ? 'administrador' : 'usuario'
+    };
+};
+
+// El backend expone rol como objeto {id, nombre}; lo dejamos como string
+// para que Perfil.jsx (usuario.rol === 'administrador') funcione igual.
+const normalizarUsuario = (usuario) => {
+    if (!usuario) return null;
+    const rolNombre = typeof usuario.rol === 'string' ? usuario.rol : usuario.rol?.nombre;
+    return {
+        ...usuario,
+        rol: rolNombre === 'administrador' ? 'administrador' : 'usuario',
+        rol_id: usuario.rol_id ?? usuario.rol?.id ?? 1
+    };
+};
+
 // Este es el "proveedor" que envuelve toda la aplicación
 export function AuthProvider({ children }) {
     // El token lo guardo en localStorage para que no se pierda al recargar
@@ -19,19 +57,23 @@ export function AuthProvider({ children }) {
     // Cada vez que cambia el token, traigo los datos del usuario
     useEffect(() => {
         const cargarUsuario = async () => {
+            const respaldo = usuarioDesdeJwt(token);
             try {
                 const response = await getPerfil(token);
-                if (response.success) {
-                    setUsuario(response.data);
-                } else {
+                if (response.success && response.data) {
+                    setUsuario(normalizarUsuario(response.data));
+                } else if (response.status === 401) {
+                    // Token inválido o expirado: la sesión realmente no es válida.
                     localStorage.removeItem('token');
                     setToken(null);
                     setUsuario(null);
+                } else {
+                    // Error del servidor (ej: /usuarios/me con 500) o de red:
+                    // no cerramos la sesión, usamos los datos mínimos del JWT.
+                    setUsuario(respaldo);
                 }
             } catch (error) {
-                localStorage.removeItem('token');
-                setToken(null);
-                setUsuario(null);
+                setUsuario(respaldo);
             } finally {
                 setLoading(false);
             }
@@ -62,8 +104,10 @@ export function AuthProvider({ children }) {
         if (!token) return;
         try {
             const response = await getPerfil(token);
-            if (response.success) {
-                setUsuario(response.data);
+            if (response.success && response.data) {
+                setUsuario(normalizarUsuario(response.data));
+            } else if (response.status !== 401) {
+                setUsuario(usuarioDesdeJwt(token));
             }
         } catch (error) {
             console.error('Error al refrescar usuario:', error);

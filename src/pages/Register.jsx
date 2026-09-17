@@ -36,6 +36,24 @@ function Register() {
             return;
         }
 
+        // El backend exige teléfono (6-15 dígitos) y domicilio (mínimo 5 caracteres)
+        const telefonoDigitos = (formData.telefono || '').replace(/\D/g, '');
+        if (telefonoDigitos.length < 6) {
+            setError('El teléfono debe tener al menos 6 dígitos');
+            setLoading(false);
+            return;
+        }
+        if (telefonoDigitos.length > 15) {
+            setError('El teléfono no puede superar los 15 dígitos');
+            setLoading(false);
+            return;
+        }
+        if ((formData.domicilio || '').trim().length < 5) {
+            setError('El domicilio debe tener al menos 5 caracteres');
+            setLoading(false);
+            return;
+        }
+
         // Datos que se envían al backend
         const dataToSend = {
             nombre: formData.nombre,
@@ -151,6 +169,7 @@ function Register() {
                         placeholder="Ej: 341 1234567"
                         value={formData.telefono}
                         onChange={handleChange}
+                        required
                     />
                 </div>
 
@@ -163,6 +182,7 @@ function Register() {
                         placeholder="Ej: Av. San Martín 123"
                         value={formData.domicilio}
                         onChange={handleChange}
+                        required
                     />
                 </div>
 

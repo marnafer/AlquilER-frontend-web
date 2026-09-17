@@ -6,10 +6,8 @@ import {
     getReservasByPropiedad,
     getMisPropiedades,
     getPropiedades,
-    cancelarReserva,
     aprobarReserva,
-    rechazarReserva,
-    finalizarReserva
+    rechazarReserva
 } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
 import Loader from '../components/Loader';
@@ -35,19 +33,11 @@ function MisReservas() {
 
     const esGestion = true;
 
-    const esSolicitanteDe = (reserva) => usuario && String(reserva.usuario_id) === String(usuario.id);
-
-    const puedeCancelar = (reserva) =>
-        esSolicitanteDe(reserva) && ['pendiente', 'confirmada'].includes(reserva.estado);
-
     const puedeAprobar = (reserva) =>
         esGestion && reserva.origen === 'recibida' && reserva.estado === 'pendiente';
 
     const puedeRechazar = (reserva) =>
         esGestion && reserva.origen === 'recibida' && reserva.estado === 'pendiente';
-
-    const puedeFinalizar = (reserva) =>
-        esGestion && reserva.origen === 'recibida' && reserva.estado === 'confirmada';
 
     const cargarDatos = useCallback(async () => {
         if (!usuario) return;
@@ -87,7 +77,10 @@ function MisReservas() {
                 }
             }
 
-            const todas = [...propias, ...recibidas].sort((a, b) =>
+            // Deduplicamos por id porque GET /api/reservas (admin) ya devuelve todo
+            const porId = new Map();
+            [...propias, ...recibidas].forEach(r => porId.set(String(r.id || 0), r));
+            const todas = Array.from(porId.values()).sort((a, b) =>
                 String(b.id || 0).localeCompare(String(a.id || 0), undefined, { numeric: true })
             );
             setReservas(todas);
@@ -107,10 +100,8 @@ function MisReservas() {
         setAccionando(reserva.id);
         setMensaje({ tipo: '', texto: '' });
         let result;
-        if (accion === 'cancelar') result = await cancelarReserva(reserva.id, token);
         if (accion === 'aprobar') result = await aprobarReserva(reserva.id, token);
         if (accion === 'rechazar') result = await rechazarReserva(reserva.id, token);
-        if (accion === 'finalizar') result = await finalizarReserva(reserva.id, token);
 
         if (result && result.success) {
             setMensaje({ tipo: 'exito', texto: result.message || 'Reserva actualizada correctamente.' });
@@ -249,24 +240,6 @@ function MisReservas() {
                                                     disabled={accionando === reserva.id}
                                                 >
                                                     <i className="fas fa-times"></i> Rechazar
-                                                </button>
-                                            )}
-                                            {puedeFinalizar(reserva) && (
-                                                <button
-                                                    className="btn-detalle btn-detalle-secundario"
-                                                    onClick={() => ejecutarAccion('finalizar', reserva)}
-                                                    disabled={accionando === reserva.id}
-                                                >
-                                                    <i className="fas fa-flag-checkered"></i> Finalizar
-                                                </button>
-                                            )}
-                                            {puedeCancelar(reserva) && (
-                                                <button
-                                                    className="btn-detalle btn-detalle-danger"
-                                                    onClick={() => ejecutarAccion('cancelar', reserva)}
-                                                    disabled={accionando === reserva.id}
-                                                >
-                                                    <i className="fas fa-ban"></i> Cancelar
                                                 </button>
                                             )}
                                         </div>

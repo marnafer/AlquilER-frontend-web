@@ -65,12 +65,14 @@ export async function register(userData) {
 
 export async function logout(token) {
     try {
+        // El backend exige cuerpo en el request (Request::json()), por eso enviamos {}
         const response = await fetch(`${API_URL}/api/autenticador/logout`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
-            }
+            },
+            body: JSON.stringify({})
         });
         return await response.json();
     } catch (error) {
@@ -84,10 +86,12 @@ export async function getPerfil(token) {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const result = await response.json();
+        // Dejamos el status HTTP para distinguir 401 (token inválido) de otros errores
+        result.status = response.status;
         return result;
     } catch (error) {
         console.error('❌ Error en getPerfil:', error);
-        return { success: false, error: error.message };
+        return { success: false, error: error.message, status: 0 };
     }
 }
 
@@ -359,8 +363,8 @@ export async function removeFavorito(propiedadId, token) {
 
 export async function getReservas(token) {
     try {
-        // En el backend, las reservas del usuario autenticado se consultan en /mis-reservas
-        const response = await fetch(`${API_URL}/api/reservas/mis-reservas`, {
+        // GET /api/reservas devuelve las reservas del usuario autenticado
+        const response = await fetch(`${API_URL}/api/reservas`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         return await response.json();
@@ -385,21 +389,10 @@ export async function createReserva(data, token) {
     }
 }
 
-export async function cancelarReserva(id, token) {
-    try {
-        const response = await fetch(`${API_URL}/api/reservas/${id}/cancelar`, {
-            method: 'PUT',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return await response.json();
-    } catch (error) {
-        return { success: false, error: error.message };
-    }
-}
-
 export async function aprobarReserva(id, token) {
     try {
-        const response = await fetch(`${API_URL}/api/reservas/${id}/aprobar`, {
+        // En el backend "aprobar" equivale a confirmar
+        const response = await fetch(`${API_URL}/api/reservas/${id}/confirmar`, {
             method: 'PUT',
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -421,21 +414,9 @@ export async function rechazarReserva(id, token) {
     }
 }
 
-export async function finalizarReserva(id, token) {
-    try {
-        const response = await fetch(`${API_URL}/api/reservas/${id}/finalizar`, {
-            method: 'PUT',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return await response.json();
-    } catch (error) {
-        return { success: false, error: error.message };
-    }
-}
-
 export async function getReservasByPropiedad(propiedadId, token) {
     try {
-        const response = await fetch(`${API_URL}/api/reservas/propiedad/${propiedadId}`, {
+        const response = await fetch(`${API_URL}/api/reservas?propiedad_id=${propiedadId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         return await response.json();
