@@ -545,6 +545,32 @@ export async function getConsultas(token) {
     }
 }
 
+export async function getConsultasAdmin(token, soloEliminados = false) {
+    try {
+        const query = soloEliminados ? '?solo_eliminados=true' : '';
+        const response = await fetch(`${API_URL}/api/admin/consultas${query}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await response.json();
+        result.status = response.status;
+        return result;
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function deleteConsulta(id, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/consultas/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
 export async function getConsultasByPropiedad(propiedadId, token) {
     try {
         const response = await fetch(`${API_URL}/api/consultas/propiedad/${propiedadId}`, {
@@ -963,4 +989,5 @@ export const restoreLocalidad = restore('/api/localidades');
 export const restoreRol = restore('/api/roles');
 export const restoreServicio = restore('/api/servicios');
 export const restoreResena = restore('/api/resenas');
-export const restoreReserva = restore('/api/reservas');
+export const restoreReserva = restore('/api/reservas');
+export const restoreConsulta = restore('/api/consultas');

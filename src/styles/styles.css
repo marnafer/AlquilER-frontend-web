@@ -5142,3 +5142,33 @@ img {
 .estrella-btn.estrella-llena {
     color: #f59e0b;
 }
+
+/* ============================================
+   ADMIN - CONSULTAS
+   ============================================ */
+
+.admin-consulta-item {
+    cursor: pointer;
+}
+
+.admin-consulta-item:hover {
+    border-color: #0f766e;
+    box-shadow: 0 6px 18px rgba(15, 118, 110, 0.12);
+}
+
+.admin-consulta-item.active {
+    border-color: #0f766e;
+    background: #f0fdfa;
+    box-shadow: 0 6px 18px rgba(15, 118, 110, 0.18);
+}
+
+.admin-consulta-acciones {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.admin-consulta-acciones .admin-btn {
+    width: 34px;
+    height: 34px;
+}

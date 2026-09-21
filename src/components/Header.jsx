@@ -144,6 +144,9 @@ function Header() {
                                     <NavDropdown.Item as={Link} to="/admin/reservas" onClick={() => setExpanded(false)}>
                                         <i className="fas fa-calendar-check"></i> Reservas
                                     </NavDropdown.Item>
+                                    <NavDropdown.Item as={Link} to="/admin/consultas" onClick={() => setExpanded(false)}>
+                                        <i className="fas fa-comments"></i> Consultas
+                                    </NavDropdown.Item>
                                 </NavDropdown>
                             )}
                     </Nav>
