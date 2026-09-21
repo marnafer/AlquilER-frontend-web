@@ -29,6 +29,7 @@ import LocalidadesAdmin from './pages/admin/LocalidadesAdmin';
 import RolesAdmin from './pages/admin/RolesAdmin';
 import ServiciosAdmin from './pages/admin/ServiciosAdmin';
 import ResenasAdmin from './pages/admin/ResenasAdmin';
+import ReservasAdmin from './pages/admin/ReservasAdmin';
 
 // ============================================
 // RUTAS PROTEGIDAS
@@ -237,6 +238,14 @@ function AppRouter() {
                         element={
                             <AdminRoute>
                                 <ResenasAdmin />
+                            </AdminRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/reservas"
+                        element={
+                            <AdminRoute>
+                                <ReservasAdmin />
                             </AdminRoute>
                         }
                     />

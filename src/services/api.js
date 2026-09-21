@@ -392,6 +392,20 @@ export async function getReservas(token) {
     }
 }
 
+export async function getReservasAdmin(token, soloEliminados = false) {
+    try {
+        const query = soloEliminados ? '?solo_eliminados=true' : '';
+        const response = await fetch(`${API_URL}/api/reservas${query}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await response.json();
+        result.status = response.status;
+        return result;
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
 export async function createReserva(data, token) {
     try {
         const response = await fetch(`${API_URL}/api/reservas`, {
@@ -409,8 +423,12 @@ export async function createReserva(data, token) {
 }
 
 export async function aprobarReserva(id, token) {
+    // En el backend "aprobar" equivale a confirmar
+    return confirmarReserva(id, token);
+}
+
+export async function confirmarReserva(id, token) {
     try {
-        // En el backend "aprobar" equivale a confirmar
         const response = await fetch(`${API_URL}/api/reservas/${id}/confirmar`, {
             method: 'PUT',
             headers: { 'Authorization': `Bearer ${token}` }
@@ -425,6 +443,58 @@ export async function rechazarReserva(id, token) {
     try {
         const response = await fetch(`${API_URL}/api/reservas/${id}/rechazar`, {
             method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function finalizarReserva(id, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/reservas/${id}/finalizar`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function cancelarReserva(id, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/reservas/${id}/cancelar`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function updateReservaEstado(id, estado, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/reservas/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ estado })
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function deleteReserva(id, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/reservas/${id}`, {
+            method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
         return await response.json();
@@ -892,4 +962,5 @@ export const restoreProvincia = restore('/api/provincias');
 export const restoreLocalidad = restore('/api/localidades');
 export const restoreRol = restore('/api/roles');
 export const restoreServicio = restore('/api/servicios');
-export const restoreResena = restore('/api/resenas');
+export const restoreResena = restore('/api/resenas');
+export const restoreReserva = restore('/api/reservas');

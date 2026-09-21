@@ -8,7 +8,8 @@ const modulos = [
     { to: '/admin/localidades', icono: 'fa-map-pin', titulo: 'Localidades', desc: 'Ciudades de cada provincia.' },
     { to: '/admin/roles', icono: 'fa-user-shield', titulo: 'Roles', desc: 'Roles del sistema.' },
     { to: '/admin/servicios', icono: 'fa-wrench', titulo: 'Servicios', desc: 'Servicios de las propiedades.' },
-    { to: '/admin/resenas', icono: 'fa-star', titulo: 'Reseñas', desc: 'Reseñas de propiedades e inquilinos.' }
+    { to: '/admin/resenas', icono: 'fa-star', titulo: 'Reseñas', desc: 'Reseñas de propiedades e inquilinos.' },
+    { to: '/admin/reservas', icono: 'fa-calendar-check', titulo: 'Reservas', desc: 'Reservas y su estado de alquiler.' }
 ];
 
 function AdminHome() {

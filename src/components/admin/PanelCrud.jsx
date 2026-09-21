@@ -11,6 +11,8 @@ import Alert from '../Alert';
 //   columnas: [{ key, label, render?: (item, externos) => node }]
 //   campos:   [{ name, label, type?, requerido?, min?, max?, placeholder?, ayuda?, opciones? }]
 //   externos?: [{ clave, cargar: () => Promise -> [array] }]   (fuentes para selects/columnas)
+//   acciones?: [{ etiqueta, icono, clase?, permitido?: (item) => bool, ejecutar: (item, token) => Promise }]
+//              (botones contextuales por fila; se muestran antes de Editar/Eliminar)
 function PanelCrud({ config }) {
     const { token } = useAuth();
     const [loading, setLoading] = useState(true);
@@ -26,6 +28,7 @@ function PanelCrud({ config }) {
     const [itemAEliminar, setItemAEliminar] = useState(null);
     const [modoPapelera, setModoPapelera] = useState(false);
     const [restaurandoId, setRestaurandoId] = useState(null);
+    const [ejecutandoAccion, setEjecutandoAccion] = useState(null);
 
     const formVacio = () => {
         const f = {};
@@ -185,6 +188,23 @@ function PanelCrud({ config }) {
         }
     };
 
+    const ejecutarAccion = async (accion, item) => {
+        setEjecutandoAccion(String(item.id));
+        try {
+            const res = await accion.ejecutar(item, token);
+            if (res?.success) {
+                setMensaje({ type: 'success', text: res.message || 'Operación realizada correctamente' });
+                await cargar();
+            } else {
+                setMensaje({ type: 'danger', text: `No se pudo completar: ${res?.error || res?.message || 'error desconocido'}` });
+            }
+        } catch (error) {
+            setMensaje({ type: 'danger', text: 'Error de conexión al ejecutar la acción' });
+        } finally {
+            setEjecutandoAccion(null);
+        }
+    };
+
     const identidad = (item) => config.columnaPrincipal
         ? (item[config.columnaPrincipal] ?? `#${item.id}`)
         : `#${item.id}`;
@@ -251,6 +271,19 @@ function PanelCrud({ config }) {
                                             </td>
                                         ))}
                                         <td className="admin-tabla-acciones">
+                                            {!modoPapelera && (config.acciones || [])
+                                                .filter(a => !a.permitido || a.permitido(item))
+                                                .map(a => (
+                                                    <button
+                                                        key={a.etiqueta}
+                                                        className={`admin-btn ${a.clase || ''}`}
+                                                        onClick={() => ejecutarAccion(a, item)}
+                                                        title={a.etiqueta}
+                                                        disabled={ejecutandoAccion === String(item.id)}
+                                                    >
+                                                        <i className={ejecutandoAccion === String(item.id) ? 'fas fa-spinner fa-spin' : `fas ${a.icono}`}></i>
+                                                    </button>
+                                                ))}
                                             {modoPapelera ? (
                                                 <button
                                                     className="admin-btn restaurar"
