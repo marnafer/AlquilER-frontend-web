@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import Loader from '../Loader';
 import Alert from '../Alert';
@@ -29,6 +29,10 @@ function PanelCrud({ config }) {
     const [modoPapelera, setModoPapelera] = useState(false);
     const [restaurandoId, setRestaurandoId] = useState(null);
     const [ejecutandoAccion, setEjecutandoAccion] = useState(null);
+    const [busqueda, setBusqueda] = useState('');
+    const [ordenKey, setOrdenKey] = useState(null);
+    const [ordenDir, setOrdenDir] = useState('asc');
+    const [pagina, setPagina] = useState(1);
 
     const formVacio = () => {
         const f = {};
@@ -209,6 +213,50 @@ function PanelCrud({ config }) {
         ? (item[config.columnaPrincipal] ?? `#${item.id}`)
         : `#${item.id}`;
 
+    const filasPorPagina = config.filasPorPagina || 10;
+    const texto = busqueda.trim().toLowerCase();
+
+    const filtrados = useMemo(() => {
+        if (!texto) return items;
+        return items.filter(item =>
+            config.columnas.some(c => {
+                const val = item[c.key];
+                return val !== null && val !== undefined && String(val).toLowerCase().includes(texto);
+            }) || String(item.id).includes(texto)
+        );
+    }, [items, texto, config.columnas]);
+
+    const ordenados = useMemo(() => {
+        if (!ordenKey) return filtrados;
+        const limpia = (v) => (v === null || v === undefined ? '' : v);
+        const arr = [...filtrados].sort((a, b) => {
+            const va = limpia(a[ordenKey]);
+            const vb = limpia(b[ordenKey]);
+            const na = Number(va);
+            const nb = Number(vb);
+            if (va !== '' && vb !== '' && !Number.isNaN(na) && !Number.isNaN(nb)) return na - nb;
+            return String(va).localeCompare(String(vb), 'es');
+        });
+        return ordenDir === 'desc' ? arr.reverse() : arr;
+    }, [filtrados, ordenKey, ordenDir]);
+
+    const totalPaginas = Math.max(1, Math.ceil(ordenados.length / filasPorPagina));
+    const paginaActual = Math.min(pagina, totalPaginas);
+    const visibles = ordenados.slice((paginaActual - 1) * filasPorPagina, paginaActual * filasPorPagina);
+
+    const cambiarOrden = (key) => {
+        if (ordenKey === key) {
+            setOrdenDir(d => (d === 'asc' ? 'desc' : 'asc'));
+        } else {
+            setOrdenKey(key);
+            setOrdenDir('asc');
+        }
+    };
+
+    useEffect(() => {
+        setPagina(1);
+    }, [busqueda, modoPapelera]);
+
     if (loading) return <Loader />;
 
     return (
@@ -252,75 +300,132 @@ function PanelCrud({ config }) {
                 )}
 
                 {items.length > 0 ? (
-                    <div className="admin-tabla-container">
-                        <table className="admin-tabla">
-                            <thead>
-                                <tr>
-                                    {config.columnas.map(c => (
-                                        <th key={c.key}>{c.label}</th>
-                                    ))}
-                                    {!config.soloLectura && (
-                                        <th className="admin-tabla-acciones">Acciones</th>
-                                    )}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {items.map(item => (
-                                    <tr key={item.id}>
-                                        {config.columnas.map(c => (
-                                            <td key={c.key}>
-                                                {c.render ? c.render(item, externos) : (item[c.key] ?? '—')}
-                                            </td>
-                                        ))}
-                                        {!config.soloLectura && (
-                                        <td className="admin-tabla-acciones">
-                                            {!modoPapelera && (config.acciones || [])
-                                                .filter(a => !a.permitido || a.permitido(item))
-                                                .map(a => (
-                                                    <button
-                                                        key={a.etiqueta}
-                                                        className={`admin-btn ${a.clase || ''}`}
-                                                        onClick={() => ejecutarAccion(a, item)}
-                                                        title={a.etiqueta}
-                                                        disabled={ejecutandoAccion === String(item.id)}
-                                                    >
-                                                        <i className={ejecutandoAccion === String(item.id) ? 'fas fa-spinner fa-spin' : `fas ${a.icono}`}></i>
-                                                    </button>
-                                                ))}
-                                            {modoPapelera ? (
-                                                <button
-                                                    className="admin-btn restaurar"
-                                                    onClick={() => restaurar(item)}
-                                                    title="Restaurar"
-                                                    disabled={restaurandoId === String(item.id)}
+                    <>
+                        <div className="admin-tabla-toolbar">
+                            <div className="admin-buscador-wrapper">
+                                <i className="fas fa-search"></i>
+                                <input
+                                    className="form-control admin-buscador"
+                                    placeholder={`Buscar en ${config.titulo.toLowerCase()}...`}
+                                    value={busqueda}
+                                    onChange={e => setBusqueda(e.target.value)}
+                                />
+                            </div>
+                            <span className="admin-tabla-total">
+                                {modoPapelera ? 'papelera' : 'registros'}: {ordenados.length} / {items.length}
+                            </span>
+                        </div>
+
+                        {visibles.length > 0 ? (
+                            <div className="admin-tabla-container">
+                                <table className="admin-tabla">
+                                    <thead>
+                                        <tr>
+                                            {config.columnas.map(c => (
+                                                <th
+                                                    key={c.key}
+                                                    className="admin-th-orden"
+                                                    onClick={() => cambiarOrden(c.key)}
+                                                    title={`Ordenar por ${c.label}`}
                                                 >
-                                                    <i className={restaurandoId === String(item.id) ? 'fas fa-spinner fa-spin' : 'fas fa-rotate-left'}></i>
-                                                </button>
-                                            ) : (
-                                                <>
-                                                    <button
-                                                        className="admin-btn editar"
-                                                        onClick={() => abrirEditar(item)}
-                                                        title="Editar"
-                                                    >
-                                                        <i className="fas fa-pen"></i>
-                                                    </button>
-                                                    <button
-                                                        className="admin-btn eliminar"
-                                                        onClick={() => setItemAEliminar(item)}
-                                                        title="Eliminar"
-                                                    >
-                                                        <i className="fas fa-trash"></i>
-                                                    </button>
-                                                </>
+                                                    {c.label}{' '}
+                                                    <i className={`fas ${ordenKey === c.key ? (ordenDir === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'}`}></i>
+                                                </th>
+                                            ))}
+                                            {!config.soloLectura && (
+                                                <th className="admin-tabla-acciones">Acciones</th>
                                             )}
-                                        </td>
-                                        )}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {visibles.map(item => (
+                                            <tr key={item.id}>
+                                                {config.columnas.map(c => (
+                                                    <td key={c.key}>
+                                                        {c.render ? c.render(item, externos) : (item[c.key] ?? '—')}
+                                                    </td>
+                                                ))}
+                                                {!config.soloLectura && (
+                                                <td className="admin-tabla-acciones">
+                                                    {!modoPapelera && (config.acciones || [])
+                                                        .filter(a => !a.permitido || a.permitido(item))
+                                                        .map(a => (
+                                                            <button
+                                                                key={a.etiqueta}
+                                                                className={`admin-btn ${a.clase || ''}`}
+                                                                onClick={() => ejecutarAccion(a, item)}
+                                                                title={a.etiqueta}
+                                                                disabled={ejecutandoAccion === String(item.id)}
+                                                            >
+                                                                <i className={ejecutandoAccion === String(item.id) ? 'fas fa-spinner fa-spin' : `fas ${a.icono}`}></i>
+                                                            </button>
+                                                        ))}
+                                                    {modoPapelera ? (
+                                                        <button
+                                                            className="admin-btn restaurar"
+                                                            onClick={() => restaurar(item)}
+                                                            title="Restaurar"
+                                                            disabled={restaurandoId === String(item.id)}
+                                                        >
+                                                            <i className={restaurandoId === String(item.id) ? 'fas fa-spinner fa-spin' : 'fas fa-rotate-left'}></i>
+                                                        </button>
+                                                    ) : (
+                                                        <>
+                                                            <button
+                                                                className="admin-btn editar"
+                                                                onClick={() => abrirEditar(item)}
+                                                                title="Editar"
+                                                            >
+                                                                <i className="fas fa-pen"></i>
+                                                            </button>
+                                                            <button
+                                                                className="admin-btn eliminar"
+                                                                onClick={() => setItemAEliminar(item)}
+                                                                title="Eliminar"
+                                                            >
+                                                                <i className="fas fa-trash"></i>
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </td>
+                                                )}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+
+                                <div className="admin-paginacion">
+                                    <button
+                                        className="admin-btn"
+                                        onClick={() => setPagina(p => Math.max(1, p - 1))}
+                                        disabled={paginaActual <= 1}
+                                        title="Anterior"
+                                    >
+                                        <i className="fas fa-chevron-left"></i>
+                                    </button>
+                                    <span>
+                                        Página {paginaActual} de {totalPaginas}
+                                    </span>
+                                    <button
+                                        className="admin-btn"
+                                        onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))}
+                                        disabled={paginaActual >= totalPaginas}
+                                        title="Siguiente"
+                                    >
+                                        <i className="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="propiedades-empty">
+                                <div className="empty-icon">
+                                    <i className="fas fa-search-minus"></i>
+                                </div>
+                                <h3>Sin resultados</h3>
+                                <p>No hay registros que coincidan con tu búsqueda.</p>
+                            </div>
+                        )}
+                    </>
                 ) : (
                     <div className="propiedades-empty">
                         <div className="empty-icon">
