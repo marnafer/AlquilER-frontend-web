@@ -7,7 +7,8 @@ import {
     getMisPropiedades,
     getPropiedades,
     aprobarReserva,
-    rechazarReserva
+    rechazarReserva,
+    createResena
 } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
 import Loader from '../components/Loader';
@@ -31,6 +32,13 @@ function MisReservas() {
     const [accionando, setAccionando] = useState(null);
     const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
 
+    const [resenaActiva, setResenaActiva] = useState(null);
+    const [calificacion, setCalificacion] = useState(0);
+    const [comentario, setComentario] = useState('');
+    const [enviandoCalificacion, setEnviandoCalificacion] = useState(false);
+    const [errorCalificacion, setErrorCalificacion] = useState('');
+    const [validacionCalificacion, setValidacionCalificacion] = useState({});
+
     const esGestion = true;
 
     const puedeAprobar = (reserva) =>
@@ -38,6 +46,8 @@ function MisReservas() {
 
     const puedeRechazar = (reserva) =>
         esGestion && reserva.origen === 'recibida' && reserva.estado === 'pendiente';
+
+    const puedeCalificar = (reserva) => reserva.estado === 'finalizada';
 
     const cargarDatos = useCallback(async () => {
         if (!usuario) return;
@@ -113,6 +123,65 @@ function MisReservas() {
             });
         }
         setAccionando(null);
+    };
+
+    const abrirCalificacion = (reserva) => {
+        setCalificacion(0);
+        setComentario('');
+        setErrorCalificacion('');
+        setValidacionCalificacion({});
+        setResenaActiva(reserva);
+    };
+
+    const calcularTipoResena = (reserva) =>
+        reserva.origen === 'propia' ? 'propiedad' : 'inquilino';
+
+    const enviarCalificacion = async (e) => {
+        e.preventDefault();
+        setErrorCalificacion('');
+        setValidacionCalificacion({});
+
+        const errores = {};
+        const nota = Number(calificacion);
+        if (!nota || nota < 1 || nota > 5) errores.calificacion = 'Seleccioná una calificación de 1 a 5 estrellas';
+        const comentarioFinal = comentario.trim();
+        if (comentarioFinal && comentarioFinal.length < 3) {
+            errores.comentario = 'El comentario debe tener al menos 3 caracteres';
+        }
+        if (Object.keys(errores).length) {
+            setValidacionCalificacion(errores);
+            return;
+        }
+
+        setEnviandoCalificacion(true);
+        try {
+            const payload = {
+                reserva_id: Number(resenaActiva.id),
+                tipo: calcularTipoResena(resenaActiva),
+                calificacion: nota
+            };
+            if (comentarioFinal) payload.comentario = comentarioFinal;
+
+            const result = await createResena(payload, token);
+            if (result.success) {
+                setResenaActiva(null);
+                setCalificacion(0);
+                setComentario('');
+                setMensaje({
+                    tipo: 'exito',
+                    texto: result.message || '¡Reseña publicada correctamente!'
+                });
+            } else {
+                if (result.validation_errors) setValidacionCalificacion(result.validation_errors);
+                setErrorCalificacion(
+                    result.message || result.error || 'No se pudo publicar la reseña.'
+                );
+            }
+        } catch (err) {
+            setErrorCalificacion('Error de conexión al publicar la reseña.');
+        } finally {
+            setEnviandoCalificacion(false);
+        }
     };
 
     const filtradas = filtro === 'todos'
@@ -242,6 +311,14 @@ function MisReservas() {
                                                     <i className="fas fa-times"></i> Rechazar
                                                 </button>
                                             )}
+                                            {puedeCalificar(reserva) && (
+                                                <button
+                                                    className="btn-detalle btn-detalle-secundario"
+                                                    onClick={() => abrirCalificacion(reserva)}
+                                                >
+                                                    <i className="fas fa-star"></i> Calificar
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 );
@@ -276,6 +353,112 @@ function MisReservas() {
                 )}
 
             </div>
+
+            {resenaActiva && (
+                <div
+                    className="modal-backdrop-custom"
+                    onClick={() => !enviandoCalificacion && setResenaActiva(null)}
+                >
+                    <div
+                        className="modal-custom"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ textAlign: 'left', maxWidth: 480 }}
+                    >
+                        <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <i className="fas fa-star" style={{ color: '#f59e0b' }}></i>
+                            {calcularTipoResena(resenaActiva) === 'propiedad'
+                                ? 'Calificar la propiedad'
+                                : 'Calificar al inquilino'}
+                        </h3>
+                        <p style={{ marginBottom: 14 }}>
+                            {calcularTipoResena(resenaActiva) === 'propiedad'
+                                ? '¿Cómo te fue en la propiedad? Tu opinión ayuda a otros usuarios.'
+                                : 'Calificá tu experiencia con el inquilino de esta reserva.'}
+                        </p>
+
+                        <form onSubmit={enviarCalificacion} noValidate>
+                            <div className="form-group" style={{ marginBottom: 14 }}>
+                                <label>
+                                    Calificación <span style={{ color: '#dc2626' }}>*</span>
+                                </label>
+                                <div className="resena-estrellas resena-estrellas-grandes">
+                                    {[1, 2, 3, 4, 5].map(n => (
+                                        <button
+                                            key={n}
+                                            type="button"
+                                            className={`estrella-btn ${n <= calificacion ? 'estrella-llena' : ''}`}
+                                            onClick={() => setCalificacion(n)}
+                                            aria-label={`${n} estrella${n > 1 ? 's' : ''}`}
+                                        >
+                                            <i className="fas fa-star"></i>
+                                        </button>
+                                    ))}
+                                </div>
+                                {validacionCalificacion.calificacion && (
+                                    <span className="form-error">{validacionCalificacion.calificacion}</span>
+                                )}
+                            </div>
+
+                            <div className="form-group" style={{ marginBottom: 14 }}>
+                                <label htmlFor="comentario-resena">Comentario</label>
+                                <textarea
+                                    id="comentario-resena"
+                                    rows="4"
+                                    placeholder="Contanos cómo fue tu experiencia (opcional)"
+                                    value={comentario}
+                                    onChange={(e) => setComentario(e.target.value)}
+                                    className={validacionCalificacion.comentario ? 'input-error' : ''}
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px 12px',
+                                        borderRadius: 10,
+                                        border: `1px solid ${validacionCalificacion.comentario ? '#dc2626' : '#cbd5e1'}`,
+                                        fontFamily: 'inherit',
+                                        fontSize: 14,
+                                        resize: 'vertical'
+                                    }}
+                                />
+                                {validacionCalificacion.comentario && (
+                                    <span className="form-error">{validacionCalificacion.comentario}</span>
+                                )}
+                            </div>
+
+                            {errorCalificacion && (
+                                <div className="alert alert-error" role="alert" style={{ marginBottom: 16 }}>
+                                    <i className="fas fa-exclamation-circle" style={{ marginRight: 8 }}></i>
+                                    {errorCalificacion}
+                                </div>
+                            )}
+
+                            <div className="modal-actions">
+                                <button
+                                    type="button"
+                                    className="btn-detalle btn-detalle-secundario"
+                                    onClick={() => setResenaActiva(null)}
+                                    disabled={enviandoCalificacion}
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="btn-detalle btn-detalle-primario"
+                                    disabled={enviandoCalificacion}
+                                >
+                                    {enviandoCalificacion ? (
+                                        <>
+                                            <i className="fas fa-spinner fa-spin"></i> Publicando...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <i className="fas fa-star"></i> Publicar reseña
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

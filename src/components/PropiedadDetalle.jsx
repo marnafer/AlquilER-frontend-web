@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { getPropiedad, getCategorias, createReserva, createConsulta } from '../services/api';
+import { getPropiedad, getCategorias, createReserva, createConsulta, getResenasByPropiedad } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
 import { useAuth } from '../hooks/useAuth';
 import Loader from './Loader';
@@ -28,6 +28,9 @@ function PropiedadDetalle() {
     const [exitoConsulta, setExitoConsulta] = useState('');
     const [validacionConsulta, setValidacionConsulta] = useState({});
 
+    const [resenas, setResenas] = useState([]);
+    const [promedioResenas, setPromedioResenas] = useState(0);
+
     useEffect(() => {
         cargarDatos();
     }, [id]);
@@ -35,18 +38,34 @@ function PropiedadDetalle() {
     const cargarDatos = async () => {
         setLoading(true);
         try {
-            const [prop, cats] = await Promise.all([
+            const [prop, cats, resenasRes] = await Promise.all([
                 getPropiedad(id),
-                getCategorias()
+                getCategorias(),
+                getResenasByPropiedad(id)
             ]);
             setPropiedad(prop);
             setCategorias(cats);
+            if (resenasRes && resenasRes.success && Array.isArray(resenasRes.data.items)) {
+                setResenas(resenasRes.data.items);
+                setPromedioResenas(Number(resenasRes.data.promedio) || 0);
+            } else {
+                setResenas([]);
+                setPromedioResenas(0);
+            }
         } catch (error) {
             console.error('Error cargando detalle:', error);
         } finally {
             setLoading(false);
         }
     };
+
+    const renderEstrellas = (valor) =>
+        Array.from({ length: 5 }).map((_, i) => (
+            <i
+                key={i}
+                className={`fas fa-star ${i < Math.round(Number(valor) || 0) ? 'estrella-llena' : ''}`}
+            ></i>
+        ));
 
     const abrirModalConsulta = () => {
         setErrorConsulta('');
@@ -302,6 +321,57 @@ function PropiedadDetalle() {
                         </div>
                     </div>
                 </div>
+
+                {/* RESEÑAS */}
+                <section className="resenas-section">
+                    <div className="resenas-header">
+                        <h2>
+                            <i className="fas fa-star" style={{ color: '#f59e0b' }}></i> Reseñas
+                        </h2>
+                        {resenas.length > 0 && (
+                            <div className="resenas-promedio">
+                                <span className="resenas-promedio-num">
+                                    {Number(promedioResenas).toFixed(1)}
+                                </span>
+                                <span className="resenas-estrellas">{renderEstrellas(promedioResenas)}</span>
+                                <span className="resenas-promedio-total">
+                                    {resenas.length} {resenas.length === 1 ? 'reseña' : 'reseñas'}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+
+                    {resenas.length > 0 ? (
+                        <div className="resenas-lista">
+                            {resenas.map(r => (
+                                <article className="resena-item" key={r.id}>
+                                    <div className="resena-item-top">
+                                        <span className="resena-autor">
+                                            <i className="fas fa-user"></i>{' '}
+                                            {r.calificador
+                                                ? `${r.calificador.nombre} ${r.calificador.apellido || ''}`.trim()
+                                                : `Usuario #${r.calificador_id}`}
+                                        </span>
+                                        <span className="resenas-estrellas">{renderEstrellas(r.calificacion)}</span>
+                                    </div>
+                                    {r.fecha_publicacion && (
+                                        <p className="resena-fecha">
+                                            <i className="far fa-calendar-alt"></i>{' '}
+                                            {String(r.fecha_publicacion).slice(0, 10)}
+                                        </p>
+                                    )}
+                                    {r.comentario && (
+                                        <p className="resena-comentario">{r.comentario}</p>
+                                    )}
+                                </article>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="resenas-vacio">
+                            Todavía no hay reseñas para esta propiedad.
+                        </p>
+                    )}
+                </section>
             </div>
 
             {/* MODAL DE RESERVA */}

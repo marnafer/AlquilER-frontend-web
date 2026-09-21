@@ -4929,3 +4929,141 @@ img {
         justify-content: center;
     }
 }
+
+/* ============================================
+   RESEÑAS
+   ============================================ */
+
+.resenas-section {
+    margin: 28px 0 40px;
+    padding: 24px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+}
+
+.resenas-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.resenas-header h2 {
+    font-size: 22px;
+    font-weight: 800;
+    margin: 0;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.resenas-promedio {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 8px 14px;
+}
+
+.resenas-promedio-num {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.resenas-promedio-total {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.resenas-estrellas {
+    display: inline-flex;
+    gap: 2px;
+    font-size: 15px;
+    color: #cbd5e1;
+}
+
+.resenas-estrellas .estrella-llena {
+    color: #f59e0b;
+}
+
+.resenas-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.resena-item {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 16px;
+    background: #f8fafc;
+}
+
+.resena-item-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.resena-autor {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 14px;
+}
+
+.resena-autor i {
+    color: #0d9488;
+}
+
+.resena-fecha {
+    margin: 6px 0 0;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.resena-comentario {
+    margin: 10px 0 0;
+    color: #334155;
+    font-size: 14px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+}
+
+.resenas-vacio {
+    color: #94a3b8;
+    font-size: 14.5px;
+    margin: 0;
+    padding: 10px 0;
+}
+
+/* Selector de estrellas (modal) */
+.resena-estrellas-grandes {
+    gap: 6px;
+}
+
+.estrella-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    font-size: 26px;
+    color: #cbd5e1;
+    transition: color 0.15s ease, transform 0.1s ease;
+}
+
+.estrella-btn:hover {
+    transform: scale(1.12);
+}
+
+.estrella-btn.estrella-llena {
+    color: #f59e0b;
+}
