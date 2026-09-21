@@ -87,29 +87,59 @@ function Header() {
                                 <NavDropdown.Item as={Link} to="/consultas" onClick={() => setExpanded(false)}>
                                     <i className="fas fa-comments"></i> Consultas
                                 </NavDropdown.Item>
-                                <NavDropdown.Divider />
-                                <NavDropdown.Item onClick={handleLogout} className="text-danger">
-                                    <i className="fas fa-sign-out-alt"></i> Cerrar Sesión
-                                </NavDropdown.Item>
-                            </NavDropdown>
-                        ) : (
-                            <>
-                                <Nav.Link as={Link} to="/login" onClick={() => setExpanded(false)}>Ingresar</Nav.Link>
-                                <Button 
-                                    as={Link} 
-                                    to="/register" 
-                                    variant="primary" 
-                                    className="ms-2"
-                                    onClick={() => setExpanded(false)}
-                                    style={{ 
-                                        background: 'linear-gradient(135deg, #0f766e 0%, #059669 50%, #0d9488 100%)',
-                                        border: 'none'
-                                    }}
+<NavDropdown.Divider />
+                                    <NavDropdown.Item onClick={handleLogout} className="text-danger">
+                                        <i className="fas fa-sign-out-alt"></i> Cerrar Sesión
+                                    </NavDropdown.Item>
+                                </NavDropdown>
+                            ) : (
+                                <>
+                                    <Nav.Link as={Link} to="/login" onClick={() => setExpanded(false)}>Ingresar</Nav.Link>
+                                    <Button 
+                                        as={Link} 
+                                        to="/register" 
+                                        variant="primary" 
+                                        className="ms-2"
+                                        onClick={() => setExpanded(false)}
+                                        style={{ 
+                                            background: 'linear-gradient(135deg, #0f766e 0%, #059669 50%, #0d9488 100%)',
+                                            border: 'none'
+                                        }}
+                                    >
+                                        Registrarse
+                                    </Button>
+                                </>
+                            )}
+
+                            {Number(usuario?.rol_id) === 2 && (
+                                <NavDropdown 
+                                    title={<><i className="fas fa-cog"></i> Administración</>} 
+                                    id="admin-nav-dropdown"
+                                    align="end"
                                 >
-                                    Registrarse
-                                </Button>
-                            </>
-                        )}
+                                    <NavDropdown.Item as={Link} to="/admin" onClick={() => setExpanded(false)}>
+                                        <i className="fas fa-tachometer-alt"></i> Panel
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Item as={Link} to="/admin/usuarios" onClick={() => setExpanded(false)}>
+                                        <i className="fas fa-users"></i> Usuarios
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Item as={Link} to="/admin/categorias" onClick={() => setExpanded(false)}>
+                                        <i className="fas fa-tags"></i> Categorías
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Item as={Link} to="/admin/provincias" onClick={() => setExpanded(false)}>
+                                        <i className="fas fa-map-marked-alt"></i> Provincias
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Item as={Link} to="/admin/localidades" onClick={() => setExpanded(false)}>
+                                        <i className="fas fa-map-pin"></i> Localidades
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Item as={Link} to="/admin/roles" onClick={() => setExpanded(false)}>
+                                        <i className="fas fa-user-shield"></i> Roles
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Item as={Link} to="/admin/servicios" onClick={() => setExpanded(false)}>
+                                        <i className="fas fa-wrench"></i> Servicios
+                                    </NavDropdown.Item>
+                                </NavDropdown>
+                            )}
                     </Nav>
                 </Navbar.Collapse>
             </Container>

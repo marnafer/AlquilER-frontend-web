@@ -303,6 +303,20 @@ export async function getServicios() {
     }
 }
 
+export async function getRoles() {
+    try {
+        const response = await fetch(`${API_URL}/api/roles`);
+        const result = await response.json();
+        if (result.success && result.data && result.data.items) {
+            return result.data.items;
+        }
+        return result.data || [];
+    } catch (error) {
+        console.error('Error en getRoles:', error);
+        return [];
+    }
+}
+
 export async function getServiciosByPropiedad(propiedadId) {
     try {
         const response = await fetch(`${API_URL}/api/propiedades/${propiedadId}/servicios`);
@@ -528,6 +542,276 @@ export async function createResena(data, token) {
 export async function getResenasByPropiedad(propiedadId) {
     try {
         const response = await fetch(`${API_URL}/api/resenas/propiedad/${propiedadId}`);
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// ============================================
+// ADMIN - USUARIOS
+// ============================================
+
+export async function getUsuarios(token) {
+    try {
+        const response = await fetch(`${API_URL}/api/usuarios`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await response.json();
+        // Dejamos el status HTTP para distinguir 403/401 de otros errores
+        result.status = response.status;
+        return result;
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function deleteUsuario(id, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/usuarios/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// ============================================
+// ADMIN - CATEGORÍAS
+// ============================================
+
+export async function createCategoria(data, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/categorias`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function updateCategoria(id, data, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/categorias/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function deleteCategoria(id, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/categorias/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// ============================================
+// ADMIN - PROVINCIAS
+// ============================================
+
+export async function createProvincia(data, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/provincias`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function updateProvincia(id, data, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/provincias/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function deleteProvincia(id, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/provincias/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// ============================================
+// ADMIN - LOCALIDADES
+// ============================================
+
+export async function createLocalidad(data, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/localidades`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function updateLocalidad(id, data, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/localidades/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function deleteLocalidad(id, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/localidades/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// ============================================
+// ADMIN - ROLES
+// ============================================
+
+export async function createRol(data, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/roles`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function updateRol(id, data, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/roles/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function deleteRol(id, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/roles/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// ============================================
+// ADMIN - SERVICIOS
+// ============================================
+
+export async function createServicio(data, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/servicios`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function updateServicio(id, data, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/servicios/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function deleteServicio(id, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/servicios/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
         return await response.json();
     } catch (error) {
         return { success: false, error: error.message };

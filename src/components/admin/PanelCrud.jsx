@@ -1,0 +1,382 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../../hooks/useAuth';
+import Loader from '../Loader';
+import Alert from '../Alert';
+
+// Componente CRUD genérico configurable.
+// config espera:
+//   titulo, nombreSingular, icono, descripcion, columnaPrincipal
+//   obtener: (token) => Promise -> { data: { items } } | [array]
+//   crear / actualizar / eliminar: (payload, token) => Promise -> { success, message|error, validation_errors? }
+//   columnas: [{ key, label, render?: (item, externos) => node }]
+//   campos:   [{ name, label, type?, requerido?, min?, max?, placeholder?, ayuda?, opciones? }]
+//   externos?: [{ clave, cargar: () => Promise -> [array] }]   (fuentes para selects/columnas)
+function PanelCrud({ config }) {
+    const { token } = useAuth();
+    const [loading, setLoading] = useState(true);
+    const [guardando, setGuardando] = useState(false);
+    const [eliminando, setEliminando] = useState(false);
+    const [items, setItems] = useState([]);
+    const [externos, setExternos] = useState({});
+    const [modal, setModal] = useState(null); // null | 'crear' | 'editar'
+    const [editId, setEditId] = useState(null);
+    const [form, setForm] = useState({});
+    const [erroresForm, setErroresForm] = useState(null);
+    const [mensaje, setMensaje] = useState(null);
+    const [itemAEliminar, setItemAEliminar] = useState(null);
+
+    const formVacio = () => {
+        const f = {};
+        config.campos.forEach(c => { f[c.name] = ''; });
+        return f;
+    };
+
+    const cargar = useCallback(async () => {
+        setLoading(true);
+        setMensaje(null);
+        try {
+            const externosCargados = {};
+            const promesas = [config.obtener(token)];
+            if (config.externos) {
+                config.externos.forEach(e => {
+                    promesas.push(
+                        e.cargar()
+                            .then(data => { externosCargados[e.clave] = Array.isArray(data) ? data : []; })
+                            .catch(() => { externosCargados[e.clave] = []; })
+                    );
+                });
+            }
+            const [res] = await Promise.all(promesas);
+            const datos = Array.isArray(res) ? res : (res?.data?.items ?? res?.data ?? []);
+            setItems(Array.isArray(datos) ? datos : []);
+            setExternos(externosCargados);
+        } catch (error) {
+            console.error('Error cargando datos del panel:', error);
+            setMensaje({ type: 'danger', text: 'Error al cargar los datos.' });
+        } finally {
+            setLoading(false);
+        }
+    }, [config, token]);
+
+    useEffect(() => {
+        cargar();
+    }, [cargar]);
+
+    const abrirCrear = () => {
+        setForm(formVacio());
+        setEditId(null);
+        setErroresForm(null);
+        setMensaje(null);
+        setModal('crear');
+    };
+
+    const abrirEditar = (item) => {
+        const f = {};
+        config.campos.forEach(c => { f[c.name] = item[c.name] ?? ''; });
+        setForm(f);
+        setEditId(item.id);
+        setErroresForm(null);
+        setMensaje(null);
+        setModal('editar');
+    };
+
+    const validar = () => {
+        const errores = {};
+        config.campos.forEach(c => {
+            const val = String(form[c.name] ?? '').trim();
+            if (c.requerido && !val) {
+                errores[c.name] = ['Este campo es obligatorio'];
+            } else if (val && c.min && val.length < c.min) {
+                errores[c.name] = [`Debe tener al menos ${c.min} caracteres`];
+            } else if (val && c.max && val.length > c.max) {
+                errores[c.name] = [`No puede superar los ${c.max} caracteres`];
+            }
+        });
+        return errores;
+    };
+
+    const construirPayload = () => {
+        const payload = {};
+        config.campos.forEach(c => {
+            const val = form[c.name];
+            const esVacio = val === '' || val === null || val === undefined;
+            if (esVacio && !c.requerido) return;
+            payload[c.name] = c.type === 'select'
+                ? (esVacio ? null : Number(val))
+                : (typeof val === 'string' ? val.trim() : val);
+        });
+        return payload;
+    };
+
+    const guardar = async () => {
+        const errores = validar();
+        if (Object.keys(errores).length) {
+            setErroresForm(errores);
+            return;
+        }
+        setGuardando(true);
+        setMensaje(null);
+        setErroresForm(null);
+        try {
+            const payload = construirPayload();
+            const res = editId
+                ? await config.actualizar(editId, payload, token)
+                : await config.crear(payload, token);
+
+            if (res?.success) {
+                setMensaje({ type: 'success', text: res.message || 'Operación realizada correctamente' });
+                setModal(null);
+                await cargar();
+            } else {
+                setErroresForm(
+                    res?.validation_errors
+                        ? { ...res.validation_errors }
+                        : { global: [res?.error || res?.message || 'No se pudo guardar'] }
+                );
+            }
+        } catch (error) {
+            setErroresForm({ global: ['Error de conexión al guardar'] });
+        } finally {
+            setGuardando(false);
+        }
+    };
+
+    const confirmarEliminar = async () => {
+        if (!itemAEliminar) return;
+        setEliminando(true);
+        try {
+            const res = await config.eliminar(itemAEliminar.id, token);
+            if (res?.success) {
+                setItems(prev => prev.filter(i => String(i.id) !== String(itemAEliminar.id)));
+                setItemAEliminar(null);
+                setMensaje({ type: 'success', text: res.message || 'Eliminado correctamente' });
+            } else {
+                setItemAEliminar(null);
+                setMensaje({ type: 'danger', text: `No se pudo eliminar: ${res?.error || res?.message || 'error desconocido'}` });
+            }
+        } catch (error) {
+            setItemAEliminar(null);
+            setMensaje({ type: 'danger', text: 'Error de conexión al eliminar' });
+        } finally {
+            setEliminando(false);
+        }
+    };
+
+    const identidad = (item) => config.columnaPrincipal
+        ? (item[config.columnaPrincipal] ?? `#${item.id}`)
+        : `#${item.id}`;
+
+    if (loading) return <Loader />;
+
+    return (
+        <div className="admin-page">
+            <div className="container">
+
+                <section className="admin-hero">
+                    <div className="admin-hero-content">
+                        <span className="admin-hero-badge">
+                            <i className={`fas ${config.icono}`}></i> Administración
+                        </span>
+                        <h1>{config.titulo}</h1>
+                        <p>{config.descripcion}</p>
+                    </div>
+                    <div className="admin-hero-actions">
+                        {config.crear && (
+                            <button className="btn-detalle btn-detalle-primario" onClick={abrirCrear}>
+                                <i className="fas fa-plus"></i> Nuevo
+                            </button>
+                        )}
+                    </div>
+                </section>
+
+                <Alert type={mensaje?.type} message={mensaje?.text} />
+
+                {items.length > 0 ? (
+                    <div className="admin-tabla-container">
+                        <table className="admin-tabla">
+                            <thead>
+                                <tr>
+                                    {config.columnas.map(c => (
+                                        <th key={c.key}>{c.label}</th>
+                                    ))}
+                                    <th className="admin-tabla-acciones">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {items.map(item => (
+                                    <tr key={item.id}>
+                                        {config.columnas.map(c => (
+                                            <td key={c.key}>
+                                                {c.render ? c.render(item, externos) : (item[c.key] ?? '—')}
+                                            </td>
+                                        ))}
+                                        <td className="admin-tabla-acciones">
+                                            <button
+                                                className="admin-btn editar"
+                                                onClick={() => abrirEditar(item)}
+                                                title="Editar"
+                                            >
+                                                <i className="fas fa-pen"></i>
+                                            </button>
+                                            <button
+                                                className="admin-btn eliminar"
+                                                onClick={() => setItemAEliminar(item)}
+                                                title="Eliminar"
+                                            >
+                                                <i className="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="propiedades-empty">
+                        <div className="empty-icon">
+                            <i className={`fas ${config.icono}`}></i>
+                        </div>
+                        <h3>Aún no hay registros</h3>
+                        <p>Podés crear el primero haciendo clic en "Nuevo".</p>
+                    </div>
+                )}
+
+            </div>
+
+            {/* MODAL CREAR / EDITAR */}
+            {modal && (
+                <div className="modal-backdrop-custom" onClick={() => { if (!guardando) setModal(null); }}>
+                    <div className="modal-custom admin-modal" onClick={e => e.stopPropagation()}>
+                        <h3>
+                            {modal === 'crear'
+                                ? `Nueva ${config.nombreSingular}`
+                                : `Editar ${config.nombreSingular} ${identidad(items.find(i => String(i.id) === String(editId)) || {})}`}
+                        </h3>
+
+                        {erroresForm?.global && (
+                            <div className="alert alert-danger">
+                                {(Array.isArray(erroresForm.global) ? erroresForm.global : [erroresForm.global]).join(' ')}
+                            </div>
+                        )}
+
+                        {config.campos.map(campo => {
+                            const err = erroresForm?.[campo.name];
+                            return (
+                                <div className="admin-form-grupo" key={campo.name}>
+                                    <label htmlFor={`campo-${campo.name}`}>
+                                        {campo.label}{campo.requerido && <span className="admin-req">*</span>}
+                                    </label>
+
+                                    {campo.type === 'select' ? (
+                                        <select
+                                            id={`campo-${campo.name}`}
+                                            value={form[campo.name] ?? ''}
+                                            onChange={e => setForm({ ...form, [campo.name]: e.target.value })}
+                                            className="form-control"
+                                        >
+                                            <option value="">Seleccionar...</option>
+                                            {(externos[campo.opciones] || []).map(op => (
+                                                <option key={op.id} value={op.value ?? op.id}>
+                                                    {op.label ?? op.nombre}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <input
+                                            id={`campo-${campo.name}`}
+                                            type={campo.type || 'text'}
+                                            value={form[campo.name] ?? ''}
+                                            onChange={e => setForm({ ...form, [campo.name]: e.target.value })}
+                                            className="form-control"
+                                            placeholder={campo.placeholder || ''}
+                                            minLength={campo.min}
+                                            maxLength={campo.max}
+                                        />
+                                    )}
+
+                                    {campo.ayuda && (
+                                        <small className="admin-form-ayuda">{campo.ayuda}</small>
+                                    )}
+                                    {err && (
+                                        <div className="admin-form-error">
+                                            {(Array.isArray(err) ? err : [err]).map((m, idx) => (
+                                                <div key={idx}>{m}</div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+
+                        <div className="modal-actions">
+                            <button
+                                className="btn-detalle btn-detalle-secundario"
+                                onClick={() => setModal(null)}
+                                disabled={guardando}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                className="btn-detalle btn-detalle-primario"
+                                onClick={guardar}
+                                disabled={guardando}
+                            >
+                                {guardando ? (
+                                    <>
+                                        <i className="fas fa-spinner fa-spin"></i> Guardando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <i className="fas fa-check"></i> Guardar
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL CONFIRMAR ELIMINACIÓN */}
+            {itemAEliminar && (
+                <div className="modal-backdrop-custom" onClick={() => { if (!eliminando) setItemAEliminar(null); }}>
+                    <div className="modal-custom" onClick={e => e.stopPropagation()}>
+                        <div className="modal-icon-danger">
+                            <i className="fas fa-trash-alt"></i>
+                        </div>
+                        <h3>¿Eliminar {config.nombreSingular}?</h3>
+                        <p>
+                            Estás por eliminar <strong>{identidad(itemAEliminar)}</strong>.
+                            Esta acción no se puede deshacer.
+                        </p>
+                        <div className="modal-actions">
+                            <button
+                                className="btn-detalle btn-detalle-secundario"
+                                onClick={() => setItemAEliminar(null)}
+                                disabled={eliminando}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                className="btn-detalle btn-detalle-danger"
+                                onClick={confirmarEliminar}
+                                disabled={eliminando}
+                            >
+                                {eliminando ? (
+                                    <>
+                                        <i className="fas fa-spinner fa-spin"></i> Eliminando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <i className="fas fa-trash"></i> Sí, eliminar
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+export default PanelCrud;

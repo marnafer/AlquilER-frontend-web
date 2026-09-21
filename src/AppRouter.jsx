@@ -20,6 +20,14 @@ import MisReservas from './pages/MisReservas';
 import MisConsultas from './pages/MisConsultas';
 import PropiedadForm from './pages/PropiedadForm';
 import NotFound from './pages/NotFound';
+// Páginas de administración
+import AdminHome from './pages/admin/AdminHome';
+import UsuariosAdmin from './pages/admin/UsuariosAdmin';
+import CategoriasAdmin from './pages/admin/CategoriasAdmin';
+import ProvinciasAdmin from './pages/admin/ProvinciasAdmin';
+import LocalidadesAdmin from './pages/admin/LocalidadesAdmin';
+import RolesAdmin from './pages/admin/RolesAdmin';
+import ServiciosAdmin from './pages/admin/ServiciosAdmin';
 
 // ============================================
 // RUTAS PROTEGIDAS
@@ -37,6 +45,14 @@ function GuestRoute({ children }) {
     const { isAuthenticated, loading } = useAuth();
     if (loading) return null;
     return !isAuthenticated ? children : <Navigate to="/" replace />;
+}
+
+// Componente para rutas de administración (logueado y rol admin)
+function AdminRoute({ children }) {
+    const { isAuthenticated, loading, usuario } = useAuth();
+    if (loading) return null;
+    if (!isAuthenticated) return <Navigate to="/login" replace />;
+    return Number(usuario?.rol_id) === 2 ? children : <Navigate to="/" replace />;
 }
 
 function AppRouter() {
@@ -153,6 +169,66 @@ function AppRouter() {
                             <PrivateRoute>
                                 <MisPropiedades />
                             </PrivateRoute>
+                        }
+                    />
+
+                    {/* ============================================
+                        RUTAS DE ADMINISTRACIÓN (solo rol admin)
+                       ============================================ */}
+                    <Route
+                        path="/admin"
+                        element={
+                            <AdminRoute>
+                                <AdminHome />
+                            </AdminRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/usuarios"
+                        element={
+                            <AdminRoute>
+                                <UsuariosAdmin />
+                            </AdminRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/categorias"
+                        element={
+                            <AdminRoute>
+                                <CategoriasAdmin />
+                            </AdminRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/provincias"
+                        element={
+                            <AdminRoute>
+                                <ProvinciasAdmin />
+                            </AdminRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/localidades"
+                        element={
+                            <AdminRoute>
+                                <LocalidadesAdmin />
+                            </AdminRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/roles"
+                        element={
+                            <AdminRoute>
+                                <RolesAdmin />
+                            </AdminRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/servicios"
+                        element={
+                            <AdminRoute>
+                                <ServiciosAdmin />
+                            </AdminRoute>
                         }
                     />
 
