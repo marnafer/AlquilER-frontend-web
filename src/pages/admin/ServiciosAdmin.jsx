@@ -4,7 +4,8 @@ import {
     getServicios,
     createServicio,
     updateServicio,
-    deleteServicio
+    deleteServicio,
+    restoreServicio
 } from '../../services/api';
 
 const config = {
@@ -17,6 +18,10 @@ const config = {
     crear: (data, token) => createServicio(data, token),
     actualizar: (id, data, token) => updateServicio(id, data, token),
     eliminar: (id, token) => deleteServicio(id, token),
+    papelera: {
+        obtener: () => getServicios(true),
+        restaurar: (id, token) => restoreServicio(id, token)
+    },
     columnas: [
         { key: 'id', label: 'ID' },
         { key: 'nombre', label: 'Nombre' }

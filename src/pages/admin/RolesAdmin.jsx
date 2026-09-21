@@ -4,7 +4,8 @@ import {
     getRoles,
     createRol,
     updateRol,
-    deleteRol
+    deleteRol,
+    restoreRol
 } from '../../services/api';
 
 const config = {
@@ -17,6 +18,10 @@ const config = {
     crear: (data, token) => createRol(data, token),
     actualizar: (id, data, token) => updateRol(id, data, token),
     eliminar: (id, token) => deleteRol(id, token),
+    papelera: {
+        obtener: () => getRoles(true),
+        restaurar: (id, token) => restoreRol(id, token)
+    },
     columnas: [
         { key: 'id', label: 'ID' },
         { key: 'nombre', label: 'Nombre' }

@@ -4,7 +4,8 @@ import {
     getCategorias,
     createCategoria,
     updateCategoria,
-    deleteCategoria
+    deleteCategoria,
+    restoreCategoria
 } from '../../services/api';
 
 const config = {
@@ -17,6 +18,10 @@ const config = {
     crear: (data, token) => createCategoria(data, token),
     actualizar: (id, data, token) => updateCategoria(id, data, token),
     eliminar: (id, token) => deleteCategoria(id, token),
+    papelera: {
+        obtener: () => getCategorias(true),
+        restaurar: (id, token) => restoreCategoria(id, token)
+    },
     columnas: [
         { key: 'id', label: 'ID' },
         { key: 'nombre', label: 'Nombre' }

@@ -4,7 +4,8 @@ import {
     getUsuarios,
     getRoles,
     updatePerfil,
-    deleteUsuario
+    deleteUsuario,
+    restoreUsuario
 } from '../../services/api';
 
 const config = {
@@ -17,6 +18,10 @@ const config = {
     crear: null,
     actualizar: (id, data, token) => updatePerfil(id, data, token),
     eliminar: (id, token) => deleteUsuario(id, token),
+    papelera: {
+        obtener: (token) => getUsuarios(token, true),
+        restaurar: (id, token) => restoreUsuario(id, token)
+    },
     externos: [
         { clave: 'roles', cargar: () => getRoles() }
     ],

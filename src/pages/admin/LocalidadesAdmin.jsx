@@ -5,7 +5,8 @@ import {
     getProvincias,
     createLocalidad,
     updateLocalidad,
-    deleteLocalidad
+    deleteLocalidad,
+    restoreLocalidad
 } from '../../services/api';
 
 const config = {
@@ -18,6 +19,10 @@ const config = {
     crear: (data, token) => createLocalidad(data, token),
     actualizar: (id, data, token) => updateLocalidad(id, data, token),
     eliminar: (id, token) => deleteLocalidad(id, token),
+    papelera: {
+        obtener: () => getLocalidades(true),
+        restaurar: (id, token) => restoreLocalidad(id, token)
+    },
     externos: [
         { clave: 'provincias', cargar: () => getProvincias() }
     ],

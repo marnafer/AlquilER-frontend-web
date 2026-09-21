@@ -24,6 +24,8 @@ function PanelCrud({ config }) {
     const [erroresForm, setErroresForm] = useState(null);
     const [mensaje, setMensaje] = useState(null);
     const [itemAEliminar, setItemAEliminar] = useState(null);
+    const [modoPapelera, setModoPapelera] = useState(false);
+    const [restaurandoId, setRestaurandoId] = useState(null);
 
     const formVacio = () => {
         const f = {};
@@ -36,7 +38,10 @@ function PanelCrud({ config }) {
         setMensaje(null);
         try {
             const externosCargados = {};
-            const promesas = [config.obtener(token)];
+            const obtener = config.papelera && modoPapelera
+                ? config.papelera.obtener
+                : config.obtener;
+            const promesas = [obtener(token)];
             if (config.externos) {
                 config.externos.forEach(e => {
                     promesas.push(
@@ -56,7 +61,7 @@ function PanelCrud({ config }) {
         } finally {
             setLoading(false);
         }
-    }, [config, token]);
+    }, [config, token, modoPapelera]);
 
     useEffect(() => {
         cargar();
@@ -162,6 +167,24 @@ function PanelCrud({ config }) {
         }
     };
 
+    const restaurar = async (item) => {
+        if (!config.papelera) return;
+        setRestaurandoId(String(item.id));
+        try {
+            const res = await config.papelera.restaurar(item.id, token);
+            if (res?.success) {
+                setItems(prev => prev.filter(i => String(i.id) !== String(item.id)));
+                setMensaje({ type: 'success', text: res.message || 'Restaurado correctamente' });
+            } else {
+                setMensaje({ type: 'danger', text: `No se pudo restaurar: ${res?.error || res?.message || 'error desconocido'}` });
+            }
+        } catch (error) {
+            setMensaje({ type: 'danger', text: 'Error de conexión al restaurar' });
+        } finally {
+            setRestaurandoId(null);
+        }
+    };
+
     const identidad = (item) => config.columnaPrincipal
         ? (item[config.columnaPrincipal] ?? `#${item.id}`)
         : `#${item.id}`;
@@ -181,7 +204,17 @@ function PanelCrud({ config }) {
                         <p>{config.descripcion}</p>
                     </div>
                     <div className="admin-hero-actions">
-                        {config.crear && (
+                        {config.papelera && (
+                            <button
+                                className="btn-detalle btn-detalle-secundario"
+                                onClick={() => setModoPapelera(v => !v)}
+                                disabled={loading}
+                            >
+                                <i className={modoPapelera ? 'fas fa-list' : 'fas fa-trash-can-arrow-up'}></i>
+                                {modoPapelera ? 'Ver activos' : 'Papelera'}
+                            </button>
+                        )}
+                        {config.crear && !modoPapelera && (
                             <button className="btn-detalle btn-detalle-primario" onClick={abrirCrear}>
                                 <i className="fas fa-plus"></i> Nuevo
                             </button>
@@ -190,6 +223,13 @@ function PanelCrud({ config }) {
                 </section>
 
                 <Alert type={mensaje?.type} message={mensaje?.text} />
+
+                {modoPapelera && (
+                    <div className="alert alert-info d-flex align-items-center gap-2">
+                        <i className="fas fa-trash-can-arrow-up"></i>
+                        <span>Estás viendo la papelera. Los elementos eliminados se muestran acá y podés restaurarlos.</span>
+                    </div>
+                )}
 
                 {items.length > 0 ? (
                     <div className="admin-tabla-container">
@@ -211,20 +251,33 @@ function PanelCrud({ config }) {
                                             </td>
                                         ))}
                                         <td className="admin-tabla-acciones">
-                                            <button
-                                                className="admin-btn editar"
-                                                onClick={() => abrirEditar(item)}
-                                                title="Editar"
-                                            >
-                                                <i className="fas fa-pen"></i>
-                                            </button>
-                                            <button
-                                                className="admin-btn eliminar"
-                                                onClick={() => setItemAEliminar(item)}
-                                                title="Eliminar"
-                                            >
-                                                <i className="fas fa-trash"></i>
-                                            </button>
+                                            {modoPapelera ? (
+                                                <button
+                                                    className="admin-btn restaurar"
+                                                    onClick={() => restaurar(item)}
+                                                    title="Restaurar"
+                                                    disabled={restaurandoId === String(item.id)}
+                                                >
+                                                    <i className={restaurandoId === String(item.id) ? 'fas fa-spinner fa-spin' : 'fas fa-rotate-left'}></i>
+                                                </button>
+                                            ) : (
+                                                <>
+                                                    <button
+                                                        className="admin-btn editar"
+                                                        onClick={() => abrirEditar(item)}
+                                                        title="Editar"
+                                                    >
+                                                        <i className="fas fa-pen"></i>
+                                                    </button>
+                                                    <button
+                                                        className="admin-btn eliminar"
+                                                        onClick={() => setItemAEliminar(item)}
+                                                        title="Eliminar"
+                                                    >
+                                                        <i className="fas fa-trash"></i>
+                                                    </button>
+                                                </>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}
@@ -234,10 +287,16 @@ function PanelCrud({ config }) {
                 ) : (
                     <div className="propiedades-empty">
                         <div className="empty-icon">
-                            <i className={`fas ${config.icono}`}></i>
+                            <i className={`fas ${modoPapelera ? 'fa-trash-can-arrow-up' : config.icono}`}></i>
                         </div>
-                        <h3>Aún no hay registros</h3>
-                        <p>Podés crear el primero haciendo clic en "Nuevo".</p>
+                        <h3>{modoPapelera ? 'La papelera está vacía' : 'Aún no hay registros'}</h3>
+                        <p>
+                            {modoPapelera
+                                ? 'Los elementos eliminados aparecerán acá y podrás restaurarlos.'
+                                : (config.crear
+                                    ? 'Podés crear el primero haciendo clic en "Nuevo".'
+                                    : 'Aún no se cargaron registros en este panel.')}
+                        </p>
                     </div>
                 )}
 

@@ -3,7 +3,8 @@ import PanelCrud from '../../components/admin/PanelCrud';
 import {
     getResenas,
     updateResena,
-    deleteResena
+    deleteResena,
+    restoreResena
 } from '../../services/api';
 
 const estrellas = (valor) => (
@@ -27,6 +28,10 @@ const config = {
     obtener: (token) => getResenas(token),
     actualizar: (id, data, token) => updateResena(id, data, token),
     eliminar: (id, token) => deleteResena(id, token),
+    papelera: {
+        obtener: (token) => getResenas(token, true),
+        restaurar: (id, token) => restoreResena(id, token)
+    },
     columnas: [
         { key: 'id', label: 'ID' },
         {

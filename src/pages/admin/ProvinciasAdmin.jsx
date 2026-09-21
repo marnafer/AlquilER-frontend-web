@@ -4,7 +4,8 @@ import {
     getProvincias,
     createProvincia,
     updateProvincia,
-    deleteProvincia
+    deleteProvincia,
+    restoreProvincia
 } from '../../services/api';
 
 const config = {
@@ -17,6 +18,10 @@ const config = {
     crear: (data, token) => createProvincia(data, token),
     actualizar: (id, data, token) => updateProvincia(id, data, token),
     eliminar: (id, token) => deleteProvincia(id, token),
+    papelera: {
+        obtener: () => getProvincias(true),
+        restaurar: (id, token) => restoreProvincia(id, token)
+    },
     columnas: [
         { key: 'id', label: 'ID' },
         { key: 'nombre', label: 'Nombre' }

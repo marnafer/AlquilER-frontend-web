@@ -247,9 +247,10 @@ export async function eliminarImagenPropiedad(id, token) {
 // CATÁLOGOS (CATEGORÍAS, LOCALIDADES, PROVINCIAS, SERVICIOS)
 // ============================================
 
-export async function getCategorias() {
+export async function getCategorias(soloEliminados = false) {
     try {
-        const response = await fetch(`${API_URL}/api/categorias`);
+        const query = soloEliminados ? '?solo_eliminados=true' : '';
+        const response = await fetch(`${API_URL}/api/categorias${query}`);
         const result = await response.json();
         if (result.success && result.data && result.data.items) {
             return result.data.items;
@@ -261,9 +262,10 @@ export async function getCategorias() {
     }
 }
 
-export async function getProvincias() {
+export async function getProvincias(soloEliminados = false) {
     try {
-        const response = await fetch(`${API_URL}/api/provincias`);
+        const query = soloEliminados ? '?solo_eliminados=true' : '';
+        const response = await fetch(`${API_URL}/api/provincias${query}`);
         const result = await response.json();
         if (result.success && result.data && result.data.items) {
             return result.data.items;
@@ -275,9 +277,10 @@ export async function getProvincias() {
     }
 }
 
-export async function getLocalidades() {
+export async function getLocalidades(soloEliminados = false) {
     try {
-        const response = await fetch(`${API_URL}/api/localidades`);
+        const query = soloEliminados ? '?solo_eliminados=true' : '';
+        const response = await fetch(`${API_URL}/api/localidades${query}`);
         const result = await response.json();
         if (result.success && result.data && result.data.items) {
             return result.data.items;
@@ -289,9 +292,10 @@ export async function getLocalidades() {
     }
 }
 
-export async function getServicios() {
+export async function getServicios(soloEliminados = false) {
     try {
-        const response = await fetch(`${API_URL}/api/servicios`);
+        const query = soloEliminados ? '?solo_eliminados=true' : '';
+        const response = await fetch(`${API_URL}/api/servicios${query}`);
         const result = await response.json();
         if (result.success && result.data && result.data.items) {
             return result.data.items;
@@ -303,9 +307,10 @@ export async function getServicios() {
     }
 }
 
-export async function getRoles() {
+export async function getRoles(soloEliminados = false) {
     try {
-        const response = await fetch(`${API_URL}/api/roles`);
+        const query = soloEliminados ? '?solo_eliminados=true' : '';
+        const response = await fetch(`${API_URL}/api/roles${query}`);
         const result = await response.json();
         if (result.success && result.data && result.data.items) {
             return result.data.items;
@@ -552,9 +557,10 @@ export async function getResenasByPropiedad(propiedadId) {
 // ADMIN - USUARIOS
 // ============================================
 
-export async function getUsuarios(token) {
+export async function getUsuarios(token, soloEliminados = false) {
     try {
-        const response = await fetch(`${API_URL}/api/usuarios`, {
+        const query = soloEliminados ? '?solo_eliminados=true' : '';
+        const response = await fetch(`${API_URL}/api/usuarios${query}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const result = await response.json();
@@ -822,9 +828,10 @@ export async function deleteServicio(id, token) {
 // ADMIN - RESEÑAS
 // ============================================
 
-export async function getResenas(token) {
+export async function getResenas(token, soloEliminados = false) {
     try {
-        const response = await fetch(`${API_URL}/api/resenas`, {
+        const query = soloEliminados ? '?solo_eliminados=true' : '';
+        const response = await fetch(`${API_URL}/api/resenas${query}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const result = await response.json();
@@ -861,4 +868,28 @@ export async function deleteResena(id, token) {
     } catch (error) {
         return { success: false, error: error.message };
     }
-}
+}
+
+// ============================================
+// ADMIN - RESTAURAR (PAPELERA)
+// ============================================
+
+const restore = (endpoint) => async (id, token) => {
+    try {
+        const response = await fetch(`${API_URL}${endpoint}/${id}/restaurar`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+};
+
+export const restoreUsuario = restore('/api/usuarios');
+export const restoreCategoria = restore('/api/categorias');
+export const restoreProvincia = restore('/api/provincias');
+export const restoreLocalidad = restore('/api/localidades');
+export const restoreRol = restore('/api/roles');
+export const restoreServicio = restore('/api/servicios');
+export const restoreResena = restore('/api/resenas');
