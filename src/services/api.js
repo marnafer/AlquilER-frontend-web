@@ -990,4 +990,21 @@ export const restoreRol = restore('/api/roles');
 export const restoreServicio = restore('/api/servicios');
 export const restoreResena = restore('/api/resenas');
 export const restoreReserva = restore('/api/reservas');
-export const restoreConsulta = restore('/api/consultas');
+export const restoreConsulta = restore('/api/consultas');
+
+// ============================================
+// ADMIN - REGISTROS DE ACTIVIDAD
+// ============================================
+
+export async function getLogsActividad(token) {
+    try {
+        const response = await fetch(`${API_URL}/api/logs-actividad`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await response.json();
+        result.status = response.status;
+        return result;
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}

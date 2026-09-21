@@ -31,6 +31,7 @@ import ServiciosAdmin from './pages/admin/ServiciosAdmin';
 import ResenasAdmin from './pages/admin/ResenasAdmin';
 import ReservasAdmin from './pages/admin/ReservasAdmin';
 import ConsultasAdmin from './pages/admin/ConsultasAdmin';
+import LogsAdmin from './pages/admin/LogsAdmin';
 
 // ============================================
 // RUTAS PROTEGIDAS
@@ -255,6 +256,14 @@ function AppRouter() {
                         element={
                             <AdminRoute>
                                 <ConsultasAdmin />
+                            </AdminRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/logs"
+                        element={
+                            <AdminRoute>
+                                <LogsAdmin />
                             </AdminRoute>
                         }
                     />

@@ -259,7 +259,9 @@ function PanelCrud({ config }) {
                                     {config.columnas.map(c => (
                                         <th key={c.key}>{c.label}</th>
                                     ))}
-                                    <th className="admin-tabla-acciones">Acciones</th>
+                                    {!config.soloLectura && (
+                                        <th className="admin-tabla-acciones">Acciones</th>
+                                    )}
                                 </tr>
                             </thead>
                             <tbody>
@@ -270,6 +272,7 @@ function PanelCrud({ config }) {
                                                 {c.render ? c.render(item, externos) : (item[c.key] ?? '—')}
                                             </td>
                                         ))}
+                                        {!config.soloLectura && (
                                         <td className="admin-tabla-acciones">
                                             {!modoPapelera && (config.acciones || [])
                                                 .filter(a => !a.permitido || a.permitido(item))
@@ -312,6 +315,7 @@ function PanelCrud({ config }) {
                                                 </>
                                             )}
                                         </td>
+                                        )}
                                     </tr>
                                 ))}
                             </tbody>
