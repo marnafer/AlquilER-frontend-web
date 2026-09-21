@@ -281,6 +281,18 @@ function PanelCrud({ config }) {
                                                 </option>
                                             ))}
                                         </select>
+                                    ) : campo.type === 'textarea' ? (
+                                        <textarea
+                                            id={`campo-${campo.name}`}
+                                            rows={campo.rows || 4}
+                                            value={form[campo.name] ?? ''}
+                                            onChange={e => setForm({ ...form, [campo.name]: e.target.value })}
+                                            className="form-control"
+                                            placeholder={campo.placeholder || ''}
+                                            minLength={campo.min}
+                                            maxLength={campo.max}
+                                            style={{ resize: 'vertical', fontFamily: 'inherit', fontSize: 14 }}
+                                        />
                                     ) : (
                                         <input
                                             id={`campo-${campo.name}`}

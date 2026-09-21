@@ -816,4 +816,49 @@ export async function deleteServicio(id, token) {
     } catch (error) {
         return { success: false, error: error.message };
     }
+}
+
+// ============================================
+// ADMIN - RESEÑAS
+// ============================================
+
+export async function getResenas(token) {
+    try {
+        const response = await fetch(`${API_URL}/api/resenas`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await response.json();
+        result.status = response.status;
+        return result;
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function updateResena(id, data, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/resenas/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function deleteResena(id, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/resenas/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
 }

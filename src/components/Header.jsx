@@ -138,6 +138,9 @@ function Header() {
                                     <NavDropdown.Item as={Link} to="/admin/servicios" onClick={() => setExpanded(false)}>
                                         <i className="fas fa-wrench"></i> Servicios
                                     </NavDropdown.Item>
+                                    <NavDropdown.Item as={Link} to="/admin/resenas" onClick={() => setExpanded(false)}>
+                                        <i className="fas fa-star"></i> Reseñas
+                                    </NavDropdown.Item>
                                 </NavDropdown>
                             )}
                     </Nav>

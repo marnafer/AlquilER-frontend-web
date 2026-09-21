@@ -28,6 +28,7 @@ import ProvinciasAdmin from './pages/admin/ProvinciasAdmin';
 import LocalidadesAdmin from './pages/admin/LocalidadesAdmin';
 import RolesAdmin from './pages/admin/RolesAdmin';
 import ServiciosAdmin from './pages/admin/ServiciosAdmin';
+import ResenasAdmin from './pages/admin/ResenasAdmin';
 
 // ============================================
 // RUTAS PROTEGIDAS
@@ -228,6 +229,14 @@ function AppRouter() {
                         element={
                             <AdminRoute>
                                 <ServiciosAdmin />
+                            </AdminRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/resenas"
+                        element={
+                            <AdminRoute>
+                                <ResenasAdmin />
                             </AdminRoute>
                         }
                     />

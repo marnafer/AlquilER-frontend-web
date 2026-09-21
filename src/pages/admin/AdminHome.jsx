@@ -7,7 +7,8 @@ const modulos = [
     { to: '/admin/provincias', icono: 'fa-map-marked-alt', titulo: 'Provincias', desc: 'Provincias disponibles.' },
     { to: '/admin/localidades', icono: 'fa-map-pin', titulo: 'Localidades', desc: 'Ciudades de cada provincia.' },
     { to: '/admin/roles', icono: 'fa-user-shield', titulo: 'Roles', desc: 'Roles del sistema.' },
-    { to: '/admin/servicios', icono: 'fa-wrench', titulo: 'Servicios', desc: 'Servicios de las propiedades.' }
+    { to: '/admin/servicios', icono: 'fa-wrench', titulo: 'Servicios', desc: 'Servicios de las propiedades.' },
+    { to: '/admin/resenas', icono: 'fa-star', titulo: 'Reseñas', desc: 'Reseñas de propiedades e inquilinos.' }
 ];
 
 function AdminHome() {
