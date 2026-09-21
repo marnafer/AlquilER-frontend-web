@@ -11,7 +11,8 @@ const modulos = [
     { to: '/admin/resenas', icono: 'fa-star', titulo: 'Reseñas', desc: 'Reseñas de propiedades e inquilinos.' },
     { to: '/admin/reservas', icono: 'fa-calendar-check', titulo: 'Reservas', desc: 'Reservas y su estado de alquiler.' },
     { to: '/admin/consultas', icono: 'fa-comments', titulo: 'Consultas', desc: 'Consultas de los interesados.' },
-    { to: '/admin/logs', icono: 'fa-clock-rotate-left', titulo: 'Registros', desc: 'Actividad de los usuarios.' }
+    { to: '/admin/logs', icono: 'fa-clock-rotate-left', titulo: 'Registros', desc: 'Actividad de los usuarios.' },
+    { to: '/admin/propiedades', icono: 'fa-building', titulo: 'Propiedades', desc: 'Todas las propiedades del sistema.' }
 ];
 
 function AdminHome() {

@@ -203,6 +203,20 @@ export async function deletePropiedad(id, token) {
     }
 }
 
+export async function getPropiedadesAdmin(token, soloEliminados = false) {
+    try {
+        const query = soloEliminados ? '?solo_eliminados=true' : '';
+        const response = await fetch(`${API_URL}/api/admin/propiedades${query}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await response.json();
+        result.status = response.status;
+        return result;
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
 export async function subirImagenPropiedad(propiedadId, file, token) {
     try {
         const formData = new FormData();
@@ -991,6 +1005,7 @@ export const restoreServicio = restore('/api/servicios');
 export const restoreResena = restore('/api/resenas');
 export const restoreReserva = restore('/api/reservas');
 export const restoreConsulta = restore('/api/consultas');
+export const restorePropiedad = restore('/api/propiedades');
 
 // ============================================
 // ADMIN - REGISTROS DE ACTIVIDAD

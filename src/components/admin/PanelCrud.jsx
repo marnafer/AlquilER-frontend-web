@@ -332,11 +332,11 @@ function PanelCrud({ config }) {
                                                     <i className={`fas ${ordenKey === c.key ? (ordenDir === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'}`}></i>
                                                 </th>
                                             ))}
-                                            {!config.soloLectura && (
-                                                <th className="admin-tabla-acciones">Acciones</th>
-                                            )}
-                                        </tr>
-                                    </thead>
+{!config.soloLectura || config.eliminar || config.papelera ? (
+                                        <th className="admin-tabla-acciones">Acciones</th>
+                                    ) : null}
+                                </tr>
+                            </thead>
                                     <tbody>
                                         {visibles.map(item => (
                                             <tr key={item.id}>
@@ -345,51 +345,55 @@ function PanelCrud({ config }) {
                                                         {c.render ? c.render(item, externos) : (item[c.key] ?? '—')}
                                                     </td>
                                                 ))}
-                                                {!config.soloLectura && (
-                                                <td className="admin-tabla-acciones">
-                                                    {!modoPapelera && (config.acciones || [])
-                                                        .filter(a => !a.permitido || a.permitido(item))
-                                                        .map(a => (
+{!config.soloLectura || config.eliminar || config.papelera ? (
+                                                    <td className="admin-tabla-acciones">
+                                                        {!modoPapelera && (config.acciones || [])
+                                                            .filter(a => !a.permitido || a.permitido(item))
+                                                            .map(a => (
+                                                                <button
+                                                                    key={a.etiqueta}
+                                                                    className={`admin-btn ${a.clase || ''}`}
+                                                                    onClick={() => ejecutarAccion(a, item)}
+                                                                    title={a.etiqueta}
+                                                                    disabled={ejecutandoAccion === String(item.id)}
+                                                                >
+                                                                    <i className={ejecutandoAccion === String(item.id) ? 'fas fa-spinner fa-spin' : `fas ${a.icono}`}></i>
+                                                                </button>
+                                                            ))}
+                                                        {modoPapelera ? (
                                                             <button
-                                                                key={a.etiqueta}
-                                                                className={`admin-btn ${a.clase || ''}`}
-                                                                onClick={() => ejecutarAccion(a, item)}
-                                                                title={a.etiqueta}
-                                                                disabled={ejecutandoAccion === String(item.id)}
+                                                                className="admin-btn restaurar"
+                                                                onClick={() => restaurar(item)}
+                                                                title="Restaurar"
+                                                                disabled={restaurandoId === String(item.id)}
                                                             >
-                                                                <i className={ejecutandoAccion === String(item.id) ? 'fas fa-spinner fa-spin' : `fas ${a.icono}`}></i>
+                                                                <i className={restaurandoId === String(item.id) ? 'fas fa-spinner fa-spin' : 'fas fa-rotate-left'}></i>
                                                             </button>
-                                                        ))}
-                                                    {modoPapelera ? (
-                                                        <button
-                                                            className="admin-btn restaurar"
-                                                            onClick={() => restaurar(item)}
-                                                            title="Restaurar"
-                                                            disabled={restaurandoId === String(item.id)}
-                                                        >
-                                                            <i className={restaurandoId === String(item.id) ? 'fas fa-spinner fa-spin' : 'fas fa-rotate-left'}></i>
-                                                        </button>
-                                                    ) : (
-                                                        <>
-                                                            <button
-                                                                className="admin-btn editar"
-                                                                onClick={() => abrirEditar(item)}
-                                                                title="Editar"
-                                                            >
-                                                                <i className="fas fa-pen"></i>
-                                                            </button>
-                                                            <button
-                                                                className="admin-btn eliminar"
-                                                                onClick={() => setItemAEliminar(item)}
-                                                                title="Eliminar"
-                                                            >
-                                                                <i className="fas fa-trash"></i>
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                </td>
-                                                )}
-                                            </tr>
+                                                        ) : (
+                                                            <>
+                                                                {config.actualizar && !config.soloLectura && (
+                                                                <button
+                                                                    className="admin-btn editar"
+                                                                    onClick={() => abrirEditar(item)}
+                                                                    title="Editar"
+                                                                >
+                                                                    <i className="fas fa-pen"></i>
+                                                                </button>
+                                                                )}
+                                                                {config.eliminar && !config.soloLectura && (
+                                                                <button
+                                                                    className="admin-btn eliminar"
+                                                                    onClick={() => setItemAEliminar(item)}
+                                                                    title="Eliminar"
+                                                                >
+                                                                    <i className="fas fa-trash"></i>
+                                                                </button>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </td>
+                                                ) : null}
+                                        </tr>
                                         ))}
                                     </tbody>
                                 </table>
