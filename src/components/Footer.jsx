@@ -22,7 +22,6 @@ function Footer() {
                     <ul>
                         <li><Link to="/">Inicio</Link></li>
                         <li><Link to="/propiedades">Propiedades</Link></li>
-                        <li><Link to="/calculadora">Calculadora</Link></li>
                         <li><Link to="/contacto">Contacto</Link></li>
                     </ul>
                 </div>
