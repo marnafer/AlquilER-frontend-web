@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { useAuth } from '../../hooks/useAuth';
 import Loader from '../Loader';
 import Alert from '../Alert';
@@ -8,11 +9,14 @@ import Alert from '../Alert';
 //   titulo, nombreSingular, icono, descripcion, columnaPrincipal
 //   obtener: (token) => Promise -> { data: { items } } | [array]
 //   crear / actualizar / eliminar: (payload, token) => Promise -> { success, message|error, validation_errors? }
-//   columnas: [{ key, label, render?: (item, externos) => node }]
+//   columnas: [{ key, label, render?: (item, externos) => node, csv?: (item, externos) => string }]
 //   campos:   [{ name, label, type?, requerido?, min?, max?, placeholder?, ayuda?, opciones? }]
 //   externos?: [{ clave, cargar: () => Promise -> [array] }]   (fuentes para selects/columnas)
 //   acciones?: [{ etiqueta, icono, clase?, permitido?: (item) => bool, ejecutar: (item, token) => Promise }]
 //              (botones contextuales por fila; se muestran antes de Editar/Eliminar)
+//   csvNombre?: string   (nombre base del archivo exportado; por defecto usa el título)
+// El botón "Exportar CSV" descarga las filas filtradas y ordenadas (ignora la paginación),
+// separadas con ";" y con BOM UTF-8 para Excel.
 function PanelCrud({ config }) {
     const { token } = useAuth();
     const [loading, setLoading] = useState(true);
@@ -257,6 +261,69 @@ function PanelCrud({ config }) {
         setPagina(1);
     }, [busqueda, modoPapelera]);
 
+    const valorCsv = (columna, item, externosRef) => {
+        if (typeof columna.csv === 'function') {
+            const v = columna.csv(item, externosRef);
+            return v == null ? '' : String(v);
+        }
+        if (typeof columna.render === 'function') {
+            try {
+                const nodo = columna.render(item, externosRef);
+                if (nodo === null || nodo === undefined) return '';
+                if (typeof nodo === 'string') return nodo;
+                if (typeof nodo === 'number' || typeof nodo === 'boolean') return String(nodo);
+                const html = renderToStaticMarkup(nodo);
+                return html
+                    .replace(/<br\s*\/?>/gi, ' ')
+                    .replace(/<\/(p|div|li|tr|h[1-6])>/gi, ' ')
+                    .replace(/<[^>]+>/g, '')
+                    .replace(/&nbsp;/gi, ' ')
+                    .replace(/&amp;/gi, '&')
+                    .replace(/&lt;/gi, '<')
+                    .replace(/&gt;/gi, '>')
+                    .replace(/&quot;/gi, '"')
+                    .replace(/&#0*39;/gi, "'")
+                    .replace(/&#x27;/gi, "'")
+                    .replace(/\s+/g, ' ')
+                    .trim();
+            } catch (e) { /* continúa con el valor crudo */ }
+        }
+        const crudo = item[columna.key];
+        if (typeof crudo === 'boolean') return crudo ? 'Sí' : 'No';
+        if (crudo !== null && crudo !== undefined && (typeof crudo === 'string' || typeof crudo === 'number')) {
+            return String(crudo);
+        }
+        return crudo == null ? '' : String(crudo);
+    };
+
+    const descargarCsv = () => {
+        if (!ordenados.length) return;
+        const escapado = (v) => {
+            const s = v == null ? '' : String(v);
+            return `"${s.replace(/"/g, '""')}"`;
+        };
+        const sep = ';';
+        const encabezado = config.columnas.map(c => escapado(c.label));
+        const filas = ordenados.map(item =>
+            config.columnas.map(c => escapado(valorCsv(c, item, externos))).join(sep)
+        );
+        const csv = '\uFEFF' + [encabezado.join(sep), ...filas].join('\r\n');
+        const nombreBase = (config.csvNombre || config.titulo.toLowerCase()).replace(/\s+/g, '_');
+        const ahora = new Date();
+        const stamp =
+            `${ahora.getFullYear()}${String(ahora.getMonth() + 1).padStart(2, '0')}${String(ahora.getDate()).padStart(2, '0')}-` +
+            `${String(ahora.getHours()).padStart(2, '0')}${String(ahora.getMinutes()).padStart(2, '0')}`;
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${nombreBase}_${stamp}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
     if (loading) return <Loader />;
 
     return (
@@ -314,6 +381,14 @@ function PanelCrud({ config }) {
                             <span className="admin-tabla-total">
                                 {modoPapelera ? 'papelera' : 'registros'}: {ordenados.length} / {items.length}
                             </span>
+                            <button
+                                className="admin-btn-exportar"
+                                onClick={descargarCsv}
+                                disabled={!ordenados.length}
+                                title="Descargar las filas filtradas en CSV"
+                            >
+                                <i className="fas fa-file-csv"></i> Exportar CSV
+                            </button>
                         </div>
 
                         {visibles.length > 0 ? (

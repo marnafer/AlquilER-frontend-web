@@ -5217,6 +5217,32 @@ img {
     border-radius: 999px;
 }
 
+.admin-btn-exportar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px;
+    border-radius: 10px;
+    border: 1px solid #e0e7ff;
+    background: #fff;
+    color: #4b5563;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.admin-btn-exportar:hover:not(:disabled) {
+    background: #f4f5ff;
+    border-color: #6d5bff;
+    color: #6d5bff;
+}
+
+.admin-btn-exportar:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .admin-th-orden {
     cursor: pointer;
     user-select: none;

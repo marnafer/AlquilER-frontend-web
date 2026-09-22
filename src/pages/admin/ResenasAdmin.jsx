@@ -42,6 +42,7 @@ const config = {
         {
             key: 'calificacion',
             label: 'Calificación',
+            csv: (item) => (item.calificacion != null ? String(item.calificacion) : ''),
             render: (item) => `${estrellas(item.calificacion)} ${item.calificacion || '—'}`
         },
         {
