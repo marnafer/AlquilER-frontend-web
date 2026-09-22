@@ -18,6 +18,13 @@ function Register() {
     const { login: authLogin } = useAuth();
     const navigate = useNavigate();
 
+    const primerErrorValidacion = (result) => {
+        const validationErrors = result?.validation_errors;
+        if (!validationErrors) return '';
+        const primerCampo = Object.values(validationErrors)[0];
+        return Array.isArray(primerCampo) && primerCampo.length > 0 ? primerCampo[0] : '';
+    };
+
     const handleChange = (e) => {
         setFormData({
             ...formData,
@@ -71,7 +78,7 @@ function Register() {
                 authLogin(result.token);
                 navigate('/dashboard');
             } else {
-                setError(result.message || 'Error al registrarse');
+                setError(primerErrorValidacion(result) || result.error || result.message || 'Error al registrarse');
             }
         } catch (error) {
             setError('Error de conexión');

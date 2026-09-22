@@ -25,7 +25,7 @@ function Login() {
                 authLogin(result.data.token);
                 navigate('/dashboard');
             } else {
-                setError(result.message || 'Error al iniciar sesión');
+                setError(result.error || result.message || 'Error al iniciar sesión');
             }
         } catch (error) {
             console.error('Error en login:', error);
