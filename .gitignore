@@ -24,6 +24,8 @@ yarn-error.log*
 
 # testing / misc
 /coverage
+/test-results/
+/playwright-report/
 .DS_Store
 
 # No subir archivos de configuración con contraseñas (cuando los crees)
