@@ -9,6 +9,7 @@ import Footer from './components/Footer';
 import PropiedadDetalle from './components/PropiedadDetalle';
 // Páginas implementadas
 import Home from './pages/Home';
+import Contacto from './pages/Contacto';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Perfil from './pages/Perfil';
@@ -72,6 +73,7 @@ function AppRouter() {
                     <Route path="/" element={<Home />} />
                     <Route path="/home" element={<Home />} />
                     <Route path="/propiedades" element={<Propiedades />} />
+                    <Route path="/contacto" element={<Contacto />} />
 
                     {/* ============================================
                         RUTAS ESPECÍFICAS DE PROPIEDADES
