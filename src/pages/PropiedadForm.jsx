@@ -4,6 +4,10 @@ import { useAuth } from '../hooks/useAuth';
 import { 
     getCategorias, 
     getLocalidades, 
+    getServicios,
+    getServiciosByPropiedad,
+    guardarServiciosPropiedad,
+    sincronizarServiciosPropiedad,
     createPropiedad, 
     updatePropiedad, 
     getPropiedad, 
@@ -44,6 +48,8 @@ const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [categorias, setCategorias] = useState([]);
     const [localidades, setLocalidades] = useState([]);
+    const [serviciosCat, setServiciosCat] = useState([]);
+    const [serviciosSeleccionados, setServiciosSeleccionados] = useState([]);
 
     const [imagenes, setImagenes] = useState([]);
     const [archivoImagen, setArchivoImagen] = useState(null);
@@ -72,12 +78,14 @@ const [loading, setLoading] = useState(true);
 
     const cargarCatalogos = async () => {
         try {
-            const [cats, locs] = await Promise.all([
+            const [cats, locs, servs] = await Promise.all([
                 getCategorias(),
-                getLocalidades()
+                getLocalidades(),
+                getServicios()
             ]);
             setCategorias(cats);
             setLocalidades(locs);
+            setServiciosCat(Array.isArray(servs) ? servs : []);
         } catch (err) {
             console.error('Error cargando catálogos:', err);
             setErrorGeneral('No se pudieron cargar las categorías o localidades.');
@@ -91,6 +99,14 @@ const [loading, setLoading] = useState(true);
                 setErrorGeneral('La propiedad que intentás editar no existe.');
                 return;
             }
+
+            const servicios = await getServiciosByPropiedad(id);
+            setServiciosSeleccionados(
+                Array.isArray(servicios)
+                    ? servicios.map(s => Number(s.id)).filter(Boolean)
+                    : []
+            );
+
             setFormData({
                 titulo: prop.titulo || '',
                 descripcion: prop.descripcion || '',
@@ -245,6 +261,18 @@ const [loading, setLoading] = useState(true);
     };
 
     // ============================================
+    // MANEJO DE SERVICIOS
+    // ============================================
+    const toggleServicio = (servicioId) => {
+        const id = Number(servicioId);
+        setServiciosSeleccionados(prev =>
+            prev.includes(id)
+                ? prev.filter(x => x !== id)
+                : [...prev, id]
+        );
+    };
+
+    // ============================================
     // SUBMIT
     // ============================================
     const handleSubmit = async (e) => {
@@ -279,6 +307,22 @@ const [loading, setLoading] = useState(true);
                 : await createPropiedad(payload, token);
 
             if (result.success) {
+                const propiedadId = Number(id || result.data?.id || result.id);
+                if (propiedadId) {
+                    if (esEdicion) {
+                        await sincronizarServiciosPropiedad(
+                            propiedadId,
+                            serviciosSeleccionados,
+                            token
+                        );
+                    } else if (serviciosSeleccionados.length > 0) {
+                        await guardarServiciosPropiedad(
+                            propiedadId,
+                            serviciosSeleccionados,
+                            token
+                        );
+                    }
+                }
                 navigate('/mis-propiedades');
             } else {
                 // Si el backend devuelve errores por campo (422)
@@ -720,6 +764,49 @@ const [loading, setLoading] = useState(true);
                             </div>
                         </section>
                     )}
+
+                    {/* ============================================
+                        SECCIÓN 5: SERVICIOS
+                       ============================================ */}
+                    <section className="propform-card">
+                        <div className="propform-card-header">
+                            <h3>
+                                <i className="fas fa-concierge-bell"></i> Servicios de la propiedad
+                            </h3>
+                        </div>
+
+                        {serviciosCat.length === 0 ? (
+                            <p className="form-help">
+                                Todavía no hay servicios cargados en el sistema.
+                            </p>
+                        ) : (
+                            <div className="servicios-checkbox-grid">
+                                {serviciosCat.map(serv => {
+                                    const activo = serviciosSeleccionados.includes(Number(serv.id));
+                                    return (
+                                        <label
+                                            key={serv.id}
+                                            className={`servicio-checkbox ${activo ? 'activo' : ''}`}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={activo}
+                                                onChange={() => toggleServicio(serv.id)}
+                                            />
+                                            <span className="servicio-checkbox-radio">
+                                                {activo && <i className="fas fa-check"></i>}
+                                            </span>
+                                            <span className="servicio-checkbox-nombre">{serv.nombre}</span>
+                                        </label>
+                                    );
+                                })}
+                            </div>
+                        )}
+                        <span className="form-help">
+                            Marcá las comodidades que ofrece la propiedad. Quién la vea podrá filtrar
+                            y conocer estos servicios desde el detalle.
+                        </span>
+                    </section>
 
                     {/* ============================================
                         ACCIONES

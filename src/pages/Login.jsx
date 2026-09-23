@@ -22,7 +22,7 @@ function Login() {
 
             // El backend devuelve { success: true, data: { token: ... } }
             if (result.success && result.data && result.data.token) {
-                authLogin(result.data.token);
+                authLogin(result.data.token, result.data.refresh_token);
                 navigate('/dashboard');
             } else {
                 setError(result.error || result.message || 'Error al iniciar sesión');

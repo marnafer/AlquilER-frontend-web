@@ -2,7 +2,7 @@
 // Es como un "centro de control" que sabe si el usuario está logueado o no.
 
 import React, { createContext, useState, useEffect, useCallback } from 'react';
-import { getPerfil } from '../services/api';
+import { getPerfil, logout as apiLogout } from '../services/api';
 
 // Creo el contexto que van a usar todos los componentes
 export const AuthContext = createContext();
@@ -49,6 +49,7 @@ const normalizarUsuario = (usuario) => {
 export function AuthProvider({ children }) {
     // El token lo guardo en localStorage para que no se pierda al recargar
     const [token, setToken] = useState(localStorage.getItem('token') || null);
+    const [refreshToken, setRefreshToken] = useState(localStorage.getItem('refresh_token') || null);
     // Acá guardo los datos del usuario (nombre, email, etc)
     const [usuario, setUsuario] = useState(null);
     // Estado para saber si está cargando la info del usuario
@@ -87,15 +88,24 @@ export function AuthProvider({ children }) {
     }, [token]);
 
     // Función para iniciar sesión: guardo el token
-    const login = (nuevoToken) => {
+    const login = (nuevoToken, nuevoRefreshToken) => {
         localStorage.setItem('token', nuevoToken);
+        if (nuevoRefreshToken) {
+            localStorage.setItem('refresh_token', nuevoRefreshToken);
+            setRefreshToken(nuevoRefreshToken);
+        }
         setToken(nuevoToken);
     };
 
-    // Función para cerrar sesión: limpio todo
+    // Función para cerrar sesión: avisamos al backend y limpiamos todo
     const logout = () => {
+        if (token) {
+            apiLogout(token, refreshToken).catch(() => {});
+        }
         localStorage.removeItem('token');
+        localStorage.removeItem('refresh_token');
         setToken(null);
+        setRefreshToken(null);
         setUsuario(null);
     };
 

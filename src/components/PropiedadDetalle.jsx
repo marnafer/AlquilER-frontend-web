@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { getPropiedad, getCategorias, createReserva, createConsulta, getResenasByPropiedad } from '../services/api';
+import { getPropiedad, getCategorias, createReserva, createConsulta, getResenasByPropiedad, getServiciosByPropiedad } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
 import { useAuth } from '../hooks/useAuth';
 import Loader from './Loader';
@@ -10,6 +10,7 @@ function PropiedadDetalle() {
     const { usuario, token, isAuthenticated } = useAuth();
     const [propiedad, setPropiedad] = useState(null);
     const [categorias, setCategorias] = useState([]);
+    const [servicios, setServicios] = useState([]);
     const [loading, setLoading] = useState(true);
     const [imgError, setImgError] = useState(false);
 
@@ -38,13 +39,16 @@ function PropiedadDetalle() {
     const cargarDatos = async () => {
         setLoading(true);
         try {
-            const [prop, cats, resenasRes] = await Promise.all([
+            const [prop, cats, resenasRes, serviciosRes] = await Promise.all([
                 getPropiedad(id),
                 getCategorias(),
-                getResenasByPropiedad(id)
+                getResenasByPropiedad(id),
+                getServiciosByPropiedad(id)
             ]);
             setPropiedad(prop);
             setCategorias(cats);
+            const servItems = serviciosRes?.items || serviciosRes || [];
+            setServicios(Array.isArray(servItems) ? servItems : []);
             if (resenasRes && resenasRes.success && Array.isArray(resenasRes.data.items)) {
                 setResenas(resenasRes.data.items);
                 setPromedioResenas(Number(resenasRes.data.promedio) || 0);
@@ -248,6 +252,21 @@ function PropiedadDetalle() {
                                 <span className="feature-label">Capacidad</span>
                             </div>
                         </div>
+
+                        {servicios.length > 0 && (
+                            <div className="detalle-servicios">
+                                <h3 className="detalle-servicios-titulo">
+                                    <i className="fas fa-concierge-bell"></i> Servicios
+                                </h3>
+                                <div className="detalle-servicios-lista">
+                                    {servicios.map(serv => (
+                                        <span className="detalle-servicio-badge" key={serv.id}>
+                                            <i className="fas fa-circle-check"></i> {serv.nombre}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
                         <p className="propiedad-detalle-descripcion">
                             {propiedad.descripcion || 'Sin descripción'}

@@ -75,7 +75,7 @@ function Register() {
             const result = await register(dataToSend);
             
             if (result.success && result.token) {
-                authLogin(result.token);
+                authLogin(result.token, result.data?.refresh_token);
                 navigate('/dashboard');
             } else {
                 setError(primerErrorValidacion(result) || result.error || result.message || 'Error al registrarse');

@@ -8,6 +8,8 @@ import {
     getPropiedades,
     aprobarReserva,
     rechazarReserva,
+    finalizarReserva,
+    cancelarReserva,
     createResena
 } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
@@ -46,6 +48,12 @@ function MisReservas() {
 
     const puedeRechazar = (reserva) =>
         esGestion && reserva.origen === 'recibida' && reserva.estado === 'pendiente';
+
+    const puedeFinalizar = (reserva) =>
+        esGestion && reserva.origen === 'recibida' && reserva.estado === 'confirmada';
+
+    const puedeCancelar = (reserva) =>
+        ['pendiente', 'confirmada'].includes(reserva.estado);
 
     const puedeCalificar = (reserva) => reserva.estado === 'finalizada';
 
@@ -112,6 +120,8 @@ function MisReservas() {
         let result;
         if (accion === 'aprobar') result = await aprobarReserva(reserva.id, token);
         if (accion === 'rechazar') result = await rechazarReserva(reserva.id, token);
+        if (accion === 'finalizar') result = await finalizarReserva(reserva.id, token);
+        if (accion === 'cancelar') result = await cancelarReserva(reserva.id, token);
 
         if (result && result.success) {
             setMensaje({ tipo: 'exito', texto: result.message || 'Reserva actualizada correctamente.' });
@@ -273,7 +283,9 @@ function MisReservas() {
                                             </h3>
                                             <p className="misreservas-item-solicitante">
                                                 {reserva.origen === 'recibida'
-                                                    ? <>Solicitada por <strong>usuario #{reserva.usuario_id}</strong></>
+                                                    ? <>Solicitada por <strong>{reserva.usuario
+                                                        ? `${reserva.usuario.nombre || ''} ${reserva.usuario.apellido || ''}`.trim() || `usuario #${reserva.usuario_id}`
+                                                        : `usuario #${reserva.usuario_id}`}</strong></>
                                                     : 'Solicitud propia'}
                                             </p>
                                             <div className="misreservas-item-fechas">
@@ -302,6 +314,15 @@ function MisReservas() {
                                                     <i className="fas fa-check"></i> Aprobar
                                                 </button>
                                             )}
+                                            {puedeFinalizar(reserva) && (
+                                                <button
+                                                    className="btn-detalle btn-detalle-primario"
+                                                    onClick={() => ejecutarAccion('finalizar', reserva)}
+                                                    disabled={accionando === reserva.id}
+                                                >
+                                                    <i className="fas fa-flag-checkered"></i> Finalizar
+                                                </button>
+                                            )}
                                             {puedeRechazar(reserva) && (
                                                 <button
                                                     className="btn-detalle btn-detalle-danger"
@@ -309,6 +330,19 @@ function MisReservas() {
                                                     disabled={accionando === reserva.id}
                                                 >
                                                     <i className="fas fa-times"></i> Rechazar
+                                                </button>
+                                            )}
+                                            {puedeCancelar(reserva) && (
+                                                <button
+                                                    className="btn-detalle btn-detalle-secundario"
+                                                    onClick={() => {
+                                                        if (window.confirm('¿Cancelar esta reserva?')) {
+                                                            ejecutarAccion('cancelar', reserva);
+                                                        }
+                                                    }}
+                                                    disabled={accionando === reserva.id}
+                                                >
+                                                    <i className="fas fa-ban"></i> Cancelar
                                                 </button>
                                             )}
                                             {puedeCalificar(reserva) && (

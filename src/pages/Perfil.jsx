@@ -11,6 +11,11 @@ function Perfil() {
     const [guardando, setGuardando] = useState(false);
     const [mensaje, setMensaje] = useState({ type: '', text: '' });
 
+    const [passNueva, setPassNueva] = useState('');
+    const [passRepetir, setPassRepetir] = useState('');
+    const [passErrores, setPassErrores] = useState({});
+    const [guardandoPass, setGuardandoPass] = useState(false);
+
     const [formData, setFormData] = useState({
         nombre: '',
         apellido: '',
@@ -72,6 +77,44 @@ function Perfil() {
         });
         setEditando(false);
         setMensaje({ type: '', text: '' });
+    };
+
+    const handleCambiarContrasena = async (e) => {
+        e.preventDefault();
+        const errores = {};
+
+        if (!passNueva) {
+            errores.nueva = 'Ingresá la nueva contraseña.';
+        } else if (passNueva.length < 8) {
+            errores.nueva = 'La contraseña debe tener al menos 8 caracteres.';
+        }
+
+        if (passRepetir !== passNueva) {
+            errores.repetir = 'Las contraseñas no coinciden.';
+        }
+
+        setPassErrores(errores);
+        if (Object.keys(errores).length > 0) return;
+
+        setGuardandoPass(true);
+        setMensaje({ type: '', text: '' });
+        try {
+            const result = await updatePerfil(usuario.id, { contrasena: passNueva }, token);
+
+            if (result.success) {
+                setPassNueva('');
+                setPassRepetir('');
+                setMensaje({ type: 'success', text: 'Contraseña cambiada correctamente' });
+                setTimeout(() => setMensaje({ type: '', text: '' }), 3000);
+            } else {
+                if (result.validation_errors) setPassErrores(result.validation_errors);
+                setMensaje({ type: 'error', text: result.message || result.error || 'No se pudo cambiar la contraseña' });
+            }
+        } catch (err) {
+            setMensaje({ type: 'error', text: 'Error de conexión' });
+        } finally {
+            setGuardandoPass(false);
+        }
     };
 
     if (loading) return <Loader />;
@@ -370,6 +413,68 @@ function Perfil() {
                         </div>
                     </div>
 
+                </section>
+
+                {/* CAMBIO DE CONTRASEÑA */}
+                <section className="perfil-card" style={{ marginTop: '24px' }}>
+                    <div className="perfil-card-header">
+                        <h3>
+                            <i className="fas fa-key"></i> Cambiar contraseña
+                        </h3>
+                    </div>
+                    <p className="perfil-form-help">
+                        Definí una nueva contraseña de al menos 8 caracteres. Se actualizará tu acceso
+                        en la sesión actual.
+                    </p>
+
+                    <form onSubmit={handleCambiarContrasena} className="perfil-form" noValidate>
+                        <div className="form-row">
+                            <div className="perfil-form-group">
+                                <label htmlFor="pass-nueva">Nueva contraseña</label>
+                                <input
+                                    type="password"
+                                    id="pass-nueva"
+                                    name="passNueva"
+                                    value={passNueva}
+                                    onChange={(e) => setPassNueva(e.target.value)}
+                                    placeholder="Mínimo 8 caracteres"
+                                    className={passErrores.nueva ? 'input-error' : ''}
+                                />
+                                {passErrores.nueva && <span className="form-error">{passErrores.nueva}</span>}
+                            </div>
+                            <div className="perfil-form-group">
+                                <label htmlFor="pass-repetir">Repetir contraseña</label>
+                                <input
+                                    type="password"
+                                    id="pass-repetir"
+                                    name="passRepetir"
+                                    value={passRepetir}
+                                    onChange={(e) => setPassRepetir(e.target.value)}
+                                    placeholder="Repetí la nueva contraseña"
+                                    className={passErrores.repetir ? 'input-error' : ''}
+                                />
+                                {passErrores.repetir && <span className="form-error">{passErrores.repetir}</span>}
+                            </div>
+                        </div>
+
+                        <div className="perfil-form-acciones">
+                            <button
+                                type="submit"
+                                className="btn-detalle btn-detalle-primario"
+                                disabled={guardandoPass}
+                            >
+                                {guardandoPass ? (
+                                    <>
+                                        <i className="fas fa-spinner fa-spin"></i> Guardando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <i className="fas fa-key"></i> Actualizar contraseña
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </form>
                 </section>
 
             </div>

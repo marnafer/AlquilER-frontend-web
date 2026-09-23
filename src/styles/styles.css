@@ -5545,7 +5545,263 @@ img {
         font-size: 26px;
     }
 
-    .contact-form {
+.contact-form {
         padding: 24px;
     }
+}
+
+/* ========== PAGINAS ESTATICAS (FAQ, TERMINOS, PRIVACIDAD) ========== */
+.estatica-page {
+    padding: 40px 0 80px;
+}
+
+.estatica-hero {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 40px;
+}
+
+.estatica-hero h1 {
+    font-size: 34px;
+    color: #111827;
+    margin: 14px 0 10px;
+}
+
+.estatica-hero p {
+    color: #64748b;
+    line-height: 1.7;
+}
+
+.estatica-contenido {
+    max-width: 780px;
+    margin: 0 auto;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 32px 40px;
+}
+
+.estatica-contenido h2 {
+    font-size: 20px;
+    color: #111827;
+    margin: 0 0 12px;
+    padding-top: 28px;
+    border-top: 1px solid #eef2f7;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.estatica-contenido h2:first-child {
+    padding-top: 0;
+    border-top: none;
+}
+
+.estatica-contenido h2 i {
+    color: #16a34a;
+    font-size: 16px;
+}
+
+.estatica-contenido p {
+    color: #4b5563;
+    line-height: 1.8;
+    margin-bottom: 14px;
+}
+
+.estatica-contenido ul {
+    margin: 0 0 18px 22px;
+    color: #4b5563;
+    line-height: 1.8;
+}
+
+.estatica-contenido li {
+    margin-bottom: 8px;
+}
+
+.faq-list {
+    max-width: 760px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.faq-item {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.faq-item[open] {
+    border-color: #86efac;
+    box-shadow: 0 4px 16px rgba(22, 163, 74, 0.08);
+}
+
+.faq-item summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 18px 22px;
+    font-weight: 600;
+    font-size: 16px;
+    color: #111827;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.faq-item summary::-webkit-details-marker {
+    display: none;
+}
+
+.faq-item summary:hover {
+    color: #16a34a;
+}
+
+.faq-icono {
+    color: #16a34a;
+    font-size: 14px;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+
+.faq-item[open] .faq-icono {
+    transform: rotate(180deg);
+}
+
+.faq-item[open] summary {
+    border-bottom: 1px solid #eef2f7;
+}
+
+.faq-respuesta {
+    padding: 4px 22px 20px;
+    color: #475569;
+    line-height: 1.7;
+    font-size: 15px;
+}
+
+@media (max-width: 576px) {
+    .estatica-contenido {
+        padding: 24px 20px;
+    }
+
+    .estatica-hero h1 {
+        font-size: 26px;
+    }
+}
+
+/* ========== SELECTOR DE SERVICIOS (PROPIEDAD) ========== */
+.servicios-checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.servicio-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #ffffff;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+    user-select: none;
+}
+
+.servicio-checkbox:hover {
+    border-color: #86efac;
+}
+
+.servicio-checkbox.activo {
+    border-color: #16a34a;
+    background: #f0fdf4;
+}
+
+.servicio-checkbox input {
+    display: none;
+}
+
+.servicio-checkbox-radio {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #cbd5e1;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: #ffffff;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.servicio-checkbox.activo .servicio-checkbox-radio {
+    background: #16a34a;
+    border-color: #16a34a;
+}
+
+.servicio-checkbox-nombre {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1f2937;
+}
+
+@media (max-width: 576px) {
+    .servicios-checkbox-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.perfil-form-help {
+    color: #6b7280;
+    font-size: 14px;
+    margin: -6px 0 18px;
+    line-height: 1.6;
+}
+
+/* ========== SERVICIOS EN EL DETALLE ========== */
+.detalle-servicios {
+    margin: 18px 0 6px;
+}
+
+.detalle-servicios-titulo {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.detalle-servicios-titulo i {
+    color: #16a34a;
+}
+
+.detalle-servicios-lista {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.detalle-servicio-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 13px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 999px;
+}
+
+.detalle-servicio-badge i {
+    color: #16a34a;
 }

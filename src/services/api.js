@@ -1,4 +1,4 @@
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+export const API_URL = import.meta.env.VITE_API_URL || '';
 
 // ============================================
 // AUTENTICACIÓN Y USUARIOS
@@ -18,6 +18,7 @@ export async function login(email, password) {
             if (!result.data.token) {
                 result.data.token = result.token;
             }
+            result.refresh_token = result.data.refresh_token;
         }
         return result;
     } catch (error) {
@@ -63,16 +64,16 @@ export async function register(userData) {
     }
 }
 
-export async function logout(token) {
+export async function logout(token, refreshToken) {
     try {
-        // El backend exige cuerpo en el request (Request::json()), por eso enviamos {}
+        const payload = refreshToken ? { refresh_token: refreshToken } : {};
         const response = await fetch(`${API_URL}/api/autenticador/logout`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({})
+            body: JSON.stringify(payload)
         });
         return await response.json();
     } catch (error) {
@@ -340,10 +341,45 @@ export async function getServiciosByPropiedad(propiedadId) {
     try {
         const response = await fetch(`${API_URL}/api/propiedades/${propiedadId}/servicios`);
         const result = await response.json();
+        if (result.success && result.data && result.data.items) {
+            return result.data.items;
+        }
         return result.data || [];
     } catch (error) {
         console.error('Error en getServiciosByPropiedad:', error);
         return [];
+    }
+}
+
+export async function guardarServiciosPropiedad(propiedadId, ids, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/propiedades/${propiedadId}/servicios/multiple`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ servicio_ids: ids })
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function sincronizarServiciosPropiedad(propiedadId, ids, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/propiedades/${propiedadId}/servicios`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ servicio_ids: ids })
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
     }
 }
 

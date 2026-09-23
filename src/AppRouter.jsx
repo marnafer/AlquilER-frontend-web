@@ -10,6 +10,9 @@ import PropiedadDetalle from './components/PropiedadDetalle';
 // Páginas implementadas
 import Home from './pages/Home';
 import Contacto from './pages/Contacto';
+import PreguntasFrecuentes from './pages/PreguntasFrecuentes';
+import Terminos from './pages/Terminos';
+import Privacidad from './pages/Privacidad';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Perfil from './pages/Perfil';
@@ -74,6 +77,9 @@ function AppRouter() {
                     <Route path="/home" element={<Home />} />
                     <Route path="/propiedades" element={<Propiedades />} />
                     <Route path="/contacto" element={<Contacto />} />
+                    <Route path="/preguntas-frecuentes" element={<PreguntasFrecuentes />} />
+                    <Route path="/terminos" element={<Terminos />} />
+                    <Route path="/privacidad" element={<Privacidad />} />
 
                     {/* ============================================
                         RUTAS ESPECÍFICAS DE PROPIEDADES

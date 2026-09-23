@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { getPropiedades, getReservas, getFavoritos } from '../services/api';
+import { getPropiedades, getReservas, getFavoritos, getConsultas } from '../services/api';
 import Loader from '../components/Loader';
 
 function Dashboard() {
@@ -17,21 +17,23 @@ function Dashboard() {
 
     const cargarDatos = useCallback(async () => {
         try {
-            const [propRes, reservasRes, favoritosRes] = await Promise.all([
+            const [propRes, reservasRes, favoritosRes, consultasRes] = await Promise.all([
                 getPropiedades(),
                 getReservas(token),
-                getFavoritos(token)
+                getFavoritos(token),
+                getConsultas(token)
             ]);
 
             const props = propRes?.data?.items || propRes?.data || propRes || [];
             const reservas = reservasRes?.data?.items || reservasRes?.data || reservasRes || [];
             const favoritos = favoritosRes?.data?.items || favoritosRes?.data || favoritosRes || [];
+            const consultas = consultasRes?.data?.items || consultasRes?.data || consultasRes || [];
 
             setStats({
                 propiedades: Array.isArray(props) ? props.length : 0,
                 reservas: Array.isArray(reservas) ? reservas.length : 0,
                 favoritos: Array.isArray(favoritos) ? favoritos.length : 0,
-                consultas: 0
+                consultas: Array.isArray(consultas) ? consultas.length : 0
             });
 
             setReservasRecientes(
