@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { getPropiedades, getCategorias, getFavoritos } from '../services/api';
+import { getPropiedades, getCategorias, getProvincias, getLocalidades, getFavoritos } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import PropiedadCard from '../components/PropiedadCard';
 
@@ -9,12 +9,16 @@ function Propiedades() {
     const [searchParams, setSearchParams] = useSearchParams();
     const [propiedades, setPropiedades] = useState([]);
     const [categorias, setCategorias] = useState([]);
+    const [provincias, setProvincias] = useState([]);
+    const [localidades, setLocalidades] = useState([]);
     const [favoritoIds, setFavoritoIds] = useState(() => new Set());
     const [loading, setLoading] = useState(true);
 
     // Filtros
     const [search, setSearch] = useState(searchParams.get('q') || '');
     const [categoriaId, setCategoriaId] = useState(searchParams.get('categoria_id') || '');
+    const [provinciaId, setProvinciaId] = useState(searchParams.get('provincia_id') || '');
+    const [localidadId, setLocalidadId] = useState(searchParams.get('localidad_id') || '');
     const [precioMax, setPrecioMax] = useState(searchParams.get('precio_max') || '');
     const [orden, setOrden] = useState(searchParams.get('orden') || 'recientes');
     const [pagina, setPagina] = useState(Number(searchParams.get('pagina')) || 1);
@@ -30,20 +34,26 @@ function Propiedades() {
         const params = {};
         if (search) params.q = search;
         if (categoriaId) params.categoria_id = categoriaId;
+        if (provinciaId) params.provincia_id = provinciaId;
+        if (localidadId) params.localidad_id = localidadId;
         if (precioMax) params.precio_max = precioMax;
         if (orden !== 'recientes') params.orden = orden;
         if (pagina > 1) params.pagina = pagina;
         setSearchParams(params, { replace: true });
-    }, [search, categoriaId, precioMax, orden, pagina]);
+    }, [search, categoriaId, provinciaId, localidadId, precioMax, orden, pagina]);
 
     const cargarDatos = async () => {
         try {
-            const [props, cats] = await Promise.all([
+            const [props, cats, provs, locs] = await Promise.all([
                 getPropiedades(),
-                getCategorias()
+                getCategorias(),
+                getProvincias(),
+                getLocalidades()
             ]);
             setPropiedades(props);
             setCategorias(cats);
+            setProvincias(provs);
+            setLocalidades(locs);
         } catch (error) {
             console.error('Error cargando propiedades:', error);
         } finally {
@@ -79,6 +89,19 @@ function Propiedades() {
         return map;
     }, [categorias]);
 
+    // Localidad -> provincia (para filtrar propiedades por provincia)
+    const localidadProvinciaMap = useMemo(() => {
+        const map = {};
+        localidades.forEach(loc => { map[String(loc.id)] = String(loc.provincia_id); });
+        return map;
+    }, [localidades]);
+
+    // Localidades que dependen de la provincia elegida
+    const localidadesDeProvincia = useMemo(() => {
+        if (!provinciaId) return localidades;
+        return localidades.filter(loc => String(loc.provincia_id) === String(provinciaId));
+    }, [localidades, provinciaId]);
+
     // Filtrado y ordenamiento
     const filtradas = useMemo(() => {
         let resultado = [...propiedades];
@@ -94,6 +117,16 @@ function Propiedades() {
 
         if (categoriaId) {
             resultado = resultado.filter(p => String(p.categoria_id) === String(categoriaId));
+        }
+
+        if (provinciaId) {
+            resultado = resultado.filter(p =>
+                localidadProvinciaMap[String(p.localidad_id)] === String(provinciaId)
+            );
+        }
+
+        if (localidadId) {
+            resultado = resultado.filter(p => String(p.localidad_id) === String(localidadId));
         }
 
         if (precioMax) {
@@ -115,7 +148,7 @@ function Propiedades() {
         }
 
         return resultado;
-    }, [propiedades, search, categoriaId, precioMax, orden]);
+    }, [propiedades, search, categoriaId, provinciaId, localidadId, localidadProvinciaMap, precioMax, orden]);
 
     // Paginación
     const totalPaginas = Math.max(1, Math.ceil(filtradas.length / POR_PAGINA));
@@ -128,6 +161,8 @@ function Propiedades() {
     const limpiarFiltros = () => {
         setSearch('');
         setCategoriaId('');
+        setProvinciaId('');
+        setLocalidadId('');
         setPrecioMax('');
         setOrden('recientes');
         setPagina(1);
@@ -145,7 +180,7 @@ function Propiedades() {
         });
     };
 
-    const hayFiltros = search || categoriaId || precioMax || orden !== 'recientes';
+    const hayFiltros = search || categoriaId || provinciaId || localidadId || precioMax || orden !== 'recientes';
 
     return (
         <div className="props-page">
@@ -171,6 +206,33 @@ function Propiedades() {
                             <option value="">Todas</option>
                             {categorias.map(cat => (
                                 <option key={cat.id} value={cat.id}>{cat.nombre}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="filtro-group">
+                        <label><i className="fas fa-map-marker-alt"></i> Provincia</label>
+                        <select
+                            value={provinciaId}
+                            onChange={(e) => { setProvinciaId(e.target.value); setLocalidadId(''); setPagina(1); }}
+                        >
+                            <option value="">Todas</option>
+                            {provincias.map(prov => (
+                                <option key={prov.id} value={prov.id}>{prov.nombre}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="filtro-group">
+                        <label><i className="fas fa-city"></i> Localidad</label>
+                        <select
+                            value={localidadId}
+                            onChange={(e) => { setLocalidadId(e.target.value); setPagina(1); }}
+                            disabled={localidadesDeProvincia.length === 0}
+                        >
+                            <option value="">Todas</option>
+                            {localidadesDeProvincia.map(loc => (
+                                <option key={loc.id} value={loc.id}>{loc.nombre}</option>
                             ))}
                         </select>
                     </div>
