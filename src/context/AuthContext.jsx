@@ -87,6 +87,27 @@ export function AuthProvider({ children }) {
         }
     }, [token]);
 
+    // El interceptor de api.js renueva el token con el refresh_token; acá
+    // sincronizamos el contexto y, si la sesión expira de verdad, cerramos sesión.
+    useEffect(() => {
+        const alRefrescarToken = () => {
+            const nuevoToken = localStorage.getItem('token');
+            const nuevoRefreshToken = localStorage.getItem('refresh_token');
+            if (nuevoToken) setToken(nuevoToken);
+            if (nuevoRefreshToken) setRefreshToken(nuevoRefreshToken);
+        };
+        const alExpirarSesion = () => {
+            logout();
+        };
+
+        window.addEventListener('auth:token-refreshed', alRefrescarToken);
+        window.addEventListener('auth:session-expired', alExpirarSesion);
+        return () => {
+            window.removeEventListener('auth:token-refreshed', alRefrescarToken);
+            window.removeEventListener('auth:session-expired', alExpirarSesion);
+        };
+    }, []);
+
     // Función para iniciar sesión: guardo el token
     const login = (nuevoToken, nuevoRefreshToken) => {
         localStorage.setItem('token', nuevoToken);

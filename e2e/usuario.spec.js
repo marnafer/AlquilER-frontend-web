@@ -69,3 +69,25 @@ test('usuario: consulta y reserva desde el detalle', async ({ page }) => {
     await page.getByRole('button', { name: 'Solicitar reserva' }).click();
     await expect(page.getByText(/Reserva solicitada correctamente/i)).toBeVisible();
 });
+
+test('usuario: la sesión sobrevive a un access token inválido (refresh automático)', async ({ page }) => {
+    await login(page);
+
+    // Simular expiración: corromper el access token dejando intacto el refresh_token
+    await page.evaluate(() => localStorage.setItem('token', 'token.falsificado.xyz'));
+
+    // El interceptor renueva el token y reintenta la petición (200 en vez de 401)
+    const sondeo = await page.evaluate(async () => {
+        const res = await fetch('/api/usuarios/me', { headers: { 'Authorization': 'Bearer token.falsificado.xyz' } });
+        return { status: res.status };
+    });
+    expect(sondeo.status).toBe(200);
+
+    // El nuevo token queda guardado (JWT válido) y la sesión sigue activa
+    await expect.poll(async () => page.evaluate(() => localStorage.getItem('token'))).not.toBe('token.falsificado.xyz');
+    const tokenNuevo = await page.evaluate(() => localStorage.getItem('token'));
+    expect(tokenNuevo.split('.')).toHaveLength(3);
+
+    await page.goto('/propiedades');
+    await expect(page.locator('#basic-nav-dropdown')).toBeVisible({ timeout: 15000 });
+});
