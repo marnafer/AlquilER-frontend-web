@@ -13,6 +13,8 @@ import Alert from '../Alert';
 //   campos:   [{ name, label, type?, requerido?, min?, max?, placeholder?, ayuda?, opciones? }]
 //   externos?: [{ clave, cargar: () => Promise -> [array] }]   (fuentes para selects/columnas)
 //   normalizarEdicion?: (item) => objeto   (transforma el item antes de precargar el modal de edición)
+//   filtros?: [{ parametro, label, tipo?: 'select'|'date'|'number'|'text', opciones?: [{ value, label }] }]
+//              (filtros server-side; obtener y papelera.obtener reciben (token, filtros))
 //   acciones?: [{ etiqueta, icono, clase?, permitido?: (item) => bool, ejecutar: (item, token) => Promise }]
 //              (botones contextuales por fila; se muestran antes de Editar/Eliminar)
 //   csvNombre?: string   (nombre base del archivo exportado; por defecto usa el título)
@@ -35,6 +37,12 @@ function PanelCrud({ config }) {
     const [restaurandoId, setRestaurandoId] = useState(null);
     const [ejecutandoAccion, setEjecutandoAccion] = useState(null);
     const [busqueda, setBusqueda] = useState('');
+    const [filtros, setFiltros] = useState(null);
+    const [borradorFiltros, setBorradorFiltros] = useState(() => {
+        const f = {};
+        (config.filtros || []).forEach(x => { f[x.parametro] = ''; });
+        return f;
+    });
     const [ordenKey, setOrdenKey] = useState(null);
     const [ordenDir, setOrdenDir] = useState('asc');
     const [pagina, setPagina] = useState(1);
@@ -53,7 +61,12 @@ function PanelCrud({ config }) {
             const obtener = config.papelera && modoPapelera
                 ? config.papelera.obtener
                 : config.obtener;
-            const promesas = [obtener(token)];
+            const params = filtros
+                ? Object.fromEntries(
+                    Object.entries(filtros).filter(([, v]) => v !== '' && v !== null && v !== undefined)
+                )
+                : {};
+            const promesas = [obtener(token, params)];
             if (config.externos) {
                 config.externos.forEach(e => {
                     promesas.push(
@@ -73,7 +86,7 @@ function PanelCrud({ config }) {
         } finally {
             setLoading(false);
         }
-    }, [config, token, modoPapelera]);
+    }, [config, token, modoPapelera, filtros]);
 
     useEffect(() => {
         cargar();
@@ -96,6 +109,26 @@ function PanelCrud({ config }) {
         setErroresForm(null);
         setMensaje(null);
         setModal('editar');
+    };
+
+    const filtrosVacio = () => {
+        const f = {};
+        (config.filtros || []).forEach(x => { f[x.parametro] = ''; });
+        return f;
+    };
+
+    const aplicarFiltros = () => {
+        const activos = {};
+        Object.entries(borradorFiltros).forEach(([k, v]) => {
+            if (v !== '' && v !== null && v !== undefined) activos[k] = v;
+        });
+        setFiltros(Object.keys(activos).length ? activos : null);
+        setPagina(1);
+    };
+
+    const limpiarFiltros = () => {
+        setBorradorFiltros(filtrosVacio());
+        setFiltros(null);
     };
 
     const validar = () => {
@@ -368,9 +401,50 @@ function PanelCrud({ config }) {
                     </div>
                 )}
 
-                {items.length > 0 ? (
-                    <>
-                        <div className="admin-tabla-toolbar">
+                <div className="admin-tabla-toolbar">
+                            {config.filtros && config.filtros.length > 0 && (
+                                <div className="admin-filtros">
+                                    {config.filtros.map(f => (
+                                        <label className="admin-filtro" key={f.parametro}>
+                                            <span className="admin-filtro-label">{f.label}</span>
+                                            {f.tipo === 'select' ? (
+                                                <select
+                                                    className="form-control"
+                                                    value={borradorFiltros[f.parametro] ?? ''}
+                                                    onChange={e => setBorradorFiltros({ ...borradorFiltros, [f.parametro]: e.target.value })}
+                                                >
+                                                    <option value="">Todos</option>
+                                                    {(f.opciones || []).map(op => (
+                                                        <option key={op.value} value={op.value}>{op.label ?? op.value}</option>
+                                                    ))}
+                                                </select>
+                                            ) : (
+                                                <input
+                                                    type={f.tipo || 'text'}
+                                                    className="form-control"
+                                                    value={borradorFiltros[f.parametro] ?? ''}
+                                                    onChange={e => setBorradorFiltros({ ...borradorFiltros, [f.parametro]: e.target.value })}
+                                                />
+                                            )}
+                                        </label>
+                                    ))}
+                                    <button
+                                        className="admin-filtros-btn admin-filtros-btn-primario"
+                                        onClick={aplicarFiltros}
+                                        title="Aplicar filtros"
+                                    >
+                                        <i className="fas fa-filter"></i> Filtrar
+                                    </button>
+                                    <button
+                                        className="admin-filtros-btn admin-filtros-btn-secundario"
+                                        onClick={limpiarFiltros}
+                                        disabled={!filtros}
+                                        title="Quitar filtros"
+                                    >
+                                        Limpiar
+                                    </button>
+                                </div>
+                            )}
                             <div className="admin-buscador-wrapper">
                                 <i className="fas fa-search"></i>
                                 <input
@@ -393,7 +467,9 @@ function PanelCrud({ config }) {
                             </button>
                         </div>
 
-                        {visibles.length > 0 ? (
+                        {items.length > 0 ? (
+                            <>
+                                {visibles.length > 0 ? (
                             <div className="admin-tabla-container">
                                 <table className="admin-tabla">
                                     <thead>
@@ -512,13 +588,15 @@ function PanelCrud({ config }) {
                         <div className="empty-icon">
                             <i className={`fas ${modoPapelera ? 'fa-trash-can-arrow-up' : config.icono}`}></i>
                         </div>
-                        <h3>{modoPapelera ? 'La papelera está vacía' : 'Aún no hay registros'}</h3>
+                        <h3>{modoPapelera ? 'La papelera está vacía' : (filtros ? 'Sin resultados' : 'Aún no hay registros')}</h3>
                         <p>
                             {modoPapelera
                                 ? 'Los elementos eliminados aparecerán acá y podrás restaurarlos.'
-                                : (config.crear
-                                    ? 'Podés crear el primero haciendo clic en "Nuevo".'
-                                    : 'Aún no se cargaron registros en este panel.')}
+                                : (filtros
+                                    ? 'Ningún registro coincide con los filtros aplicados. Probá quitarlos o cambiarlos.'
+                                    : (config.crear
+                                        ? 'Podés crear el primero haciendo clic en "Nuevo".'
+                                        : 'Aún no se cargaron registros en este panel.'))}
                         </p>
                     </div>
                 )}

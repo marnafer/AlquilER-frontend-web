@@ -962,10 +962,15 @@ export async function deleteServicio(id, token) {
 // ADMIN - RESEÑAS
 // ============================================
 
-export async function getResenas(token, soloEliminados = false) {
+export async function getResenas(token, soloEliminados = false, filtros = {}) {
     try {
-        const query = soloEliminados ? '?solo_eliminados=true' : '';
-        const response = await fetch(`${API_URL}/api/resenas${query}`, {
+        const params = new URLSearchParams();
+        if (soloEliminados) params.set('solo_eliminados', 'true');
+        Object.entries(filtros).forEach(([k, v]) => {
+            if (v !== '' && v !== null && v !== undefined) params.set(k, String(v));
+        });
+        const qs = params.toString();
+        const response = await fetch(`${API_URL}/api/resenas${qs ? `?${qs}` : ''}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const result = await response.json();
