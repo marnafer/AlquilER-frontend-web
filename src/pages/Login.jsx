@@ -18,7 +18,6 @@ function Login() {
 
         try {
             const result = await login(email, password);
-            console.log('Respuesta del backend:', result);
 
             // El backend devuelve { success: true, data: { token: ... } }
             if (result.success && result.data && result.data.token) {
