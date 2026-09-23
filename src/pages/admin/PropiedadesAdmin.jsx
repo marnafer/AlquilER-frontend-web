@@ -2,9 +2,15 @@ import React from 'react';
 import PanelCrud from '../../components/admin/PanelCrud';
 import {
     getPropiedadesAdmin,
+    updatePropiedad,
     deletePropiedad,
     restorePropiedad
 } from '../../services/api';
+
+const estados = [
+    { value: 1, label: 'Disponible' },
+    { value: 0, label: 'No disponible' }
+];
 
 const estadoBadge = (disponible) => (
     <span className={`admin-badge ${disponible ? 'admin-badge-usuario' : 'admin-badge-admin'}`}>
@@ -19,7 +25,28 @@ const config = {
     descripcion: 'Propiedades publicadas en el sistema.',
     columnaPrincipal: 'titulo',
     obtener: (token) => getPropiedadesAdmin(token),
+    actualizar: (id, payload, token) => updatePropiedad(id, payload, token),
     eliminar: (id, token) => deletePropiedad(id, token),
+    normalizarEdicion: (item) => ({
+        ...item,
+        disponible: item.disponible ? 1 : 0
+    }),
+    campos: [
+        { name: 'titulo', label: 'Título', requerido: true, min: 3, max: 120 },
+        { name: 'direccion', label: 'Dirección', requerido: true, min: 4, max: 200 },
+        { name: 'precio', label: 'Precio mensual', type: 'number', requerido: true, min: 1, ayuda: 'Valor numérico sin separadores.' },
+        {
+            name: 'disponible',
+            label: 'Estado',
+            type: 'select',
+            opciones: 'estados',
+            requerido: true,
+            ayuda: 'Si la marcás como no disponible, desaparece del catálogo público.'
+        }
+    ],
+    externos: [
+        { clave: 'estados', cargar: () => Promise.resolve(estados) }
+    ],
     papelera: {
         obtener: (token) => getPropiedadesAdmin(token, true),
         restaurar: (id, token) => restorePropiedad(id, token)

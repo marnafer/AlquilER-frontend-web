@@ -12,6 +12,7 @@ import Alert from '../Alert';
 //   columnas: [{ key, label, render?: (item, externos) => node, csv?: (item, externos) => string }]
 //   campos:   [{ name, label, type?, requerido?, min?, max?, placeholder?, ayuda?, opciones? }]
 //   externos?: [{ clave, cargar: () => Promise -> [array] }]   (fuentes para selects/columnas)
+//   normalizarEdicion?: (item) => objeto   (transforma el item antes de precargar el modal de edición)
 //   acciones?: [{ etiqueta, icono, clase?, permitido?: (item) => bool, ejecutar: (item, token) => Promise }]
 //              (botones contextuales por fila; se muestran antes de Editar/Eliminar)
 //   csvNombre?: string   (nombre base del archivo exportado; por defecto usa el título)
@@ -87,8 +88,9 @@ function PanelCrud({ config }) {
     };
 
     const abrirEditar = (item) => {
+        const base = config.normalizarEdicion ? config.normalizarEdicion(item) : item;
         const f = {};
-        config.campos.forEach(c => { f[c.name] = item[c.name] ?? ''; });
+        config.campos.forEach(c => { f[c.name] = base[c.name] ?? ''; });
         setForm(f);
         setEditId(item.id);
         setErroresForm(null);
@@ -117,7 +119,7 @@ function PanelCrud({ config }) {
             const val = form[c.name];
             const esVacio = val === '' || val === null || val === undefined;
             if (esVacio && !c.requerido) return;
-            payload[c.name] = c.type === 'select'
+            payload[c.name] = c.type === 'select' || c.type === 'number'
                 ? (esVacio ? null : Number(val))
                 : (typeof val === 'string' ? val.trim() : val);
         });
