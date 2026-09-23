@@ -1,6 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { getPropiedad, getCategorias, createReserva, createConsulta, getResenasByPropiedad, getServiciosByPropiedad } from '../services/api';
+import {
+    getPropiedad,
+    getCategorias,
+    createReserva,
+    createConsulta,
+    getResenasByPropiedad,
+    getServiciosByPropiedad,
+    getReservas,
+    createResena,
+    updateResena,
+    deleteResena
+} from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
 import { useAuth } from '../hooks/useAuth';
 import Loader from './Loader';
@@ -31,6 +42,15 @@ function PropiedadDetalle() {
 
     const [resenas, setResenas] = useState([]);
     const [promedioResenas, setPromedioResenas] = useState(0);
+    const [reservas, setReservas] = useState([]);
+
+    // Reseñar
+    const [calificacion, setCalificacion] = useState(5);
+    const [comentario, setComentario] = useState('');
+    const [editandoResena, setEditandoResena] = useState(false);
+    const [guardandoResena, setGuardandoResena] = useState(false);
+    const [errorResena, setErrorResena] = useState('');
+    const [exitoResena, setExitoResena] = useState('');
 
     useEffect(() => {
         cargarDatos();
@@ -56,6 +76,13 @@ function PropiedadDetalle() {
                 setResenas([]);
                 setPromedioResenas(0);
             }
+            if (token) {
+                const res = await getReservas(token);
+                const items = res?.data?.items || res?.data || res || [];
+                setReservas(Array.isArray(items) ? items : []);
+            } else {
+                setReservas([]);
+            }
         } catch (error) {
             console.error('Error cargando detalle:', error);
         } finally {
@@ -70,6 +97,97 @@ function PropiedadDetalle() {
                 className={`fas fa-star ${i < Math.round(Number(valor) || 0) ? 'estrella-llena' : ''}`}
             ></i>
         ));
+
+    const esDuenio = usuario && propiedad && String(usuario.id) === String(propiedad.usuario_id);
+
+    // Reseña propia + reserva finalizada calificable (inquilino sobre la propiedad)
+    const { miResena, reservaCalificable } = useMemo(() => {
+        if (!usuario || !propiedad || esDuenio) return { miResena: null, reservaCalificable: null };
+
+        const mia = resenas.find(r => String(r.calificador_id) === String(usuario.id)) || null;
+        const finalizadas = (reservas || []).filter(r =>
+            String(r.propiedad_id) === String(propiedad.id) && r.estado === 'finalizada'
+        );
+        const disponible = finalizadas.find(r =>
+            !resenas.some(x => String(x.reserva_id) === String(r.id))
+        ) || null;
+
+        return { miResena: mia, reservaCalificable: disponible };
+    }, [resenas, reservas, usuario, propiedad, esDuenio]);
+
+    const abrirFormularioResena = () => {
+        setErrorResena('');
+        setExitoResena('');
+        setCalificacion(miResena ? Number(miResena.calificacion) || 5 : 5);
+        setComentario(miResena?.comentario || '');
+        setEditandoResena(true);
+    };
+
+    const cerrarFormularioResena = () => {
+        setEditandoResena(false);
+        setErrorResena('');
+    };
+
+    const enviarResena = async (e) => {
+        e.preventDefault();
+        setErrorResena('');
+        setExitoResena('');
+
+        const valor = Number(calificacion);
+        if (!valor || valor < 1 || valor > 5) {
+            setErrorResena('Seleccioná una calificación de 1 a 5 estrellas.');
+            return;
+        }
+
+        setGuardandoResena(true);
+        try {
+            const data = {
+                calificacion: valor,
+                comentario: comentario.trim()
+            };
+            const resultado = miResena
+                ? await updateResena(miResena.id, data, token)
+                : await createResena({ ...data, reserva_id: Number(reservaCalificable.id) }, token);
+
+            if (resultado.success) {
+                setEditandoResena(false);
+                setExitoResena(miResena
+                    ? 'Tu reseña se actualizó correctamente.'
+                    : 'Reseña publicada. ¡Gracias por tu aporte!'
+                );
+                await cargarDatos();
+            } else {
+                setErrorResena(
+                    resultado.message || resultado.error || 'No se pudo guardar la reseña.'
+                );
+            }
+        } catch (err) {
+            setErrorResena('Error de conexión al guardar la reseña.');
+        } finally {
+            setGuardandoResena(false);
+        }
+    };
+
+    const eliminarResena = async () => {
+        if (!miResena || !window.confirm('¿Eliminar tu reseña?')) return;
+        setErrorResena('');
+        setExitoResena('');
+        setGuardandoResena(true);
+        try {
+            const resultado = await deleteResena(miResena.id, token);
+            if (resultado.success) {
+                setEditandoResena(false);
+                setExitoResena('Tu reseña fue eliminada.');
+                await cargarDatos();
+            } else {
+                setErrorResena(resultado.message || resultado.error || 'No se pudo eliminar la reseña.');
+            }
+        } catch (err) {
+            setErrorResena('Error de conexión al eliminar la reseña.');
+        } finally {
+            setGuardandoResena(false);
+        }
+    };
 
     const abrirModalConsulta = () => {
         setErrorConsulta('');
@@ -137,7 +255,6 @@ function PropiedadDetalle() {
     const categoriaNombre = categorias.find(c => c.id === propiedad.categoria_id)?.nombre;
     const disponible = propiedad.disponible !== false;
     const imagen = rutaImagenPropiedad(propiedad);
-    const esDuenio = usuario && String(usuario.id) === String(propiedad.usuario_id);
     const hoy = new Date().toISOString().slice(0, 10);
 
     const abrirModal = () => {
@@ -360,6 +477,26 @@ function PropiedadDetalle() {
                         )}
                     </div>
 
+                    {exitoResena && (
+                        <div style={{
+                            background: '#d1fae5',
+                            color: '#065f46',
+                            padding: '12px 16px',
+                            borderRadius: 12,
+                            fontSize: 14,
+                            marginBottom: 16
+                        }}>
+                            <i className="fas fa-check-circle"></i> {exitoResena}
+                        </div>
+                    )}
+
+                    {errorResena && (
+                        <div className="alert alert-error" role="alert" style={{ marginBottom: 16 }}>
+                            <i className="fas fa-exclamation-circle" style={{ marginRight: 8 }}></i>
+                            {errorResena}
+                        </div>
+                    )}
+
                     {resenas.length > 0 ? (
                         <div className="resenas-lista">
                             {resenas.map(r => (
@@ -373,6 +510,11 @@ function PropiedadDetalle() {
                                         </span>
                                         <span className="resenas-estrellas">{renderEstrellas(r.calificacion)}</span>
                                     </div>
+                                    {miResena && String(r.id) === String(miResena.id) && (
+                                        <span className="resena-mia-badge">
+                                            <i className="fas fa-star"></i> Tu reseña
+                                        </span>
+                                    )}
                                     {r.fecha_publicacion && (
                                         <p className="resena-fecha">
                                             <i className="far fa-calendar-alt"></i>{' '}
@@ -382,6 +524,26 @@ function PropiedadDetalle() {
                                     {r.comentario && (
                                         <p className="resena-comentario">{r.comentario}</p>
                                     )}
+                                    {miResena && String(r.id) === String(miResena.id) && !editandoResena && (
+                                        <div className="resena-acciones">
+                                            <button
+                                                type="button"
+                                                className="resena-btn"
+                                                onClick={abrirFormularioResena}
+                                                disabled={guardandoResena}
+                                            >
+                                                <i className="fas fa-pen"></i> Editar
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="resena-btn resena-btn-danger"
+                                                onClick={eliminarResena}
+                                                disabled={guardandoResena}
+                                            >
+                                                <i className="fas fa-trash"></i> Eliminar
+                                            </button>
+                                        </div>
+                                    )}
                                 </article>
                             ))}
                         </div>
@@ -390,6 +552,98 @@ function PropiedadDetalle() {
                             Todavía no hay reseñas para esta propiedad.
                         </p>
                     )}
+
+                    {editandoResena ? (
+                        <form className="resena-form" onSubmit={enviarResena} noValidate>
+                            <h3 className="resena-form-titulo">
+                                <i className="fas fa-star" style={{ color: '#f59e0b' }}></i>{' '}
+                                {miResena ? 'Editar tu reseña' : 'Calificar esta propiedad'}
+                            </h3>
+
+                            <div className="resena-selector">
+                                <span className="resena-selector-label">Tu calificación:</span>
+                                <span className="resena-selector-estrellas">
+                                    {Array.from({ length: 5 }).map((_, i) => {
+                                        const valor = i + 1;
+                                        return (
+                                            <button
+                                                type="button"
+                                                key={valor}
+                                                className={`estrella-btn ${valor <= Number(calificacion) ? 'estrella-llena' : ''}`}
+                                                onClick={() => setCalificacion(valor)}
+                                                title={`${valor} ${valor === 1 ? 'estrella' : 'estrellas'}`}
+                                            >
+                                                <i className="fas fa-star"></i>
+                                            </button>
+                                        );
+                                    })}
+                                </span>
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="resena-comentario">Comentario (opcional)</label>
+                                <textarea
+                                    id="resena-comentario"
+                                    rows="3"
+                                    placeholder="Contá cómo fue tu experiencia con esta propiedad..."
+                                    value={comentario}
+                                    onChange={(e) => setComentario(e.target.value)}
+                                    maxLength="1000"
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px 12px',
+                                        borderRadius: 10,
+                                        border: '1px solid #cbd5e1',
+                                        fontFamily: 'inherit',
+                                        fontSize: 14,
+                                        resize: 'vertical'
+                                    }}
+                                />
+                            </div>
+
+                            <div className="modal-actions">
+                                <button
+                                    type="button"
+                                    className="btn-detalle btn-detalle-secundario"
+                                    onClick={cerrarFormularioResena}
+                                    disabled={guardandoResena}
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="btn-detalle btn-detalle-primario"
+                                    disabled={guardandoResena}
+                                >
+                                    {guardandoResena ? (
+                                        <>
+                                            <i className="fas fa-spinner fa-spin"></i> Guardando...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <i className="fas fa-paper-plane"></i>{' '}
+                                            {miResena ? 'Guardar cambios' : 'Publicar reseña'}
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    ) : isAuthenticated && !esDuenio && (miResena || reservaCalificable) ? (
+                        <div className="resena-cta">
+                            <button
+                                type="button"
+                                className="btn-detalle btn-detalle-primario"
+                                onClick={abrirFormularioResena}
+                            >
+                                <i className="fas fa-star"></i>{' '}
+                                {miResena ? 'Editar mi reseña' : 'Calificar esta propiedad'}
+                            </button>
+                        </div>
+                    ) : isAuthenticated && esDuenio ? (
+                        <p className="resenas-vacio">
+                            Como propietario podés calificar a tus inquilinos desde Mis Reservas.
+                        </p>
+                    ) : null}
                 </section>
             </div>
 

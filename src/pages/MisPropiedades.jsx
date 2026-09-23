@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { getPropiedades, deletePropiedad } from '../services/api';
+import { getMisPropiedades, deletePropiedad } from '../services/api';
 import Loader from '../components/Loader';
 
 function MisPropiedades() {
@@ -19,11 +19,8 @@ function MisPropiedades() {
     const cargarPropiedades = async () => {
         if (!usuario) return;
         try {
-            const todas = await getPropiedades();
-            const mias = todas.filter(
-                p => String(p.usuario_id) === String(usuario.id)
-            );
-            setPropiedades(mias);
+            const resultado = await getMisPropiedades(token);
+            setPropiedades(Array.isArray(resultado) ? resultado : []);
         } catch (error) {
             console.error('Error cargando propiedades:', error);
         } finally {

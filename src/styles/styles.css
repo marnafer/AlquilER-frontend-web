@@ -5120,6 +5120,99 @@ img {
     padding: 10px 0;
 }
 
+.resena-mia-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 8px;
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 999px;
+}
+
+.resena-acciones {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.resena-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.resena-btn:hover {
+    background: #e2e8f0;
+}
+
+.resena-btn-danger {
+    background: #fef2f2;
+    color: #b91c1c;
+    border-color: #fecaca;
+}
+
+.resena-btn-danger:hover {
+    background: #fee2e2;
+}
+
+.resena-cta {
+    margin-top: 18px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.resena-form {
+    margin-top: 20px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 18px 20px;
+    background: #f8fafc;
+}
+
+.resena-form-titulo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 17px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 14px;
+}
+
+.resena-selector {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.resena-selector-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+}
+
+.resena-selector-estrellas {
+    display: inline-flex;
+    gap: 2px;
+}
+
 /* Selector de estrellas (modal) */
 .resena-estrellas-grandes {
     gap: 6px;

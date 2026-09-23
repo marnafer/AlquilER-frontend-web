@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { 
     getCategorias, 
@@ -40,6 +40,8 @@ function PropiedadForm() {
     const { id } = useParams();
     const esEdicion = Boolean(id);
     const navigate = useNavigate();
+    const location = useLocation();
+    const recienCreada = Boolean(location.state?.recienCreada);
     const { token } = useAuth();
 
     // Estados de datos
@@ -56,6 +58,7 @@ const [loading, setLoading] = useState(true);
     const [subiendoImagen, setSubiendoImagen] = useState(false);
     const [imagenError, setImagenError] = useState('');
     const imagenInputRef = useRef(null);
+    const imagenesSectionRef = useRef(null);
 
     // Estados del formulario
     const [formData, setFormData] = useState(FORM_INICIAL);
@@ -128,6 +131,16 @@ const [loading, setLoading] = useState(true);
             setLoading(false);
         }
     };
+
+    // Si la propiedad se acaba de crear, resaltamos la sección de imágenes
+    useEffect(() => {
+        if (recienCreada && esEdicion && !loading) {
+            const timer = setTimeout(() => {
+                imagenesSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [recienCreada, esEdicion, loading]);
 
     // ============================================
     // MANEJO DE IMÁGENES
@@ -323,7 +336,11 @@ const [loading, setLoading] = useState(true);
                         );
                     }
                 }
-                navigate('/mis-propiedades');
+navigate(esEdicion || !propiedadId
+                    ? '/mis-propiedades'
+                    : `/propiedades/${propiedadId}/editar`, {
+                    state: esEdicion ? undefined : { recienCreada: true }
+                });
             } else {
                 // Si el backend devuelve errores por campo (422)
                 if (result.validation_errors) {
@@ -648,12 +665,26 @@ const [loading, setLoading] = useState(true);
                         SECCIÓN 4: IMÁGENES (SOLO EDICIÓN)
                        ============================================ */}
                     {esEdicion && (
-                        <section className="propform-card">
+                        <section className="propform-card" ref={imagenesSectionRef}>
                             <div className="propform-card-header">
                                 <h3>
                                     <i className="fas fa-images"></i> Imágenes de la propiedad
                                 </h3>
                             </div>
+
+                            {recienCreada && (
+                                <div style={{
+                                    background: '#d1fae5',
+                                    color: '#065f46',
+                                    padding: '12px 16px',
+                                    borderRadius: 12,
+                                    fontSize: 14,
+                                    marginBottom: 18
+                                }}>
+                                    <i className="fas fa-check-circle"></i>{' '}
+                                    Propiedad creada correctamente. ¡Sumale fotos ahora para que se vea en el catálogo!
+                                </div>
+                            )}
 
                             <div
                                 style={{
