@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { getMisPropiedades, deletePropiedad } from '../services/api';
+import { getMisPropiedades, deletePropiedad, updatePropiedad } from '../services/api';
 import Loader from '../components/Loader';
 
 function MisPropiedades() {
@@ -10,6 +10,8 @@ function MisPropiedades() {
     const [propiedades, setPropiedades] = useState([]);
     const [eliminando, setEliminando] = useState(false);
     const [propiedadAEliminar, setPropiedadAEliminar] = useState(null);
+    const [actualizando, setActualizando] = useState(null);
+    const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
 
     useEffect(() => {
         cargarPropiedades();
@@ -56,6 +58,28 @@ function MisPropiedades() {
         }
     };
 
+    const toggleDisponible = async (prop) => {
+        setActualizando(prop.id);
+        setMensaje({ tipo: '', texto: '' });
+        try {
+            const result = await updatePropiedad(prop.id, { disponible: prop.disponible ? 0 : 1 }, token);
+            if (result.success) {
+                setPropiedades(prev => prev.map(p =>
+                    p.id === prop.id ? { ...p, disponible: p.disponible ? 0 : 1 } : p
+                ));
+            } else {
+                setMensaje({
+                    tipo: 'error',
+                    texto: result.message || result.error || 'No se pudo actualizar la disponibilidad.'
+                });
+            }
+        } catch (error) {
+            setMensaje({ tipo: 'error', texto: 'Error de conexión al actualizar la disponibilidad.' });
+        } finally {
+            setActualizando(null);
+        }
+    };
+
     if (loading) return <Loader />;
 
     const totalDisponibles = propiedades.filter(p => p.disponible).length;
@@ -85,6 +109,17 @@ function MisPropiedades() {
                         </Link>
                     </div>
                 </section>
+
+                {mensaje.texto && (
+                    <div
+                        className={`alert ${mensaje.tipo === 'error' ? 'alert-error' : 'alert-success'}`}
+                        role="alert"
+                        style={{ marginBottom: 20 }}
+                    >
+                        <i className={`fas ${mensaje.tipo === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}`} style={{ marginRight: 8 }}></i>
+                        {mensaje.texto}
+                    </div>
+                )}
 
                 {/* ESTADÍSTICAS */}
                 <section className="misprops-stats">
@@ -155,6 +190,20 @@ function MisPropiedades() {
                                     </div>
 
                                     <div className="misprops-actions">
+                                        <button
+                                            className="misprops-btn toggle"
+                                            onClick={() => toggleDisponible(prop)}
+                                            disabled={actualizando === prop.id}
+                                            title={prop.disponible ? 'Marcar como no disponible' : 'Marcar como disponible'}
+                                            aria-label={prop.disponible ? 'Marcar como no disponible' : 'Marcar como disponible'}
+                                        >
+                                            {actualizando === prop.id ? (
+                                                <i className="fas fa-spinner fa-spin"></i>
+                                            ) : (
+                                                <i className={`fas fa-toggle-${prop.disponible ? 'on' : 'off'}`}></i>
+                                            )}
+                                            {prop.disponible ? 'Poner alquilada' : 'Poner disponible'}
+                                        </button>
                                         <Link
                                             to={`/propiedades/${prop.id}`}
                                             className="misprops-btn ver"

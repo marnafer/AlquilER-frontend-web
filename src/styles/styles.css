@@ -3107,6 +3107,25 @@ img {
     border-color: #fda4af;
 }
 
+.misprops-btn.toggle {
+    flex: 1;
+    background: #fefce8;
+    border-color: #fde68a;
+    color: #b45309;
+    text-align: center;
+}
+
+.misprops-btn.toggle:hover {
+    background: #fef3c7;
+    border-color: #fcd34d;
+    color: #92400e;
+}
+
+.misprops-btn.toggle:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
 /* ========== MODAL DE CONFIRMACIÓN ========== */
 .modal-backdrop-custom {
     position: fixed;
