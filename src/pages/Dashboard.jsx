@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { getPropiedades, getReservas, getFavoritos, getConsultas } from '../services/api';
+import { getMisPropiedades, getReservas, getFavoritos, getConsultas } from '../services/api';
 import Loader from '../components/Loader';
 
 function Dashboard() {
@@ -18,7 +18,7 @@ function Dashboard() {
     const cargarDatos = useCallback(async () => {
         try {
             const [propRes, reservasRes, favoritosRes, consultasRes] = await Promise.all([
-                getPropiedades(),
+                getMisPropiedades(token),
                 getReservas(token),
                 getFavoritos(token),
                 getConsultas(token)
