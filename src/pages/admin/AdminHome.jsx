@@ -1,0 +1,48 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+
+const modulos = [
+    { to: '/admin/usuarios', icono: 'fa-users', titulo: 'Usuarios', desc: 'Cuentas registradas en el sistema.' },
+    { to: '/admin/categorias', icono: 'fa-tags', titulo: 'Categorías', desc: 'Tipos de propiedades.' },
+    { to: '/admin/provincias', icono: 'fa-map-marked-alt', titulo: 'Provincias', desc: 'Provincias disponibles.' },
+    { to: '/admin/localidades', icono: 'fa-map-pin', titulo: 'Localidades', desc: 'Ciudades de cada provincia.' },
+    { to: '/admin/roles', icono: 'fa-user-shield', titulo: 'Roles', desc: 'Roles del sistema.' },
+    { to: '/admin/servicios', icono: 'fa-wrench', titulo: 'Servicios', desc: 'Servicios de las propiedades.' },
+    { to: '/admin/resenas', icono: 'fa-star', titulo: 'Reseñas', desc: 'Reseñas de propiedades e inquilinos.' },
+    { to: '/admin/reservas', icono: 'fa-calendar-check', titulo: 'Reservas', desc: 'Reservas y su estado de alquiler.' },
+    { to: '/admin/consultas', icono: 'fa-comments', titulo: 'Consultas', desc: 'Consultas de los interesados.' },
+    { to: '/admin/logs', icono: 'fa-clock-rotate-left', titulo: 'Registros', desc: 'Actividad de los usuarios.' },
+    { to: '/admin/propiedades', icono: 'fa-building', titulo: 'Propiedades', desc: 'Todas las propiedades del sistema.' }
+];
+
+function AdminHome() {
+    return (
+        <div className="admin-page">
+            <div className="container">
+                <section className="admin-hero">
+                    <div className="admin-hero-content">
+                        <span className="admin-hero-badge">
+                            <i className="fas fa-tachometer-alt"></i> Administración
+                        </span>
+                        <h1>Panel de control</h1>
+                        <p>Gestioná los datos maestros y los usuarios de AlquilER.</p>
+                    </div>
+                </section>
+
+                <section className="admin-grid">
+                    {modulos.map(m => (
+                        <Link to={m.to} key={m.to} className="admin-card">
+                            <span className="admin-card-icono">
+                                <i className={`fas ${m.icono}`}></i>
+                            </span>
+                            <strong>{m.titulo}</strong>
+                            <small>{m.desc}</small>
+                        </Link>
+                    ))}
+                </section>
+            </div>
+        </div>
+    );
+}
+
+export default AdminHome;

@@ -1,12 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { getPropiedades, getCategorias } from '../services/api';
+import { Link, useNavigate } from 'react-router-dom';
+import { getPropiedades, getCategorias, getServicios, getLocalidades } from '../services/api';
+import { rutaImagenPropiedad } from '../utils/imagenes';
 import Loader from '../components/Loader';
+
+const ICONOS_SERVICIO = {
+    'Wifi': 'fa-wifi',
+    'Aire Acondicionado': 'fa-snowflake',
+    'Calefacción': 'fa-fire',
+    'Piscina': 'fa-swimming-pool',
+    'Estacionamiento': 'fa-car',
+    'TV Cable': 'fa-tv',
+    'Cocina Equipada': 'fa-utensils',
+    'Seguridad': 'fa-shield-halved',
+    'Limpieza': 'fa-broom',
+    'Amueblado': 'fa-couch',
+    'Balcón': 'fa-building',
+    'Mascotas': 'fa-paw',
+};
+
+const iconoServicio = (nombre) => {
+    const key = Object.keys(ICONOS_SERVICIO).find(
+        k => k.toLowerCase() === (nombre || '').toLowerCase()
+    );
+    return ICONOS_SERVICIO[key] || 'fa-circle-check';
+};
 
 function Home() {
     const [propiedades, setPropiedades] = useState([]);
     const [categorias, setCategorias] = useState([]);
+    const [servicios, setServicios] = useState([]);
+    const [localidades, setLocalidades] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    const [busqueda, setBusqueda] = useState('');
+    const [categoriaBusqueda, setCategoriaBusqueda] = useState('');
+    const navigate = useNavigate();
 
     useEffect(() => {
         cargarDatos();
@@ -14,18 +43,30 @@ function Home() {
 
     const cargarDatos = async () => {
         try {
-            const [props, cats] = await Promise.all([
+            const [props, cats, serv, localidadesRes] = await Promise.all([
                 getPropiedades(),
-                getCategorias()
+                getCategorias(),
+                getServicios(),
+                getLocalidades()
             ]);
-            
+
             setPropiedades(props);
             setCategorias(cats);
+            setServicios(Array.isArray(serv) ? serv : []);
+            setLocalidades(Array.isArray(localidadesRes) ? localidadesRes : []);
         } catch (error) {
             console.error('Error cargando datos:', error);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleBuscar = (e) => {
+        e.preventDefault();
+        const query = new URLSearchParams();
+        if (busqueda.trim()) query.set('q', busqueda.trim());
+        if (categoriaBusqueda) query.set('categoria_id', categoriaBusqueda);
+        navigate(query.toString() ? `/propiedades?${query.toString()}` : '/propiedades');
     };
 
     if (loading) return <Loader />;
@@ -39,32 +80,40 @@ function Home() {
                         <div className="hero-content">
                             <h1>Encontrá tu <span>propiedad ideal</span></h1>
                             <p>Las mejores propiedades en alquiler. Departamentos, casas, locales comerciales y más.</p>
-                            
-                            <div className="search-box">
-                                <input type="text" placeholder="¿Dónde querés vivir?" />
-                                <select>
-                                    <option>Todas las categorías</option>
+
+                            <form onSubmit={handleBuscar} className="search-box">
+                                <input
+                                    type="text"
+                                    placeholder="¿Dónde querés vivir?"
+                                    value={busqueda}
+                                    onChange={(e) => setBusqueda(e.target.value)}
+                                />
+                                <select
+                                    value={categoriaBusqueda}
+                                    onChange={(e) => setCategoriaBusqueda(e.target.value)}
+                                >
+                                    <option value="">Todas las categorías</option>
                                     {categorias.map(cat => (
                                         <option key={cat.id} value={cat.id}>{cat.nombre}</option>
                                     ))}
                                 </select>
-                                <button className="btn-search">
+                                <button type="submit" className="btn-search">
                                     <i className="fas fa-search"></i> Buscar
                                 </button>
-                            </div>
+                            </form>
                         </div>
-                        
+
                         <div className="hero-image">
-                            <img 
-                                src="/assets/img/logo.png" 
-                                alt="AlquilER" 
+                            <img
+                                src="/assets/img/logo.png"
+                                alt="AlquilER"
                                 style={{ maxHeight: '500px', width: 'auto' }}
                                 onError={(e) => e.target.src = '/assets/img/logo.png'}
                             />
                         </div>
                     </div>
                 </div>
-                
+
                 <div className="wave-divider">
                     <svg viewBox="0 0 1440 100" xmlns="http://www.w3.org/2000/svg">
                         <path fill="#f0fdf4" d="M0,50 C360,100 720,0 1080,50 C1260,75 1380,85 1440,90 L1440,100 L0,100 Z"/>
@@ -72,25 +121,24 @@ function Home() {
                 </div>
             </section>
 
-            {/* PROPIEDADES DESTACADAS */}
+            {/* PROPIEDADES RECIENTES */}
             <section className="propiedades-destacadas">
                 <div className="container">
                     <div className="section-header">
-                        <span className="section-badge">Destacadas</span>
-                        <h2>Propiedades Destacadas</h2>
-                        <p>Las propiedades más visitadas del momento</p>
+                        <span className="section-badge">Catálogo</span>
+                        <h2>Propiedades Recientes</h2>
+                        <p>Las últimas publicaciones en AlquilER</p>
                     </div>
-                    
+
                     <div className="propiedades-grid">
                         {propiedades.slice(0, 6).map(prop => (
                             <div className="propiedad-card" key={prop.id}>
                                 <div className="propiedad-image">
-                                    <img 
-                                        src={`/uploads/propiedades/${prop.id}.jpg`} 
+                                    <img
+                                        src={rutaImagenPropiedad(prop) || '/assets/img/logo.png'}
                                         alt={prop.titulo}
-                                        onError={(e) => e.target.src = '/assets/img/propiedad-default.jpg'}
+                                        onError={(e) => e.target.src = '/assets/img/logo.png'}
                                     />
-                                    <span className="propiedad-badge">Destacado</span>
                                 </div>
                                 <div className="propiedad-info">
                                     <h3>{prop.titulo}</h3>
@@ -110,7 +158,7 @@ function Home() {
                             </div>
                         ))}
                     </div>
-                    
+
                     <div className="section-footer">
                         <Link to="/propiedades" className="btn-ver-todas">Ver todas las propiedades</Link>
                     </div>
@@ -125,7 +173,7 @@ function Home() {
                         <h2>Explorar por Categoría</h2>
                         <p>Encontrá lo que buscás</p>
                     </div>
-                    
+
                     <div className="categorias-grid">
                         {categorias.slice(0, 4).map(cat => (
                             <Link to={`/propiedades?categoria_id=${cat.id}`} className="categoria-card" key={cat.id}>
@@ -146,12 +194,17 @@ function Home() {
                         <h2>Servicios Destacados</h2>
                         <p>Comodidades que ofrecen nuestras propiedades</p>
                     </div>
-                    
+
                     <div className="servicios-grid">
-                        {['Wifi', 'Aire Acondicionado', 'Calefacción', 'Piscina', 'Estacionamiento', 'TV Cable', 'Cocina Equipada', 'Seguridad'].map((serv, i) => (
-                            <div className="servicio-card" key={i}>
-                                <i className={`fas fa-${['wifi', 'snowflake', 'fire', 'swimming-pool', 'car', 'tv', 'utensils', 'shower'][i]} servicio-icon`}></i>
-                                <h4>{serv}</h4>
+                        {servicios.length === 0 && (
+                            <p className="form-help" style={{ textAlign: 'center' }}>
+                                Todavía no hay servicios cargados.
+                            </p>
+                        )}
+                        {servicios.slice(0, 8).map(serv => (
+                            <div className="servicio-card" key={serv.id}>
+                                <i className={`fas ${iconoServicio(serv.nombre)} servicio-icon`}></i>
+                                <h4>{serv.nombre}</h4>
                             </div>
                         ))}
                     </div>
@@ -167,15 +220,15 @@ function Home() {
                             <span className="stat-label">Propiedades publicadas</span>
                         </div>
                         <div className="stat-item">
-                            <span className="stat-number">0</span>
-                            <span className="stat-label">Usuarios registrados</span>
+                            <span className="stat-number">{categorias.length}</span>
+                            <span className="stat-label">Categorías disponibles</span>
                         </div>
                         <div className="stat-item">
-                            <span className="stat-number">0</span>
-                            <span className="stat-label">Reservas realizadas</span>
+                            <span className="stat-number">{servicios.length}</span>
+                            <span className="stat-label">Servicios ofrecidos</span>
                         </div>
                         <div className="stat-item">
-                            <span className="stat-number">0</span>
+                            <span className="stat-number">{localidades.length}</span>
                             <span className="stat-label">Ciudades disponibles</span>
                         </div>
                     </div>
