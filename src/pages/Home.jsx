@@ -71,6 +71,10 @@ function Home() {
 
     if (loading) return <Loader />;
 
+    const disponibles = propiedades.filter(p =>
+        p.disponible !== false && p.disponible !== 0 && p.disponible !== '0'
+    );
+
     return (
         <>
             {/* HERO SECTION */}
@@ -131,7 +135,12 @@ function Home() {
                     </div>
 
                     <div className="propiedades-grid">
-                        {propiedades.slice(0, 6).map(prop => (
+                        {disponibles.length === 0 && (
+                            <p className="form-help" style={{ textAlign: 'center' }}>
+                                Todavía no hay propiedades disponibles.
+                            </p>
+                        )}
+                        {disponibles.slice(0, 6).map(prop => (
                             <div className="propiedad-card" key={prop.id}>
                                 <div className="propiedad-image">
                                     <img
@@ -216,7 +225,7 @@ function Home() {
                 <div className="container">
                     <div className="stats-grid">
                         <div className="stat-item">
-                            <span className="stat-number">{propiedades.length}</span>
+                            <span className="stat-number">{disponibles.length}</span>
                             <span className="stat-label">Propiedades publicadas</span>
                         </div>
                         <div className="stat-item">

@@ -106,6 +106,11 @@ function Propiedades() {
     const filtradas = useMemo(() => {
         let resultado = [...propiedades];
 
+        // Excluir del catálogo público las propiedades marcadas como no disponibles
+        resultado = resultado.filter(p =>
+            p.disponible !== false && p.disponible !== 0 && p.disponible !== '0'
+        );
+
         if (search.trim()) {
             const q = search.toLowerCase();
             resultado = resultado.filter(p =>
