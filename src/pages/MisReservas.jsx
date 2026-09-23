@@ -24,6 +24,20 @@ const ESTADOS = [
     { valor: 'finalizada', etiqueta: 'Finalizadas' }
 ];
 
+const ESTADO_INFO = {
+    pendiente: { etiqueta: 'Pendiente', icono: 'fa-hourglass-half' },
+    confirmada: { etiqueta: 'Confirmada', icono: 'fa-check-circle' },
+    rechazada: { etiqueta: 'Rechazada', icono: 'fa-times-circle' },
+    cancelada: { etiqueta: 'Cancelada', icono: 'fa-ban' },
+    finalizada: { etiqueta: 'Finalizada', icono: 'fa-flag-checkered' }
+};
+
+const ORIGENES = [
+    { valor: 'todos', etiqueta: 'Todas' },
+    { valor: 'recibida', etiqueta: 'Recibidas en mis propiedades' },
+    { valor: 'propia', etiqueta: 'Mis solicitudes' }
+];
+
 const soloDia = (f) => (f ? String(f).slice(0, 10) : '—');
 
 function MisReservas() {
@@ -31,6 +45,7 @@ function MisReservas() {
     const [loading, setLoading] = useState(true);
     const [reservas, setReservas] = useState([]);
     const [filtro, setFiltro] = useState('todos');
+    const [filtroOrigen, setFiltroOrigen] = useState('todos');
     const [accionando, setAccionando] = useState(null);
     const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
 
@@ -194,13 +209,18 @@ function MisReservas() {
         }
     };
 
-    const filtradas = filtro === 'todos'
-        ? reservas
-        : reservas.filter(r => r.estado === filtro);
+    const filtradas = reservas.filter(r =>
+        (filtro === 'todos' || r.estado === filtro) &&
+        (filtroOrigen === 'todos' || r.origen === filtroOrigen)
+    );
 
     const conteo = (estado) => estado === 'todos'
+        ? reservas.filter(r => filtroOrigen === 'todos' || r.origen === filtroOrigen).length
+        : reservas.filter(r => r.estado === estado && (filtroOrigen === 'todos' || r.origen === filtroOrigen)).length;
+
+    const conteoOrigen = (origen) => origen === 'todos'
         ? reservas.length
-        : reservas.filter(r => r.estado === estado).length;
+        : reservas.filter(r => r.origen === origen && (filtro === 'todos' || r.estado === filtro)).length;
 
     if (loading) return <Loader />;
 
@@ -236,17 +256,32 @@ function MisReservas() {
 
                 {/* FILTROS */}
                 {reservas.length > 0 && (
-                    <div className="misreservas-filtros">
-                        {ESTADOS.map(e => (
-                            <button
-                                key={e.valor}
-                                className={`misreservas-filtro ${filtro === e.valor ? 'activo' : ''}`}
-                                onClick={() => setFiltro(e.valor)}
-                            >
-                                {e.etiqueta}
-                                <span className="misreservas-filtro-count">{conteo(e.valor)}</span>
-                            </button>
-                        ))}
+                    <div className="misreservas-tabs">
+                        <div className="misreservas-filtros">
+                            {ESTADOS.map(e => (
+                                <button
+                                    key={e.valor}
+                                    className={`misreservas-filtro ${filtro === e.valor ? 'activo' : ''}`}
+                                    onClick={() => setFiltro(e.valor)}
+                                >
+                                    {e.etiqueta}
+                                    <span className="misreservas-filtro-count">{conteo(e.valor)}</span>
+                                </button>
+                            ))}
+                        </div>
+                        <div className="misreservas-filtros">
+                            {ORIGENES.map(o => (
+                                <button
+                                    key={o.valor}
+                                    className={`misreservas-filtro misreservas-filtro-origen ${filtroOrigen === o.valor ? 'activo' : ''}`}
+                                    onClick={() => setFiltroOrigen(o.valor)}
+                                >
+                                    <i className={`fas ${o.valor === 'recibida' ? 'fa-inbox' : o.valor === 'propia' ? 'fa-paper-plane' : 'fa-layer-group'}`}></i>
+                                    {o.etiqueta}
+                                    <span className="misreservas-filtro-count">{conteoOrigen(o.valor)}</span>
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 )}
 
@@ -270,6 +305,9 @@ function MisReservas() {
                                             {reserva.origen === 'recibida' && (
                                                 <span className="misreservas-item-tag">Recibida</span>
                                             )}
+                                            {reserva.origen === 'propia' && (
+                                                <span className="misreservas-item-tag propia">Solicitada</span>
+                                            )}
                                         </div>
 
                                         <div className="misreservas-item-info">
@@ -288,6 +326,18 @@ function MisReservas() {
                                                         : `usuario #${reserva.usuario_id}`}</strong></>
                                                     : 'Solicitud propia'}
                                             </p>
+                                            {reserva.origen === 'recibida' && reserva.usuario && (
+                                                <div className="misreservas-item-contacto">
+                                                    <span>
+                                                        <i className="fas fa-envelope"></i>
+                                                        {reserva.usuario.email || '—'}
+                                                    </span>
+                                                    <span>
+                                                        <i className="fas fa-phone-alt"></i>
+                                                        {reserva.usuario.telefono || '—'}
+                                                    </span>
+                                                </div>
+                                            )}
                                             <div className="misreservas-item-fechas">
                                                 <span>
                                                     <i className="far fa-calendar-alt"></i>
@@ -302,7 +352,8 @@ function MisReservas() {
 
                                         <div className="misreservas-item-acciones">
                                             <span className={`dash-reserva-badge ${reserva.estado}`}>
-                                                {reserva.estado}
+                                                <i className={`fas ${ESTADO_INFO[reserva.estado]?.icono || 'fa-circle'}`}></i>
+                                                {ESTADO_INFO[reserva.estado]?.etiqueta || reserva.estado}
                                             </span>
 
                                             {puedeAprobar(reserva) && (
@@ -326,7 +377,11 @@ function MisReservas() {
                                             {puedeRechazar(reserva) && (
                                                 <button
                                                     className="btn-detalle btn-detalle-danger"
-                                                    onClick={() => ejecutarAccion('rechazar', reserva)}
+                                                    onClick={() => {
+                                                        if (window.confirm('¿Rechazar esta solicitud de reserva? El inquilino recibirá el rechazo.')) {
+                                                            ejecutarAccion('rechazar', reserva);
+                                                        }
+                                                    }}
                                                     disabled={accionando === reserva.id}
                                                 >
                                                     <i className="fas fa-times"></i> Rechazar

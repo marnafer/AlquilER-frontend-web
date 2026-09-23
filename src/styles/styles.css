@@ -4100,6 +4100,46 @@ img {
     background: rgba(255, 255, 255, 0.25);
 }
 
+.misreservas-tabs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 22px;
+}
+
+.misreservas-tabs .misreservas-filtros {
+    margin-bottom: 0;
+}
+
+.misreservas-filtro .fas {
+    font-size: 12px;
+}
+
+.misreservas-item-tag.propia {
+    background: rgba(13, 148, 136, 0.82);
+}
+
+.misreservas-item-contacto {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 5px;
+    font-size: 12.5px;
+    color: #475569;
+}
+
+.misreservas-item-contacto span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.misreservas-item-contacto i {
+    color: #0f766e;
+    width: 14px;
+    text-align: center;
+}
+
 .misreservas-lista {
     display: flex;
     flex-direction: column;
