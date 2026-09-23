@@ -75,6 +75,21 @@ function Home() {
         p.disponible !== false && p.disponible !== 0 && p.disponible !== '0'
     );
 
+    const onImgError = (e) => {
+        const img = e.currentTarget;
+        if (img.dataset.fallback !== '1') {
+            img.dataset.fallback = '1';
+            img.src = '/assets/img/logo.png';
+        } else {
+            img.style.display = 'none';
+        }
+    };
+
+    const ocultarHero = (e) => {
+        const hero = e.currentTarget.closest('.hero-image');
+        if (hero) hero.style.display = 'none';
+    };
+
     return (
         <>
             {/* HERO SECTION */}
@@ -112,7 +127,7 @@ function Home() {
                                 src="/assets/img/logo.png"
                                 alt="AlquilER"
                                 style={{ maxHeight: '500px', width: 'auto' }}
-                                onError={(e) => e.target.src = '/assets/img/logo.png'}
+                                onError={ocultarHero}
                             />
                         </div>
                     </div>
@@ -146,7 +161,7 @@ function Home() {
                                     <img
                                         src={rutaImagenPropiedad(prop) || '/assets/img/logo.png'}
                                         alt={prop.titulo}
-                                        onError={(e) => e.target.src = '/assets/img/logo.png'}
+                                        onError={onImgError}
                                     />
                                 </div>
                                 <div className="propiedad-info">

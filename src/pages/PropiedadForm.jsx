@@ -42,7 +42,7 @@ function PropiedadForm() {
     const navigate = useNavigate();
     const location = useLocation();
     const recienCreada = Boolean(location.state?.recienCreada);
-    const { token } = useAuth();
+    const { token, usuario } = useAuth();
 
     // Estados de datos
 const [loading, setLoading] = useState(true);
@@ -100,6 +100,14 @@ const [loading, setLoading] = useState(true);
             const prop = await getPropiedad(id);
             if (!prop) {
                 setErrorGeneral('La propiedad que intentás editar no existe.');
+                return;
+            }
+
+            // Guard de ownership: solo el dueño o un administrador puede editar
+            const esAdmin = Number(usuario?.rol_id) === 2;
+            const esDuenio = Number(prop.usuario_id) === Number(usuario?.id);
+            if (!esAdmin && !esDuenio) {
+                setErrorGeneral('No tenés permisos para editar esta propiedad.');
                 return;
             }
 
