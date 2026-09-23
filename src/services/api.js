@@ -4,7 +4,7 @@ const API_URL = 'http://localhost:8000';
 
 export async function login(email, password) {
     try {
-        const response = await fetch(`${API_URL}/api/login`, {
+        const response = await fetch(`${API_URL}/api/autenticador/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
@@ -18,7 +18,7 @@ export async function login(email, password) {
 export async function register(userData) {
     try {
         console.log('📤 Enviando al backend:', userData);
-        const response = await fetch(`${API_URL}/api/register`, {
+        const response = await fetch(`${API_URL}/api/autenticador/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(userData)
