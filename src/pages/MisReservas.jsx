@@ -56,7 +56,7 @@ function MisReservas() {
     const [errorCalificacion, setErrorCalificacion] = useState('');
     const [validacionCalificacion, setValidacionCalificacion] = useState({});
 
-    const esGestion = true;
+    const [esGestion, setEsGestion] = useState(false);
 
     const puedeAprobar = (reserva) =>
         esGestion && reserva.origen === 'recibida' && reserva.estado === 'pendiente';
@@ -80,6 +80,9 @@ function MisReservas() {
             if (!Array.isArray(misProps)) throw new Error('Props inválidas');
             const catalogo = await getPropiedades();
             if (!Array.isArray(catalogo)) throw new Error('Catálogo inválido');
+
+            const esPropietario = misProps.length > 0;
+            setEsGestion(esPropietario);
 
             const mapPropiedad = {};
             [...misProps, ...catalogo].forEach(p => { if (p) mapPropiedad[p.id] = p; });

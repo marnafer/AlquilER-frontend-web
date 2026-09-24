@@ -47,7 +47,6 @@ export async function register(userData) {
 
         return result;
     } catch (error) {
-        console.error('❌ Error en register:', error);
         return { success: false, error: error.message };
     }
 }
@@ -79,7 +78,6 @@ export async function getPerfil(token) {
         result.status = response.status;
         return result;
     } catch (error) {
-        console.error('❌ Error en getPerfil:', error);
         return { success: false, error: error.message, status: 0 };
     }
 }

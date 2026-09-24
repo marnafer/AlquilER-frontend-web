@@ -41,6 +41,7 @@ function MisPropiedades() {
     const confirmarEliminar = async () => {
         if (!propiedadAEliminar) return;
         setEliminando(true);
+        setMensaje({ tipo: '', texto: '' });
         try {
             const result = await deletePropiedad(propiedadAEliminar.id, token);
             if (result.success) {
@@ -49,10 +50,13 @@ function MisPropiedades() {
                 );
                 setPropiedadAEliminar(null);
             } else {
-                alert(result.message || result.error || 'No se pudo eliminar');
+                setMensaje({
+                    tipo: 'error',
+                    texto: result.message || result.error || 'No se pudo eliminar.'
+                });
             }
         } catch (error) {
-            alert('Error de conexión al eliminar');
+            setMensaje({ tipo: 'error', texto: 'Error de conexión al eliminar.' });
         } finally {
             setEliminando(false);
         }
