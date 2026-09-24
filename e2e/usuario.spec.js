@@ -21,8 +21,7 @@ test('usuario: registro con cuenta nueva muestra toast y redirige a login', asyn
     await page.locator('#telefono').fill('1155558899');
     await page.locator('#domicilio').fill('Calle 1234 test');
     await page.locator('button[type="submit"]').click();
-    await expect(page.locator('.register-toast.success')).toBeVisible();
-    await expect(page.getByText(/Usuario registrado correctamente/i)).toBeVisible();
+    await expect(page.locator('.toast-global.success')).toContainText(/Usuario registrado correctamente/i);
     await expect(page).toHaveURL(/\/login/, { timeout: 5000 });
 });
 

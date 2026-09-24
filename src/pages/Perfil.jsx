@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useUI } from '../context/UIContext';
 import { updatePerfil } from '../services/api';
 import Loader from '../components/Loader';
 
@@ -9,7 +10,7 @@ function Perfil() {
 
     const [editando, setEditando] = useState(false);
     const [guardando, setGuardando] = useState(false);
-    const [mensaje, setMensaje] = useState({ type: '', text: '' });
+    const { showToast } = useUI();
 
     const [passNueva, setPassNueva] = useState('');
     const [passRepetir, setPassRepetir] = useState('');
@@ -44,23 +45,20 @@ function Perfil() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setGuardando(true);
-        setMensaje({ type: '', text: '' });
 
         try {
             const result = await updatePerfil(usuario.id, formData, token);
 
             if (result.success) {
-                setMensaje({ type: 'success', text: 'Perfil actualizado correctamente' });
+                showToast('Perfil actualizado correctamente');
                 setEditando(false);
                 // Refrescamos el usuario en el contexto (sin recargar la página)
                 await refreshUser();
-                // Auto-ocultar el mensaje de éxito después de 3s
-                setTimeout(() => setMensaje({ type: '', text: '' }), 3000);
             } else {
-                setMensaje({ type: 'error', text: result.message || 'Error al actualizar el perfil' });
+                showToast(result.message || 'Error al actualizar el perfil', 'error');
             }
         } catch (error) {
-            setMensaje({ type: 'error', text: 'Error de conexión' });
+            showToast('Error de conexión', 'error');
         } finally {
             setGuardando(false);
         }
@@ -76,7 +74,6 @@ function Perfil() {
             domicilio: usuario?.domicilio || ''
         });
         setEditando(false);
-        setMensaje({ type: '', text: '' });
     };
 
     const handleCambiarContrasena = async (e) => {
@@ -97,21 +94,19 @@ function Perfil() {
         if (Object.keys(errores).length > 0) return;
 
         setGuardandoPass(true);
-        setMensaje({ type: '', text: '' });
         try {
             const result = await updatePerfil(usuario.id, { contrasena: passNueva }, token);
 
             if (result.success) {
                 setPassNueva('');
                 setPassRepetir('');
-                setMensaje({ type: 'success', text: 'Contraseña cambiada correctamente' });
-                setTimeout(() => setMensaje({ type: '', text: '' }), 3000);
+                showToast('Contraseña cambiada correctamente');
             } else {
                 if (result.validation_errors) setPassErrores(result.validation_errors);
-                setMensaje({ type: 'error', text: result.message || result.error || 'No se pudo cambiar la contraseña' });
+                showToast(result.message || result.error || 'No se pudo cambiar la contraseña', 'error');
             }
         } catch (err) {
-            setMensaje({ type: 'error', text: 'Error de conexión' });
+            showToast('Error de conexión', 'error');
         } finally {
             setGuardandoPass(false);
         }
@@ -181,14 +176,6 @@ function Perfil() {
                         </div>
                     </div>
                 </section>
-
-                {/* MENSAJE */}
-                {mensaje.text && (
-                    <div className={`alert alert-${mensaje.type === 'success' ? 'success' : 'error'}`} style={{ marginBottom: '24px' }}>
-                        <i className={`fas ${mensaje.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}`} style={{ marginRight: '8px' }}></i>
-                        {mensaje.text}
-                    </div>
-                )}
 
                 {/* GRID PRINCIPAL */}
                 <section className="perfil-grid">

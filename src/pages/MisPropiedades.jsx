@@ -2,16 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { getMisPropiedades, deletePropiedad, updatePropiedad } from '../services/api';
+import { useUI } from '../context/UIContext';
 import Loader from '../components/Loader';
 
 function MisPropiedades() {
     const { token, usuario } = useAuth();
+    const { showToast } = useUI();
     const [loading, setLoading] = useState(true);
     const [propiedades, setPropiedades] = useState([]);
     const [eliminando, setEliminando] = useState(false);
     const [propiedadAEliminar, setPropiedadAEliminar] = useState(null);
     const [actualizando, setActualizando] = useState(null);
-    const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
 
     useEffect(() => {
         cargarPropiedades();
@@ -41,7 +42,6 @@ function MisPropiedades() {
     const confirmarEliminar = async () => {
         if (!propiedadAEliminar) return;
         setEliminando(true);
-        setMensaje({ tipo: '', texto: '' });
         try {
             const result = await deletePropiedad(propiedadAEliminar.id, token);
             if (result.success) {
@@ -49,14 +49,13 @@ function MisPropiedades() {
                     prev.filter(p => p.id !== propiedadAEliminar.id)
                 );
                 setPropiedadAEliminar(null);
+                showToast('Propiedad eliminada correctamente.');
             } else {
-                setMensaje({
-                    tipo: 'error',
-                    texto: result.message || result.error || 'No se pudo eliminar.'
-                });
+                showToast(result.message || result.error || 'No se pudo eliminar.', 'error');
+                setPropiedadAEliminar(null);
             }
         } catch (error) {
-            setMensaje({ tipo: 'error', texto: 'Error de conexión al eliminar.' });
+            showToast('Error de conexión al eliminar.', 'error');
         } finally {
             setEliminando(false);
         }
@@ -64,21 +63,18 @@ function MisPropiedades() {
 
     const toggleDisponible = async (prop) => {
         setActualizando(prop.id);
-        setMensaje({ tipo: '', texto: '' });
         try {
             const result = await updatePropiedad(prop.id, { disponible: prop.disponible ? 0 : 1 }, token);
             if (result.success) {
                 setPropiedades(prev => prev.map(p =>
                     p.id === prop.id ? { ...p, disponible: p.disponible ? 0 : 1 } : p
                 ));
+                if (result.message) showToast(result.message);
             } else {
-                setMensaje({
-                    tipo: 'error',
-                    texto: result.message || result.error || 'No se pudo actualizar la disponibilidad.'
-                });
+                showToast(result.message || result.error || 'No se pudo actualizar la disponibilidad.', 'error');
             }
         } catch (error) {
-            setMensaje({ tipo: 'error', texto: 'Error de conexión al actualizar la disponibilidad.' });
+            showToast('Error de conexión al actualizar la disponibilidad.', 'error');
         } finally {
             setActualizando(null);
         }
@@ -113,17 +109,6 @@ function MisPropiedades() {
                         </Link>
                     </div>
                 </section>
-
-                {mensaje.texto && (
-                    <div
-                        className={`alert ${mensaje.tipo === 'error' ? 'alert-error' : 'alert-success'}`}
-                        role="alert"
-                        style={{ marginBottom: 20 }}
-                    >
-                        <i className={`fas ${mensaje.tipo === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}`} style={{ marginRight: 8 }}></i>
-                        {mensaje.texto}
-                    </div>
-                )}
 
                 {/* ESTADÍSTICAS */}
                 <section className="misprops-stats">

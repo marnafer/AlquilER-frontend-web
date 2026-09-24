@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { useAuth } from '../../hooks/useAuth';
+import { useUI } from '../../context/UIContext';
 import Loader from '../Loader';
-import Alert from '../Alert';
 
 // Componente CRUD genérico configurable.
 // config espera:
@@ -24,6 +24,7 @@ import Alert from '../Alert';
 // separadas con ";" y con BOM UTF-8 para Excel.
 function PanelCrud({ config }) {
     const { token } = useAuth();
+    const { showToast } = useUI();
     const [loading, setLoading] = useState(true);
     const [guardando, setGuardando] = useState(false);
     const [eliminando, setEliminando] = useState(false);
@@ -33,7 +34,6 @@ function PanelCrud({ config }) {
     const [editId, setEditId] = useState(null);
     const [form, setForm] = useState({});
     const [erroresForm, setErroresForm] = useState(null);
-    const [mensaje, setMensaje] = useState(null);
     const [itemAEliminar, setItemAEliminar] = useState(null);
     const [detalleItem, setDetalleItem] = useState(null);
     const [detalleDatos, setDetalleDatos] = useState(null);
@@ -60,7 +60,6 @@ function PanelCrud({ config }) {
 
     const cargar = useCallback(async () => {
         setLoading(true);
-        setMensaje(null);
         try {
             const externosCargados = {};
             const obtener = config.papelera && modoPapelera
@@ -87,7 +86,7 @@ function PanelCrud({ config }) {
             setExternos(externosCargados);
         } catch (error) {
             console.error('Error cargando datos del panel:', error);
-            setMensaje({ type: 'danger', text: 'Error al cargar los datos.' });
+            showToast('Error al cargar los datos.', 'error');
         } finally {
             setLoading(false);
         }
@@ -101,7 +100,6 @@ function PanelCrud({ config }) {
         setForm(formVacio());
         setEditId(null);
         setErroresForm(null);
-        setMensaje(null);
         setModal('crear');
     };
 
@@ -112,7 +110,6 @@ function PanelCrud({ config }) {
         setForm(f);
         setEditId(item.id);
         setErroresForm(null);
-        setMensaje(null);
         setModal('editar');
     };
 
@@ -188,7 +185,6 @@ function PanelCrud({ config }) {
             return;
         }
         setGuardando(true);
-        setMensaje(null);
         setErroresForm(null);
         try {
             const payload = construirPayload();
@@ -197,7 +193,7 @@ function PanelCrud({ config }) {
                 : await config.crear(payload, token);
 
             if (res?.success) {
-                setMensaje({ type: 'success', text: res.message || 'Operación realizada correctamente' });
+                showToast(res.message || 'Operación realizada correctamente');
                 setModal(null);
                 await cargar();
             } else {
@@ -222,14 +218,14 @@ function PanelCrud({ config }) {
             if (res?.success) {
                 setItems(prev => prev.filter(i => String(i.id) !== String(itemAEliminar.id)));
                 setItemAEliminar(null);
-                setMensaje({ type: 'success', text: res.message || 'Eliminado correctamente' });
+                showToast(res.message || 'Eliminado correctamente');
             } else {
                 setItemAEliminar(null);
-                setMensaje({ type: 'danger', text: `No se pudo eliminar: ${res?.error || res?.message || 'error desconocido'}` });
+                showToast(`No se pudo eliminar: ${res?.error || res?.message || 'error desconocido'}`, 'error');
             }
         } catch (error) {
             setItemAEliminar(null);
-            setMensaje({ type: 'danger', text: 'Error de conexión al eliminar' });
+            showToast('Error de conexión al eliminar', 'error');
         } finally {
             setEliminando(false);
         }
@@ -242,12 +238,12 @@ function PanelCrud({ config }) {
             const res = await config.papelera.restaurar(item.id, token);
             if (res?.success) {
                 setItems(prev => prev.filter(i => String(i.id) !== String(item.id)));
-                setMensaje({ type: 'success', text: res.message || 'Restaurado correctamente' });
+                showToast(res.message || 'Restaurado correctamente');
             } else {
-                setMensaje({ type: 'danger', text: `No se pudo restaurar: ${res?.error || res?.message || 'error desconocido'}` });
+                showToast(`No se pudo restaurar: ${res?.error || res?.message || 'error desconocido'}`, 'error');
             }
         } catch (error) {
-            setMensaje({ type: 'danger', text: 'Error de conexión al restaurar' });
+            showToast('Error de conexión al restaurar', 'error');
         } finally {
             setRestaurandoId(null);
         }
@@ -258,13 +254,13 @@ function PanelCrud({ config }) {
         try {
             const res = await accion.ejecutar(item, token);
             if (res?.success) {
-                setMensaje({ type: 'success', text: res.message || 'Operación realizada correctamente' });
+                showToast(res.message || 'Operación realizada correctamente');
                 await cargar();
             } else {
-                setMensaje({ type: 'danger', text: `No se pudo completar: ${res?.error || res?.message || 'error desconocido'}` });
+                showToast(`No se pudo completar: ${res?.error || res?.message || 'error desconocido'}`, 'error');
             }
         } catch (error) {
-            setMensaje({ type: 'danger', text: 'Error de conexión al ejecutar la acción' });
+            showToast('Error de conexión al ejecutar la acción', 'error');
         } finally {
             setEjecutandoAccion(null);
         }
@@ -413,8 +409,6 @@ function PanelCrud({ config }) {
                         )}
                     </div>
                 </section>
-
-                <Alert type={mensaje?.type} message={mensaje?.text} />
 
                 {modoPapelera && (
                     <div className="alert alert-info d-flex align-items-center gap-2">

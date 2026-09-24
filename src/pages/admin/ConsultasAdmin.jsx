@@ -12,15 +12,13 @@ import {
     restoreConsulta
 } from '../../services/api';
 import Loader from '../../components/Loader';
-import Alert from '../../components/Alert';
 
 function ConsultasAdmin() {
     const { token, usuario } = useAuth();
-    const { confirm } = useUI();
+    const { confirm, showToast } = useUI();
 
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [mensaje, setMensaje] = useState(null);
     const [modoPapelera, setModoPapelera] = useState(false);
 
     const [usuarios, setUsuarios] = useState([]);
@@ -46,19 +44,18 @@ function ConsultasAdmin() {
 
     const cargar = useCallback(async () => {
         setLoading(true);
-        setMensaje(null);
         try {
             const res = usuarioFiltro
                 ? await getConsultasByUsuario(usuarioFiltro, token)
                 : await getConsultasAdmin(token, modoPapelera);
             if (res.status === 403) {
-                setMensaje({ type: 'danger', text: 'No autorizado para ver el listado de consultas.' });
+                showToast('No autorizado para ver el listado de consultas.', 'error');
             }
             setItems(extraerItems(res));
             setActiva(null);
             setMensajes([]);
         } catch (e) {
-            setMensaje({ type: 'danger', text: 'Error al cargar las consultas.' });
+            showToast('Error al cargar las consultas.', 'error');
         } finally {
             setLoading(false);
         }
@@ -144,13 +141,13 @@ function ConsultasAdmin() {
         try {
             const result = await deleteConsulta(item.id, token);
             if (result.success) {
-                setMensaje({ type: 'success', text: 'Consulta movida a la papelera.' });
+                showToast('Consulta movida a la papelera.');
                 cargar();
             } else {
-                setMensaje({ type: 'danger', text: result.error || result.message || 'No se pudo eliminar la consulta.' });
+                showToast(result.error || result.message || 'No se pudo eliminar la consulta.', 'error');
             }
         } catch (err) {
-            setMensaje({ type: 'danger', text: 'Error de conexión al eliminar la consulta.' });
+            showToast('Error de conexión al eliminar la consulta.', 'error');
         } finally {
             setProcesandoId(null);
         }
@@ -161,13 +158,13 @@ function ConsultasAdmin() {
         try {
             const result = await restoreConsulta(item.id, token);
             if (result.success) {
-                setMensaje({ type: 'success', text: 'Consulta restaurada.' });
+                showToast('Consulta restaurada.');
                 cargar();
             } else {
-                setMensaje({ type: 'danger', text: result.error || result.message || 'No se pudo restaurar la consulta.' });
+                showToast(result.error || result.message || 'No se pudo restaurar la consulta.', 'error');
             }
         } catch (err) {
-            setMensaje({ type: 'danger', text: 'Error de conexión al restaurar la consulta.' });
+            showToast('Error de conexión al restaurar la consulta.', 'error');
         } finally {
             setProcesandoId(null);
         }
@@ -225,8 +222,6 @@ function ConsultasAdmin() {
                         </button>
                     </div>
                 </section>
-
-                <Alert type={mensaje?.type} message={mensaje?.text} />
 
                 {modoPapelera && (
                     <div className="alert alert-info d-flex align-items-center gap-2">

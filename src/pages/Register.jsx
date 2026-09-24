@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { register } from '../services/api';
+import { useUI } from '../context/UIContext';
 
 function Register() {
     const [formData, setFormData] = useState({
@@ -12,9 +13,8 @@ function Register() {
         telefono: '',
         domicilio: ''
     });
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
+    const { showToast } = useUI();
     const navigate = useNavigate();
 
     const primerErrorValidacion = (result) => {
@@ -33,12 +33,10 @@ function Register() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
-        setSuccess('');
         setLoading(true);
 
         if (formData.password !== formData.password_confirm) {
-            setError('Las contraseñas no coinciden');
+            showToast('Las contraseñas no coinciden', 'error');
             setLoading(false);
             return;
         }
@@ -46,17 +44,17 @@ function Register() {
         // El backend exige teléfono (6-15 dígitos) y domicilio (mínimo 5 caracteres)
         const telefonoDigitos = (formData.telefono || '').replace(/\D/g, '');
         if (telefonoDigitos.length < 6) {
-            setError('El teléfono debe tener al menos 6 dígitos');
+            showToast('El teléfono debe tener al menos 6 dígitos', 'error');
             setLoading(false);
             return;
         }
         if (telefonoDigitos.length > 15) {
-            setError('El teléfono no puede superar los 15 dígitos');
+            showToast('El teléfono no puede superar los 15 dígitos', 'error');
             setLoading(false);
             return;
         }
         if ((formData.domicilio || '').trim().length < 5) {
-            setError('El domicilio debe tener al menos 5 caracteres');
+            showToast('El domicilio debe tener al menos 5 caracteres', 'error');
             setLoading(false);
             return;
         }
@@ -75,13 +73,13 @@ function Register() {
             const result = await register(dataToSend);
 
             if (result.success) {
-                setSuccess('Usuario registrado correctamente');
+                showToast('Usuario registrado correctamente');
                 setTimeout(() => navigate('/login'), 2000);
             } else {
-                setError(primerErrorValidacion(result) || result.error || result.message || 'Error al registrarse');
+                showToast(primerErrorValidacion(result) || result.error || result.message || 'Error al registrarse', 'error');
             }
         } catch (error) {
-            setError('Error de conexión');
+            showToast('Error de conexión', 'error');
         } finally {
             setLoading(false);
         }
@@ -91,18 +89,6 @@ function Register() {
         <div className="auth-container" style={{ maxWidth: '480px', margin: '40px auto', padding: '40px' }}>
             <h1 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '8px' }}>Crear cuenta</h1>
             <p style={{ textAlign: 'center', color: '#64748b', marginBottom: '32px' }}>Registrate para alquilar o publicar propiedades</p>
-
-            {error && (
-                <div className="register-toast error">
-                    {error}
-                </div>
-            )}
-
-            {success && (
-                <div className="register-toast success">
-                    ✓ {success}
-                </div>
-            )}
 
             <form onSubmit={handleSubmit}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
