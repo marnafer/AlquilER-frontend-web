@@ -204,6 +204,7 @@ function Perfil() {
                                     className="perfil-edit-btn"
                                     onClick={() => setEditando(true)}
                                     title="Editar"
+                                    aria-label="Editar datos personales"
                                 >
                                     <i className="fas fa-pen"></i>
                                 </button>

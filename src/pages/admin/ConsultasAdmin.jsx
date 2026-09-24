@@ -260,6 +260,7 @@ function ConsultasAdmin() {
                                                 className="admin-btn restaurar"
                                                 onClick={() => restaurar(c)}
                                                 title="Restaurar"
+                                                aria-label="Restaurar consulta"
                                                 disabled={procesandoId === String(c.id)}
                                             >
                                                 <i className={procesandoId === String(c.id) ? 'fas fa-spinner fa-spin' : 'fas fa-rotate-left'}></i>
@@ -269,6 +270,7 @@ function ConsultasAdmin() {
                                                 className="admin-btn eliminar"
                                                 onClick={() => eliminar(c)}
                                                 title="Eliminar"
+                                                aria-label="Eliminar consulta"
                                                 disabled={procesandoId === String(c.id)}
                                             >
                                                 <i className={procesandoId === String(c.id) ? 'fas fa-spinner fa-spin' : 'fas fa-trash'}></i>

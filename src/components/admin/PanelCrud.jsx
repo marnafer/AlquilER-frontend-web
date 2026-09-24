@@ -527,6 +527,7 @@ function PanelCrud({ config }) {
                                                                 className="admin-btn ver"
                                                                 onClick={() => abrirDetalle(item)}
                                                                 title="Ver detalle"
+                                                                aria-label="Ver detalle"
                                                             >
                                                                 <i className="fas fa-eye"></i>
                                                             </button>
@@ -539,6 +540,7 @@ function PanelCrud({ config }) {
                                                                     className={`admin-btn ${a.clase || ''}`}
                                                                     onClick={() => ejecutarAccion(a, item)}
                                                                     title={a.etiqueta}
+                                                                    aria-label={a.etiqueta}
                                                                     disabled={ejecutandoAccion === String(item.id)}
                                                                 >
                                                                     <i className={ejecutandoAccion === String(item.id) ? 'fas fa-spinner fa-spin' : `fas ${a.icono}`}></i>
@@ -549,6 +551,7 @@ function PanelCrud({ config }) {
                                                                 className="admin-btn restaurar"
                                                                 onClick={() => restaurar(item)}
                                                                 title="Restaurar"
+                                                                aria-label="Restaurar"
                                                                 disabled={restaurandoId === String(item.id)}
                                                             >
                                                                 <i className={restaurandoId === String(item.id) ? 'fas fa-spinner fa-spin' : 'fas fa-rotate-left'}></i>
@@ -560,6 +563,7 @@ function PanelCrud({ config }) {
                                                                     className="admin-btn editar"
                                                                     onClick={() => abrirEditar(item)}
                                                                     title="Editar"
+                                                                    aria-label="Editar"
                                                                 >
                                                                     <i className="fas fa-pen"></i>
                                                                 </button>
@@ -569,6 +573,7 @@ function PanelCrud({ config }) {
                                                                     className="admin-btn eliminar"
                                                                     onClick={() => setItemAEliminar(item)}
                                                                     title="Eliminar"
+                                                                    aria-label="Eliminar"
                                                                 >
                                                                     <i className="fas fa-trash"></i>
                                                                 </button>
@@ -588,6 +593,7 @@ function PanelCrud({ config }) {
                                         onClick={() => setPagina(p => Math.max(1, p - 1))}
                                         disabled={paginaActual <= 1}
                                         title="Anterior"
+                                        aria-label="Página anterior"
                                     >
                                         <i className="fas fa-chevron-left"></i>
                                     </button>
@@ -599,6 +605,7 @@ function PanelCrud({ config }) {
                                         onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))}
                                         disabled={paginaActual >= totalPaginas}
                                         title="Siguiente"
+                                        aria-label="Página siguiente"
                                     >
                                         <i className="fas fa-chevron-right"></i>
                                     </button>

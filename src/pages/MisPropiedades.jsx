@@ -224,6 +224,7 @@ function MisPropiedades() {
                                             className="misprops-btn eliminar"
                                             onClick={() => handleEliminarClick(prop)}
                                             title="Eliminar"
+                                            aria-label="Eliminar propiedad"
                                         >
                                             <i className="fas fa-trash"></i>
                                         </button>

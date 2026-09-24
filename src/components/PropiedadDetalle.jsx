@@ -572,6 +572,8 @@ function PropiedadDetalle() {
                                                 className={`estrella-btn ${valor <= Number(calificacion) ? 'estrella-llena' : ''}`}
                                                 onClick={() => setCalificacion(valor)}
                                                 title={`${valor} ${valor === 1 ? 'estrella' : 'estrellas'}`}
+                                                aria-label={`Calificar con ${valor} ${valor === 1 ? 'estrella' : 'estrellas'}`}
+                                                aria-pressed={valor <= Number(calificacion)}
                                             >
                                                 <i className="fas fa-star"></i>
                                             </button>

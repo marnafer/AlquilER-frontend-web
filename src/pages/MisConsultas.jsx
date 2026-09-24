@@ -221,6 +221,7 @@ function MisConsultas() {
                             {visibles.map(item => {
                                 const c = item.consulta;
                                 const img = item.propiedad ? rutaImagenPropiedad(item.propiedad) : '';
+                                const altTitulo = item.propiedad?.titulo || c.propiedad?.titulo || 'Propiedad';
                                 return (
                                     <button
                                         key={c.id}
@@ -229,7 +230,7 @@ function MisConsultas() {
                                     >
                                         <div className="misconsultas-item-img">
                                             {img ? (
-                                                <img src={img} alt="" />
+                                                <img src={img} alt={`Imagen de ${altTitulo}`} />
                                             ) : (
                                                 <i className="fas fa-home"></i>
                                             )}
