@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useUI } from '../context/UIContext';
 import { 
     getCategorias, 
     getLocalidades, 
@@ -43,6 +44,7 @@ function PropiedadForm() {
     const location = useLocation();
     const recienCreada = Boolean(location.state?.recienCreada);
     const { token, usuario } = useAuth();
+    const { confirm } = useUI();
 
     // Estados de datos
 const [loading, setLoading] = useState(true);
@@ -202,7 +204,14 @@ const [loading, setLoading] = useState(true);
     };
 
     const handleEliminarImagen = async (imagenId) => {
-        if (!window.confirm('¿Eliminar esta imagen?')) return;
+        const confirmado = await confirm({
+            titulo: '¿Eliminar esta imagen?',
+            mensaje: 'La imagen se quitará de la propiedad.',
+            textoAceptar: 'Sí, eliminar',
+            textoCancelar: 'Cancelar',
+            peligro: true
+        });
+        if (!confirmado) return;
         setImagenError('');
         const result = await eliminarImagenPropiedad(imagenId, token);
         if (result.success) {

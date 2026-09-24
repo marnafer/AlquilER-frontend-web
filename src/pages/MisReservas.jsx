@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useUI } from '../context/UIContext';
 import {
     getReservas,
     getReservasByPropiedad,
@@ -42,6 +43,7 @@ const soloDia = (f) => (f ? String(f).slice(0, 10) : '—');
 
 function MisReservas() {
     const { token, usuario } = useAuth();
+    const { confirm, showToast } = useUI();
     const [loading, setLoading] = useState(true);
     const [reservas, setReservas] = useState([]);
     const [filtro, setFiltro] = useState('todos');
@@ -134,7 +136,6 @@ function MisReservas() {
 
     const ejecutarAccion = async (accion, reserva) => {
         setAccionando(reserva.id);
-        setMensaje({ tipo: '', texto: '' });
         let result;
         if (accion === 'aprobar') result = await aprobarReserva(reserva.id, token);
         if (accion === 'rechazar') result = await rechazarReserva(reserva.id, token);
@@ -142,13 +143,10 @@ function MisReservas() {
         if (accion === 'cancelar') result = await cancelarReserva(reserva.id, token);
 
         if (result && result.success) {
-            setMensaje({ tipo: 'exito', texto: result.message || 'Reserva actualizada correctamente.' });
+            showToast(result.message || 'Reserva actualizada correctamente.');
             await cargarDatos();
         } else {
-            setMensaje({
-                tipo: 'error',
-                texto: result?.message || result?.error || 'No se pudo actualizar la reserva.'
-            });
+            showToast(result?.message || result?.error || 'No se pudo actualizar la reserva.', 'error');
         }
         setAccionando(null);
     };
@@ -380,10 +378,15 @@ function MisReservas() {
                                             {puedeRechazar(reserva) && (
                                                 <button
                                                     className="btn-detalle btn-detalle-danger"
-                                                    onClick={() => {
-                                                        if (window.confirm('¿Rechazar esta solicitud de reserva? El inquilino recibirá el rechazo.')) {
-                                                            ejecutarAccion('rechazar', reserva);
-                                                        }
+                                                    onClick={async () => {
+                                                        const aceptado = await confirm({
+                                                            titulo: '¿Rechazar solicitud?',
+                                                            mensaje: 'El inquilino recibirá el rechazo de su solicitud de reserva.',
+                                                            textoAceptar: 'Rechazar',
+                                                            textoCancelar: 'Cancelar',
+                                                            peligro: true
+                                                        });
+                                                        if (aceptado) ejecutarAccion('rechazar', reserva);
                                                     }}
                                                     disabled={accionando === reserva.id}
                                                 >
@@ -393,10 +396,15 @@ function MisReservas() {
                                             {puedeCancelar(reserva) && (
                                                 <button
                                                     className="btn-detalle btn-detalle-secundario"
-                                                    onClick={() => {
-                                                        if (window.confirm('¿Cancelar esta reserva?')) {
-                                                            ejecutarAccion('cancelar', reserva);
-                                                        }
+                                                    onClick={async () => {
+                                                        const aceptado = await confirm({
+                                                            titulo: '¿Cancelar esta reserva?',
+                                                            mensaje: '',
+                                                            textoAceptar: 'Cancelar reserva',
+                                                            textoCancelar: 'Volver',
+                                                            peligro: true
+                                                        });
+                                                        if (aceptado) ejecutarAccion('cancelar', reserva);
                                                     }}
                                                     disabled={accionando === reserva.id}
                                                 >

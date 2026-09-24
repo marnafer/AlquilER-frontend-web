@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { UIProvider } from './context/UIContext';
 import AppRouter from './AppRouter';
 
 function App() {
@@ -9,7 +10,10 @@ function App() {
         <BrowserRouter>
             {/* AuthProvider provee el estado de autenticación a toda la app */}
             <AuthProvider>
-                <AppRouter />
+                {/* UIProvider provee toast global y modal de confirmación */}
+                <UIProvider>
+                    <AppRouter />
+                </UIProvider>
             </AuthProvider>
         </BrowserRouter>
     );

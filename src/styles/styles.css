@@ -5834,3 +5834,93 @@ img {
         transform: translate(-50%, 0);
     }
 }
+
+/* ========== TOAST GLOBAL (UIContext) ========== */
+.toast-stack {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.toast-global {
+    pointer-events: auto;
+    min-width: 260px;
+    max-width: 380px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 12px 32px -8px rgba(15, 23, 42, 0.35);
+    border: 1px solid transparent;
+    animation: toastIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toast-global i {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.toast-global.success {
+    background: #ecfdf5;
+    color: #065f46;
+    border-color: #a7f3d0;
+}
+
+.toast-global.success i {
+    color: #059669;
+}
+
+.toast-global.error {
+    background: #fef2f2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
+
+.toast-global.error i {
+    color: #dc2626;
+}
+
+.toast-global.info {
+    background: #eff6ff;
+    color: #1e40af;
+    border-color: #bfdbfe;
+}
+
+.toast-global.info i {
+    color: #2563eb;
+}
+
+@keyframes toastIn {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ========== MODAL UI: ÍCONO INFORMATIVO ========== */
+.modal-icon-info {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.15);
+}

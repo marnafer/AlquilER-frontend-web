@@ -14,11 +14,13 @@ import {
 } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
 import { useAuth } from '../hooks/useAuth';
+import { useUI } from '../context/UIContext';
 import Loader from './Loader';
 
 function PropiedadDetalle() {
     const { id } = useParams();
     const { usuario, token, isAuthenticated } = useAuth();
+    const { confirm } = useUI();
     const [propiedad, setPropiedad] = useState(null);
     const [categorias, setCategorias] = useState([]);
     const [servicios, setServicios] = useState([]);
@@ -169,7 +171,15 @@ function PropiedadDetalle() {
     };
 
     const eliminarResena = async () => {
-        if (!miResena || !window.confirm('¿Eliminar tu reseña?')) return;
+        if (!miResena) return;
+        const confirmado = await confirm({
+            titulo: '¿Eliminar tu reseña?',
+            mensaje: 'No se puede recuperar después de eliminarla.',
+            textoAceptar: 'Sí, eliminar',
+            textoCancelar: 'Cancelar',
+            peligro: true
+        });
+        if (!confirmado) return;
         setErrorResena('');
         setExitoResena('');
         setGuardandoResena(true);

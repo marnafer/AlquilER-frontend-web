@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useUI } from '../../context/UIContext';
 import {
     getConsultasAdmin,
     getConsultasByUsuario,
@@ -15,6 +16,7 @@ import Alert from '../../components/Alert';
 
 function ConsultasAdmin() {
     const { token, usuario } = useAuth();
+    const { confirm } = useUI();
 
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -130,7 +132,14 @@ function ConsultasAdmin() {
     };
 
     const eliminar = async (item) => {
-        if (!window.confirm(`¿Eliminar la consulta #${item.id} con su conversación?`)) return;
+        const confirmado = await confirm({
+            titulo: '¿Eliminar consulta?',
+            mensaje: `La consulta #${item.id} con su conversación se moverá a la papelera.`,
+            textoAceptar: 'Sí, eliminar',
+            textoCancelar: 'Cancelar',
+            peligro: true
+        });
+        if (!confirmado) return;
         setProcesandoId(String(item.id));
         try {
             const result = await deleteConsulta(item.id, token);
