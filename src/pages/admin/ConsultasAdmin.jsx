@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import {
     getConsultasAdmin,
+    getConsultasByUsuario,
+    getUsuarios,
     getMensajesConsulta,
     enviarMensajeConsulta,
     deleteConsulta,
@@ -18,6 +20,9 @@ function ConsultasAdmin() {
     const [loading, setLoading] = useState(true);
     const [mensaje, setMensaje] = useState(null);
     const [modoPapelera, setModoPapelera] = useState(false);
+
+    const [usuarios, setUsuarios] = useState([]);
+    const [usuarioFiltro, setUsuarioFiltro] = useState('');
 
     const [activa, setActiva] = useState(null);
     const [mensajes, setMensajes] = useState([]);
@@ -41,7 +46,9 @@ function ConsultasAdmin() {
         setLoading(true);
         setMensaje(null);
         try {
-            const res = await getConsultasAdmin(token, modoPapelera);
+            const res = usuarioFiltro
+                ? await getConsultasByUsuario(usuarioFiltro, token)
+                : await getConsultasAdmin(token, modoPapelera);
             if (res.status === 403) {
                 setMensaje({ type: 'danger', text: 'No autorizado para ver el listado de consultas.' });
             }
@@ -53,11 +60,24 @@ function ConsultasAdmin() {
         } finally {
             setLoading(false);
         }
-    }, [token, modoPapelera]);
+    }, [token, modoPapelera, usuarioFiltro]);
 
     useEffect(() => {
         cargar();
     }, [cargar]);
+
+    const cargarUsuarios = useCallback(async () => {
+        try {
+            const res = await getUsuarios(token);
+            setUsuarios(extraerItems(res));
+        } catch (e) {
+            setUsuarios([]);
+        }
+    }, [token]);
+
+    useEffect(() => {
+        cargarUsuarios();
+    }, [cargarUsuarios]);
 
     const abrirConsulta = async (item) => {
         setActiva(item);
@@ -168,9 +188,28 @@ function ConsultasAdmin() {
                         <p>Leé las consultas de los interesados y respondé a cada conversación.</p>
                     </div>
                     <div className="admin-hero-actions">
+                        <label className="admin-filtro">
+                            <span className="admin-filtro-label">Por usuario</span>
+                            <select
+                                className="form-control"
+                                value={usuarioFiltro}
+                                onChange={e => {
+                                    setUsuarioFiltro(e.target.value);
+                                    if (e.target.value) setModoPapelera(false);
+                                }}
+                            >
+                                <option value="">Todos</option>
+                                {usuarios.map(u => (
+                                    <option key={u.id} value={u.id}>
+                                        {u.apellido ? `${u.nombre} ${u.apellido}` : u.nombre} ({u.email})
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
                         <button
                             className="btn-detalle btn-detalle-secundario"
                             onClick={() => setModoPapelera(v => !v)}
+                            disabled={Boolean(usuarioFiltro)}
                         >
                             <i className={modoPapelera ? 'fas fa-list' : 'fas fa-trash-can-arrow-up'}></i>
                             {modoPapelera ? 'Ver activas' : 'Papelera'}

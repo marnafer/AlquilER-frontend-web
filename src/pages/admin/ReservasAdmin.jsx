@@ -20,6 +20,20 @@ const ESTADOS = [
     { id: 'cancelada', nombre: 'Cancelada' }
 ];
 
+// Transiciones válidas desde cada estado (mismas que permite el backend).
+const TRANSICIONES = {
+    pendiente: ['pendiente', 'confirmada', 'rechazada', 'cancelada'],
+    confirmada: ['confirmada', 'finalizada', 'cancelada'],
+    rechazada: ['rechazada'],
+    finalizada: ['finalizada'],
+    cancelada: ['cancelada']
+};
+
+const opcionesEstado = (item) => {
+    const permitidos = TRANSICIONES[item?.estado] || [item?.estado].filter(Boolean);
+    return ESTADOS.filter(e => permitidos.includes(e.id));
+};
+
 const estadoBadge = (estado) => (
     <span className={`admin-badge estado-${estado || ''}`}>
         {(ESTADOS.find(e => e.id === estado)?.nombre) || estado || '—'}
@@ -163,9 +177,9 @@ const config = {
             name: 'estado',
             label: 'Estado',
             type: 'select',
-            opciones: 'estados',
+            opciones: opcionesEstado,
             requerido: true,
-            ayuda: 'Los estados finalizada/cancelada se controlan con las acciones de cada fila y no por el selector.'
+            ayuda: 'Solo se ofrecen transiciones válidas para el estado actual de la reserva.'
         }
     ]
 };

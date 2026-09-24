@@ -666,7 +666,9 @@ function PanelCrud({ config }) {
                                             className="form-control"
                                         >
                                             <option value="">Seleccionar...</option>
-                                            {(externos[campo.opciones] || []).map(op => (
+                                            {(typeof campo.opciones === 'function'
+                                                ? campo.opciones(items.find(i => String(i.id) === String(editId)) || null)
+                                                : (externos[campo.opciones] || [])).map(op => (
                                                 <option key={op.id} value={op.value ?? op.id}>
                                                     {op.label ?? op.nombre}
                                                 </option>

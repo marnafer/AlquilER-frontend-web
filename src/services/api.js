@@ -719,6 +719,41 @@ export async function getUsuarios(token, soloEliminados = false) {
     }
 }
 
+export async function getUsuario(id, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/usuarios/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await response.json();
+        result.status = response.status;
+        return result;
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function getResenasByUsuario(id, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/resenas/usuario/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function getFavoritosByUsuario(id, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/usuarios/${id}/favoritos`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
 export async function deleteUsuario(id, token) {
     try {
         const response = await fetch(`${API_URL}/api/usuarios/${id}`, {

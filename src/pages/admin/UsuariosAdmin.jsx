@@ -5,7 +5,9 @@ import {
     getRoles,
     updatePerfil,
     deleteUsuario,
-    restoreUsuario
+    restoreUsuario,
+    getResenasByUsuario,
+    getFavoritosByUsuario
 } from '../../services/api';
 
 const config = {
@@ -25,6 +27,34 @@ const config = {
     externos: [
         { clave: 'roles', cargar: () => getRoles() }
     ],
+    detalle: {
+        titulo: (item) => `Perfil de ${item.nombre} ${item.apellido}`,
+        cargar: (item, token) => Promise.all([
+            Promise.resolve(item),
+            getResenasByUsuario(item.id, token),
+            getFavoritosByUsuario(item.id, token)
+        ]),
+        filas: [
+            { label: 'Email', valor: (d) => d?.[0]?.email || '—' },
+            { label: 'Teléfono', valor: (d) => d?.[0]?.telefono || '—' },
+            { label: 'Domicilio', valor: (d) => d?.[0]?.domicilio || '—' },
+            {
+                label: 'Reseñas recibidas',
+                valor: (d) => {
+                    const r = d?.[1]?.data;
+                    const n = (r?.items || []).length;
+                    return `${n} reseñas · promedio ${(r?.promedio ?? 0).toFixed(1)} ★`;
+                }
+            },
+            {
+                label: 'Favoritos',
+                valor: (d) => {
+                    const favs = d?.[2]?.data || [];
+                    return `${favs.length} propiedades guardadas`;
+                }
+            }
+        ]
+    },
     columnas: [
         { key: 'id', label: 'ID' },
         { key: 'nombre', label: 'Nombre' },
