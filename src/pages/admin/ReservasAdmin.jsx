@@ -2,6 +2,7 @@ import React from 'react';
 import PanelCrud from '../../components/admin/PanelCrud';
 import {
     getReservasAdmin,
+    getReserva,
     confirmarReserva,
     rechazarReserva,
     finalizarReserva,
@@ -69,6 +70,56 @@ const config = {
             ejecutar: (item, token) => cancelarReserva(item.id, token)
         }
     ],
+    detalle: {
+        titulo: (item) => `Reserva #${item.id}`,
+        cargar: (item, token) => getReserva(item.id, token),
+        filas: [
+            {
+                label: 'Propiedad',
+                valor: (d) => d.propiedad?.titulo || `Propiedad #${d.propiedad_id}`
+            },
+            {
+                label: 'Dirección',
+                valor: (d) => d.propiedad?.direccion || '—'
+            },
+            {
+                label: 'Inquilino',
+                valor: (d) => (d.usuario ? `${d.usuario.nombre} ${d.usuario.apellido || ''}`.trim() : `#${d.usuario_id}`)
+            },
+            {
+                label: 'Email',
+                valor: (d) => d.usuario?.email || '—'
+            },
+            {
+                label: 'Teléfono',
+                valor: (d) => d.usuario?.telefono || '—'
+            },
+            {
+                label: 'Estado',
+                valor: (d) => estadoBadge(d.estado)
+            },
+            {
+                label: 'Solicitada',
+                valor: (d) => (d.fecha_reserva ? String(d.fecha_reserva).slice(0, 16) : '—')
+            },
+            {
+                label: 'Inicio de alquiler',
+                valor: (d) => (d.fecha_inicio_alquiler ? String(d.fecha_inicio_alquiler).slice(0, 10) : '—')
+            },
+            {
+                label: 'Fin de alquiler',
+                valor: (d) => (d.fecha_fin_alquiler ? String(d.fecha_fin_alquiler).slice(0, 10) : '—')
+            },
+            {
+                label: 'Monto',
+                valor: (d) => (d.monto_total != null ? `$${Number(d.monto_total).toLocaleString('es-AR')}` : '—')
+            },
+            {
+                label: 'Comentario',
+                valor: (d) => d.comentario || '—'
+            }
+        ]
+    },
     columnas: [
         { key: 'id', label: 'ID' },
         {

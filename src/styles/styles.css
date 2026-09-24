@@ -4948,6 +4948,40 @@ img {
     background: #e2e8f0;
 }
 
+.admin-btn.ver {
+    color: #0d9488;
+    background: #f0fdfa;
+}
+
+.admin-btn.ver:hover {
+    background: #ccfbf1;
+}
+
+.admin-detalle {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px 20px;
+    margin: 14px 0 6px;
+}
+
+.admin-detalle-fila {
+    display: contents;
+}
+
+.admin-detalle-fila dt {
+    font-weight: 700;
+    color: #64748b;
+    font-size: 13px;
+    padding-top: 2px;
+}
+
+.admin-detalle-fila dd {
+    margin: 0;
+    font-size: 14px;
+    color: #1e293b;
+    word-break: break-word;
+}
+
 .admin-badge {
     display: inline-flex;
     align-items: center;

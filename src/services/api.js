@@ -513,6 +513,19 @@ export async function cancelarReserva(id, token) {
     }
 }
 
+export async function getReserva(id, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/reservas/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await response.json();
+        result.status = response.status;
+        return result;
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
 export async function updateReservaEstado(id, estado, token) {
     try {
         const response = await fetch(`${API_URL}/api/reservas/${id}`, {

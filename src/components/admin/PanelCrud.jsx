@@ -17,6 +17,8 @@ import Alert from '../Alert';
 //              (filtros server-side; obtener y papelera.obtener reciben (token, filtros))
 //   acciones?: [{ etiqueta, icono, clase?, permitido?: (item) => bool, ejecutar: (item, token) => Promise }]
 //              (botones contextuales por fila; se muestran antes de Editar/Eliminar)
+//   detalle?: { titulo?: (item) => string, cargar: (item, token) => Promise, filas: [{ label, valor: (data) => node }] }
+//              (muestra un botón "Ver" por fila y un modal de detalle con las filas)
 //   csvNombre?: string   (nombre base del archivo exportado; por defecto usa el título)
 // El botón "Exportar CSV" descarga las filas filtradas y ordenadas (ignora la paginación),
 // separadas con ";" y con BOM UTF-8 para Excel.
@@ -33,6 +35,9 @@ function PanelCrud({ config }) {
     const [erroresForm, setErroresForm] = useState(null);
     const [mensaje, setMensaje] = useState(null);
     const [itemAEliminar, setItemAEliminar] = useState(null);
+    const [detalleItem, setDetalleItem] = useState(null);
+    const [detalleDatos, setDetalleDatos] = useState(null);
+    const [cargandoDetalle, setCargandoDetalle] = useState(false);
     const [modoPapelera, setModoPapelera] = useState(false);
     const [restaurandoId, setRestaurandoId] = useState(null);
     const [ejecutandoAccion, setEjecutandoAccion] = useState(null);
@@ -130,6 +135,23 @@ function PanelCrud({ config }) {
         setBorradorFiltros(filtrosVacio());
         setFiltros(null);
     };
+
+    const abrirDetalle = async (item) => {
+        if (!config.detalle) return;
+        setDetalleItem(item);
+        setDetalleDatos(null);
+        setCargandoDetalle(true);
+        try {
+            const res = await config.detalle.cargar(item, token);
+            setDetalleDatos(res?.data ?? res);
+        } catch {
+            setDetalleDatos({ error: true });
+        } finally {
+            setCargandoDetalle(false);
+        }
+    };
+
+    const cerrarDetalle = () => setDetalleItem(null);
 
     const validar = () => {
         const errores = {};
@@ -500,6 +522,15 @@ function PanelCrud({ config }) {
                                                 ))}
 {!config.soloLectura || config.eliminar || config.papelera ? (
                                                     <td className="admin-tabla-acciones">
+                                                        {config.detalle && (
+                                                            <button
+                                                                className="admin-btn ver"
+                                                                onClick={() => abrirDetalle(item)}
+                                                                title="Ver detalle"
+                                                            >
+                                                                <i className="fas fa-eye"></i>
+                                                            </button>
+                                                        )}
                                                         {!modoPapelera && (config.acciones || [])
                                                             .filter(a => !a.permitido || a.permitido(item))
                                                             .map(a => (
@@ -742,6 +773,44 @@ function PanelCrud({ config }) {
                                         <i className="fas fa-trash"></i> Sí, eliminar
                                     </>
                                 )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL VER DETALLE */}
+            {detalleItem && config.detalle && (
+                <div className="modal-backdrop-custom" onClick={cerrarDetalle}>
+                    <div className="modal-custom admin-modal" onClick={e => e.stopPropagation()}>
+                        <h3>
+                            <i className={`fas ${config.icono}`}></i>{' '}
+                            {typeof config.detalle.titulo === 'function'
+                                ? config.detalle.titulo(detalleItem)
+                                : (config.detalle.titulo || 'Detalle')}
+                        </h3>
+
+                        {cargandoDetalle ? (
+                            <div className="text-center py-4"><Loader /></div>
+                        ) : detalleDatos?.error ? (
+                            <div className="alert alert-danger">No se pudo cargar el detalle.</div>
+                        ) : detalleDatos ? (
+                            <dl className="admin-detalle">
+                                {(config.detalle.filas || []).map(f => (
+                                    <div className="admin-detalle-fila" key={f.label}>
+                                        <dt>{f.label}</dt>
+                                        <dd>{f.valor(detalleDatos)}</dd>
+                                    </div>
+                                ))}
+                            </dl>
+                        ) : null}
+
+                        <div className="modal-actions">
+                            <button
+                                className="btn-detalle btn-detalle-secundario"
+                                onClick={cerrarDetalle}
+                            >
+                                Cerrar
                             </button>
                         </div>
                     </div>
