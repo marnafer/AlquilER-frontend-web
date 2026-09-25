@@ -99,6 +99,55 @@ export async function updatePerfil(id, userData, token) {
 }
 
 // ============================================
+// RECUPERACIÓN DE CONTRASEÑA
+// ============================================
+
+export async function recuperarContrasena(email) {
+    try {
+        const response = await fetch(`${API_URL}/api/autenticador/recuperar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function restablecerContrasena(data) {
+    try {
+        const response = await fetch(`${API_URL}/api/autenticador/restablecer`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        result.status = response.status;
+        return result;
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// ============================================
+// CONTACTO
+// ============================================
+
+export async function enviarMensajeContacto(data) {
+    try {
+        const response = await fetch(`${API_URL}/api/contacto`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// ============================================
 // PROPIEDADES
 // ============================================
 
@@ -442,6 +491,24 @@ export async function getReservasAdmin(token, soloEliminados = false) {
     }
 }
 
+export async function crearReservaAdmin(data, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/admin/reservas`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        result.status = response.status;
+        return result;
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
 export async function createReserva(data, token) {
     try {
         const response = await fetch(`${API_URL}/api/reservas`, {
@@ -710,6 +777,24 @@ export async function getUsuarios(token, soloEliminados = false) {
         });
         const result = await response.json();
         // Dejamos el status HTTP para distinguir 403/401 de otros errores
+        result.status = response.status;
+        return result;
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function crearUsuarioAdmin(data, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/admin/usuarios`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
         result.status = response.status;
         return result;
     } catch (error) {
@@ -1038,6 +1123,24 @@ export async function updateResena(id, data, token) {
             body: JSON.stringify(data)
         });
         return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function crearResenaAdmin(data, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/admin/resenas`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        result.status = response.status;
+        return result;
     } catch (error) {
         return { success: false, error: error.message };
     }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { useAuth } from '../../hooks/useAuth';
 import { useUI } from '../../context/UIContext';
@@ -9,8 +10,10 @@ import Loader from '../Loader';
 //   titulo, nombreSingular, icono, descripcion, columnaPrincipal
 //   obtener: (token) => Promise -> { data: { items } } | [array]
 //   crear / actualizar / eliminar: (payload, token) => Promise -> { success, message|error, validation_errors? }
+//   crear puede ser también una ruta (string): se muestra "Nuevo" como enlace hacia esa ruta.
 //   columnas: [{ key, label, render?: (item, externos) => node, csv?: (item, externos) => string }]
-//   campos:   [{ name, label, type?, requerido?, min?, max?, placeholder?, ayuda?, opciones? }]
+//   campos:   [{ name, label, type?, requerido?, min?, max?, placeholder?, ayuda?, opciones?, soloCrear?, soloEditar? }]
+//             requerido puede ser (modo) => bool con modo 'crear' | 'editar'.
 //   externos?: [{ clave, cargar: () => Promise -> [array] }]   (fuentes para selects/columnas)
 //   normalizarEdicion?: (item) => objeto   (transforma el item antes de precargar el modal de edición)
 //   filtros?: [{ parametro, label, tipo?: 'select'|'date'|'number'|'text', opciones?: [{ value, label }] }]
@@ -113,6 +116,18 @@ function PanelCrud({ config }) {
         setModal('editar');
     };
 
+    const modo = editId ? 'editar' : 'crear';
+
+    const campoVisible = (c) => {
+        if (c.soloCrear && modo !== 'crear') return false;
+        if (c.soloEditar && modo !== 'editar') return false;
+        return true;
+    };
+
+    const campoRequerido = (c) => (
+        typeof c.requerido === 'function' ? c.requerido(modo) : !!c.requerido
+    );
+
     const filtrosVacio = () => {
         const f = {};
         (config.filtros || []).forEach(x => { f[x.parametro] = ''; });
@@ -152,9 +167,9 @@ function PanelCrud({ config }) {
 
     const validar = () => {
         const errores = {};
-        config.campos.forEach(c => {
+        config.campos.filter(campoVisible).forEach(c => {
             const val = String(form[c.name] ?? '').trim();
-            if (c.requerido && !val) {
+            if (campoRequerido(c) && !val) {
                 errores[c.name] = ['Este campo es obligatorio'];
             } else if (val && c.min && val.length < c.min) {
                 errores[c.name] = [`Debe tener al menos ${c.min} caracteres`];
@@ -167,10 +182,10 @@ function PanelCrud({ config }) {
 
     const construirPayload = () => {
         const payload = {};
-        config.campos.forEach(c => {
+        config.campos.filter(campoVisible).forEach(c => {
             const val = form[c.name];
             const esVacio = val === '' || val === null || val === undefined;
-            if (esVacio && !c.requerido) return;
+            if (esVacio && !campoRequerido(c)) return;
             payload[c.name] = c.type === 'select' || c.type === 'number'
                 ? (esVacio ? null : Number(val))
                 : (typeof val === 'string' ? val.trim() : val);
@@ -403,9 +418,18 @@ function PanelCrud({ config }) {
                             </button>
                         )}
                         {config.crear && !modoPapelera && (
-                            <button className="btn-detalle btn-detalle-primario" onClick={abrirCrear}>
-                                <i className="fas fa-plus"></i> Nuevo
-                            </button>
+                            typeof config.crear === 'string' ? (
+                                <Link
+                                    to={config.crear}
+                                    className="btn-detalle btn-detalle-primario"
+                                >
+                                    <i className="fas fa-plus"></i> {config.crearEtiqueta || 'Nuevo'}
+                                </Link>
+                            ) : (
+                                <button className="btn-detalle btn-detalle-primario" onClick={abrirCrear}>
+                                    <i className="fas fa-plus"></i> {config.crearEtiqueta || 'Nuevo'}
+                                </button>
+                            )
                         )}
                     </div>
                 </section>
@@ -651,12 +675,12 @@ function PanelCrud({ config }) {
                             </div>
                         )}
 
-                        {config.campos.map(campo => {
+                        {config.campos.filter(campoVisible).map(campo => {
                             const err = erroresForm?.[campo.name];
                             return (
                                 <div className="admin-form-grupo" key={campo.name}>
                                     <label htmlFor={`campo-${campo.name}`}>
-                                        {campo.label}{campo.requerido && <span className="admin-req">*</span>}
+                                        {campo.label}{campoRequerido(campo) && <span className="admin-req">*</span>}
                                     </label>
 
                                     {campo.type === 'select' ? (
@@ -668,7 +692,7 @@ function PanelCrud({ config }) {
                                         >
                                             <option value="">Seleccionar...</option>
                                             {(typeof campo.opciones === 'function'
-                                                ? campo.opciones(items.find(i => String(i.id) === String(editId)) || null)
+                                                ? campo.opciones(items.find(i => String(i.id) === String(editId)) || null, modo)
                                                 : (externos[campo.opciones] || [])).map(op => (
                                                 <option key={op.id} value={op.value ?? op.id}>
                                                     {op.label ?? op.nombre}

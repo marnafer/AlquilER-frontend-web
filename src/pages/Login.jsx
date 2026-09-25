@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { login } from '../services/api';
 
@@ -10,6 +10,9 @@ function Login() {
     const [loading, setLoading] = useState(false);
     const { login: authLogin } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const aviso = location.state?.mensaje || '';
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -45,6 +48,12 @@ function Login() {
                 </div>
             )}
 
+            {aviso && (
+                <div className="alert alert-success">
+                    {aviso}
+                </div>
+            )}
+
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
                     <label htmlFor="email">Correo electrónico</label>
@@ -68,6 +77,14 @@ function Login() {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
+                    <div style={{ textAlign: 'right', marginTop: '4px' }}>
+                        <Link
+                            to="/recuperar-contrasena"
+                            style={{ fontSize: '13px', color: '#64748b' }}
+                        >
+                            ¿Olvidaste tu contraseña?
+                        </Link>
+                    </div>
                 </div>
 
                 <button type="submit" className="btn-primary" style={{ width: '100%' }} disabled={loading}>

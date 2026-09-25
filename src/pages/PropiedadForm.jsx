@@ -9,6 +9,7 @@ import {
     getServiciosByPropiedad,
     guardarServiciosPropiedad,
     sincronizarServiciosPropiedad,
+    getUsuarios,
     createPropiedad, 
     updatePropiedad, 
     getPropiedad, 
@@ -34,7 +35,8 @@ const FORM_INICIAL = {
     capacidad: '',
     disponible: 1,
     categoria_id: '',
-    localidad_id: ''
+    localidad_id: '',
+    propietario_id: ''
 };
 
 function PropiedadForm() {
@@ -45,6 +47,7 @@ function PropiedadForm() {
     const recienCreada = Boolean(location.state?.recienCreada);
     const { token, usuario } = useAuth();
     const { confirm, showToast } = useUI();
+    const esAdmin = Number(usuario?.rol_id) === 2;
 
     // Estados de datos
 const [loading, setLoading] = useState(true);
@@ -54,6 +57,7 @@ const [loading, setLoading] = useState(true);
     const [localidades, setLocalidades] = useState([]);
     const [serviciosCat, setServiciosCat] = useState([]);
     const [serviciosSeleccionados, setServiciosSeleccionados] = useState([]);
+    const [usuarios, setUsuarios] = useState([]);
 
     const [imagenes, setImagenes] = useState([]);
     const [archivoImagen, setArchivoImagen] = useState(null);
@@ -96,6 +100,16 @@ const [loading, setLoading] = useState(true);
             console.error('Error cargando catálogos:', err);
             setErrorGeneral('No se pudieron cargar las categorías o localidades.');
         }
+
+        if (esAdmin) {
+            try {
+                const res = await getUsuarios(token);
+                const lista = res?.data?.items ?? res?.data ?? [];
+                setUsuarios(Array.isArray(lista) ? lista : []);
+            } catch (err) {
+                console.error('Error cargando usuarios:', err);
+            }
+        }
     };
 
     const cargarPropiedad = async () => {
@@ -133,7 +147,8 @@ const [loading, setLoading] = useState(true);
                 capacidad: prop.capacidad ?? '',
                 disponible: prop.disponible ? 1 : 0,
                 categoria_id: prop.categoria_id ?? '',
-                localidad_id: prop.localidad_id ?? ''
+                localidad_id: prop.localidad_id ?? '',
+                propietario_id: prop.usuario_id ?? ''
             });
             setImagenes(Array.isArray(prop.imagenes) ? prop.imagenes : []);
         } catch (err) {
@@ -325,6 +340,10 @@ const [loading, setLoading] = useState(true);
             nuevosErrores.localidad_id = 'Seleccioná una localidad';
         }
 
+        if (esAdmin && !esEdicion && !formData.propietario_id) {
+            nuevosErrores.propietario_id = 'Seleccioná el propietario de la propiedad';
+        }
+
         setErrores(nuevosErrores);
         return Object.keys(nuevosErrores).length === 0;
     };
@@ -370,6 +389,10 @@ const [loading, setLoading] = useState(true);
                 categoria_id: Number(formData.categoria_id),
                 localidad_id: Number(formData.localidad_id)
             };
+
+            if (esAdmin && !esEdicion && formData.propietario_id) {
+                payload.propietario_id = Number(formData.propietario_id);
+            }
 
             const result = esEdicion
                 ? await updatePropiedad(id, payload, token)
@@ -562,6 +585,34 @@ if (result.success) {
                                     <span className="form-error">{errores.localidad_id}</span>
                                 )}
                             </div>
+
+                            {esAdmin && !esEdicion && (
+                                <div className="form-group propform-col-full">
+                                    <label htmlFor="propietario_id">
+                                        Propietario <span className="propform-required">*</span>
+                                    </label>
+                                    <select
+                                        id="propietario_id"
+                                        name="propietario_id"
+                                        value={formData.propietario_id}
+                                        onChange={handleChange}
+                                        className={errores.propietario_id ? 'input-error' : ''}
+                                    >
+                                        <option value="">Seleccionar propietario...</option>
+                                        {usuarios.map(u => (
+                                            <option key={u.id} value={u.id}>
+                                                {u.nombre} {u.apellido} — {u.rol_id === 2 ? 'Administrador' : 'Usuario'}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errores.propietario_id && (
+                                        <span className="form-error">{errores.propietario_id}</span>
+                                    )}
+                                    <span className="form-help">
+                                        Solo visible para administradores. La propiedad se asociará a este usuario.
+                                    </span>
+                                </div>
+                            )}
 
                             <div className="form-group propform-col-full">
                                 <label htmlFor="direccion">

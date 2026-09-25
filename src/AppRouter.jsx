@@ -15,6 +15,8 @@ import Terminos from './pages/Terminos';
 import Privacidad from './pages/Privacidad';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import RecuperarContrasena from './pages/RecuperarContrasena';
+import RestablecerContrasena from './pages/RestablecerContrasena';
 import Perfil from './pages/Perfil';
 import Propiedades from './pages/Propiedades';
 import Dashboard from './pages/Dashboard';
@@ -121,6 +123,22 @@ function AppRouter() {
                         element={
                             <GuestRoute>
                                 <Login />
+                            </GuestRoute>
+                        }
+                    />
+                    <Route
+                        path="/recuperar-contrasena"
+                        element={
+                            <GuestRoute>
+                                <RecuperarContrasena />
+                            </GuestRoute>
+                        }
+                    />
+                    <Route
+                        path="/restablecer-contrasena"
+                        element={
+                            <GuestRoute>
+                                <RestablecerContrasena />
                             </GuestRoute>
                         }
                     />

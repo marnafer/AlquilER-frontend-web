@@ -25,6 +25,8 @@ const config = {
     descripcion: 'Propiedades publicadas en el sistema.',
     columnaPrincipal: 'titulo',
     obtener: (token) => getPropiedadesAdmin(token),
+    crear: '/propiedades/crear',
+    crearEtiqueta: 'Nueva propiedad',
     actualizar: (id, payload, token) => updatePropiedad(id, payload, token),
     eliminar: (id, token) => deletePropiedad(id, token),
     normalizarEdicion: (item) => ({

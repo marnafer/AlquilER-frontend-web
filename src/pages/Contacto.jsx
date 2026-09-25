@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { enviarMensajeContacto } from '../services/api';
 
 const DATOS = [
     { icono: 'fa-envelope', titulo: 'Email', detalle: 'contacto@alquiler.com.ar', enlace: 'mailto:contacto@alquiler.com.ar' },
@@ -11,7 +12,9 @@ const DATOS = [
 function Contacto() {
     const [formData, setFormData] = useState({ nombre: '', email: '', asunto: '', mensaje: '' });
     const [errores, setErrores] = useState({});
+    const [errorApi, setErrorApi] = useState('');
     const [enviado, setEnviado] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -36,18 +39,38 @@ function Contacto() {
         return nuevosErrores;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setErrorApi('');
         const nuevosErrores = validar();
         setErrores(nuevosErrores);
         if (Object.keys(nuevosErrores).length > 0) return;
 
-        const asunto = encodeURIComponent(formData.asunto.trim());
-        const cuerpo = encodeURIComponent(
-            `Hola AlquilER,\n\n${formData.mensaje.trim()}\n\n---\n${formData.nombre.trim()}\n${formData.email.trim()}`
-        );
-        window.location.href = `mailto:contacto@alquiler.com.ar?subject=${asunto}&body=${cuerpo}`;
-        setEnviado(true);
+        setLoading(true);
+
+        try {
+            const result = await enviarMensajeContacto({
+                nombre: formData.nombre.trim(),
+                email: formData.email.trim(),
+                asunto: formData.asunto.trim(),
+                mensaje: formData.mensaje.trim()
+            });
+
+            if (result.success) {
+                setEnviado(true);
+                setFormData({ nombre: '', email: '', asunto: '', mensaje: '' });
+            } else {
+                setErrorApi(
+                    result.error
+                    || result.message
+                    || 'No se pudo enviar el mensaje. Intentá de nuevo.'
+                );
+            }
+        } catch (err) {
+            setErrorApi('Error de conexión. Intentá de nuevo.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -90,8 +113,8 @@ function Contacto() {
                     <div className="contact-info">
                         <h2>Escribinos un mensaje</h2>
                         <p>
-                            Completá el formulario y se abrirá tu programa de correo con el
-                            mensaje listo para enviar. También podés consultar la{' '}
+                            Completá el formulario y te responderemos a la brevedad.
+                            También podés consultar la{' '}
                             <Link to="/preguntas-frecuentes">sección de preguntas frecuentes</Link>.
                         </p>
 
@@ -169,14 +192,26 @@ function Contacto() {
                             {errores.mensaje && <span className="contact-form-error">{errores.mensaje}</span>}
                         </div>
 
-                        <button type="submit" className="contact-form-btn">
-                            <i className="fas fa-paper-plane"></i> Enviar mensaje
+                        <button type="submit" className="contact-form-btn" disabled={loading}>
+                            <i className="fas fa-paper-plane"></i> {loading ? 'Enviando...' : 'Enviar mensaje'}
                         </button>
+
+                        {loading && (
+                            <div className="alert alert-info">
+                                <i className="fas fa-spinner fa-spin"></i> Enviando mensaje...
+                            </div>
+                        )}
+
+                        {errorApi && (
+                            <div className="alert alert-error" role="alert">
+                                {errorApi}
+                            </div>
+                        )}
 
                         {enviado && (
                             <div className="alert alert-success" role="alert">
-                                <i className="fas fa-envelope-open-text"></i> Se abrió tu cliente de correo
-                                con el mensaje listo. ¡Gracias por escribirnos!
+                                <i className="fas fa-envelope-open-text"></i> Tu mensaje fue enviado.
+                                ¡Gracias por escribirnos! Te responderemos a la brevedad.
                             </div>
                         )}
                     </form>

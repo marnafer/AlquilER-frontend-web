@@ -5,6 +5,7 @@ import {
     getRoles,
     getUsuario,
     updatePerfil,
+    crearUsuarioAdmin,
     deleteUsuario,
     restoreUsuario,
     getResenasByUsuario,
@@ -18,7 +19,7 @@ const config = {
     descripcion: 'Gestioná las cuentas registradas en el sistema.',
     columnaPrincipal: 'nombre',
     obtener: (token) => getUsuarios(token),
-    crear: null,
+    crear: (payload, token) => crearUsuarioAdmin(payload, token),
     actualizar: (id, data, token) => updatePerfil(id, data, token),
     eliminar: (id, token) => deleteUsuario(id, token),
     papelera: {
@@ -84,7 +85,8 @@ const config = {
         { name: 'email', label: 'Email', type: 'email', requerido: true, max: 100, placeholder: 'juan@mail.com' },
         { name: 'telefono', label: 'Teléfono', type: 'text', requerido: true, min: 6, max: 15, placeholder: '3434556677' },
         { name: 'domicilio', label: 'Domicilio', type: 'text', requerido: true, min: 5, max: 100, placeholder: 'Calle y número' },
-        { name: 'contrasena', label: 'Contraseña', type: 'password', requerido: false, min: 6, max: 255, ayuda: 'Dejalo vacío si no querés cambiarla.' }
+        { name: 'contrasena', label: 'Contraseña', type: 'password', requerido: (modo) => modo === 'crear', min: 6, max: 255, ayuda: 'Solo para usuarios nuevos. Dejalo vacío si no querés cambiarla.' },
+        { name: 'rol_id', label: 'Rol', type: 'select', opciones: 'roles', requerido: true, soloCrear: true, ayuda: 'El rol se asigna en el alta y no se puede cambiar desde este panel.' }
     ]
 };
 
