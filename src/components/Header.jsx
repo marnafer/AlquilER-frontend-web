@@ -1,12 +1,110 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useUI } from '../context/UIContext';
 import { Navbar, Nav, NavDropdown, Container, Button } from 'react-bootstrap';
+import {
+    getNotificaciones,
+    marcarNotificacionLeida,
+    marcarTodasNotificacionesLeidas
+} from '../services/api';
 
 function Header() {
-    const { isAuthenticated, logout, usuario } = useAuth();
+    const { isAuthenticated, logout, usuario, token } = useAuth();
+    const { showToast } = useUI();
     const navigate = useNavigate();
     const [expanded, setExpanded] = useState(false);
+
+    const esUsuario = Number(usuario?.rol_id) === 1;
+
+    // ===== Notificaciones (solo rol usuario) =====
+    const [notificaciones, setNotificaciones] = useState([]);
+    const [noLeidas, setNoLeidas] = useState(0);
+    const [verDropdown, setVerDropdown] = useState(false);
+    const [cargandoNotif, setCargandoNotif] = useState(false);
+    const dropdownRef = useRef(null);
+    const ultimasNoLeidas = useRef(0);
+
+    const cargarNotificaciones = useCallback(async () => {
+        if (!esUsuario || !token) return;
+        setCargandoNotif(true);
+        try {
+            const result = await getNotificaciones(token);
+            if (result.success && result.data) {
+                setNotificaciones(result.data.items || []);
+                setNoLeidas(Number(result.data.no_leidas) || 0);
+                const nuevas = Number(result.data.no_leidas) || 0;
+                if (nuevas > ultimasNoLeidas.current && nuevas > 0) {
+                    showToast('Tienes notificaciones nuevas', 'info');
+                }
+                ultimasNoLeidas.current = nuevas;
+            }
+        } catch (error) {
+            // Silencioso: el polling no debe molestar
+        } finally {
+            setCargandoNotif(false);
+        }
+    }, [esUsuario, token, showToast]);
+
+    useEffect(() => {
+        if (esUsuario && token) {
+            ultimasNoLeidas.current = 0;
+            cargarNotificaciones();
+            const intervalo = setInterval(cargarNotificaciones, 30000);
+            return () => clearInterval(intervalo);
+        }
+        setNotificaciones([]);
+        setNoLeidas(0);
+        ultimasNoLeidas.current = 0;
+    }, [esUsuario, token, cargarNotificaciones]);
+
+    // Cerrar el dropdown al hacer clic fuera
+    useEffect(() => {
+        const alClicFuera = (e) => {
+            if (
+                dropdownRef.current &&
+                !dropdownRef.current.contains(e.target)
+            ) {
+                setVerDropdown(false);
+            }
+        };
+        document.addEventListener('mousedown', alClicFuera);
+        return () => document.removeEventListener('mousedown', alClicFuera);
+    }, []);
+
+    const alMarcarLeida = async (id) => {
+        const result = await marcarNotificacionLeida(id, token);
+        if (result.success) {
+            setNotificaciones(prev =>
+                prev.map(n =>
+                    n.id === id ? { ...n, leida: true } : n
+                )
+            );
+            setNoLeidas(prev => Math.max(0, prev - 1));
+        }
+    };
+
+    const alMarcarTodasLeidas = async () => {
+        const result = await marcarTodasNotificacionesLeidas(token);
+        if (result.success) {
+            setNotificaciones(prev =>
+                prev.map(n => ({ ...n, leida: true }))
+            );
+            setNoLeidas(0);
+            showToast('Todas las notificaciones marcadas como leídas', 'success');
+        }
+    };
+
+    const formatearFecha = (fecha) => {
+        if (!fecha) return '';
+        const d = new Date(fecha);
+        return d.toLocaleDateString('es-AR', {
+            day: 'numeric',
+            month: 'short',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
 
     const handleLogout = () => {
         logout();
@@ -66,6 +164,95 @@ function Header() {
                         <Nav.Link as={Link} to="/" onClick={() => setExpanded(false)}>Inicio</Nav.Link>
                         <Nav.Link as={Link} to="/propiedades" onClick={() => setExpanded(false)}>Propiedades</Nav.Link>
                         
+                        {isAuthenticated && esUsuario && (
+                            <div className="notif-wrap" ref={dropdownRef}>
+                                <Button
+                                    variant="link"
+                                    className="notif-btn"
+                                    onClick={() => setVerDropdown(!verDropdown)}
+                                    aria-label={noLeidas > 0
+                                        ? `Notificaciones, ${noLeidas} sin leer`
+                                        : 'Notificaciones'}
+                                    aria-expanded={verDropdown}
+                                >
+                                    <i className="fas fa-bell"></i>
+                                    {noLeidas > 0 && (
+                                        <span className="notif-badge">{noLeidas}</span>
+                                    )}
+                                </Button>
+
+                                {verDropdown && (
+                                    <div className="notif-dropdown">
+                                        <div className="notif-header">
+                                            <span className="notif-titulo">Notificaciones</span>
+                                            {noLeidas > 0 && (
+                                                <button
+                                                    type="button"
+                                                    className="notif-leer-todas"
+                                                    onClick={alMarcarTodasLeidas}
+                                                >
+                                                    Marcar todas leídas
+                                                </button>
+                                            )}
+                                        </div>
+                                        <div className="notif-body">
+                                            {cargandoNotif && notificaciones.length === 0 ? (
+                                                <div className="notif-vacio">
+                                                    <i className="fas fa-spinner fa-spin"></i> Cargando...
+                                                </div>
+                                            ) : notificaciones.length === 0 ? (
+                                                <div className="notif-vacio">
+                                                    <i className="fas fa-bell-slash"></i>
+                                                    <span>No tienes notificaciones</span>
+                                                </div>
+                                            ) : (
+                                                notificaciones.slice(0, 20).map(n => (
+                                                    <div
+                                                        key={n.id}
+                                                        className={`notif-item ${!n.leida ? 'notif-item-no-leida' : ''}`}
+                                                        onClick={() =>
+                                                            !n.leida && alMarcarLeida(n.id)
+                                                        }
+                                                        role={!n.leida ? 'button' : undefined}
+                                                        tabIndex={!n.leida ? 0 : undefined}
+                                                        onKeyDown={(e) => {
+                                                            if (!n.leida && (e.key === 'Enter' || e.key === ' ')) {
+                                                                e.preventDefault();
+                                                                alMarcarLeida(n.id);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <div className="notif-item-titulo">
+                                                            {n.titulo}
+                                                            {!n.leida && <span className="notif-dot"></span>}
+                                                        </div>
+                                                        {n.mensaje && (
+                                                            <div className="notif-item-mensaje">{n.mensaje}</div>
+                                                        )}
+                                                        {n.fecha_notificacion && (
+                                                            <div className="notif-item-fecha">
+                                                                {formatearFecha(n.fecha_notificacion)}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                        {notificaciones.length > 0 && (
+                                            <div className="notif-footer">
+                                                <Link
+                                                    to="/notificaciones"
+                                                    onClick={() => setVerDropdown(false)}
+                                                >
+                                                    Ver todas
+                                                </Link>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {isAuthenticated ? (
                             <NavDropdown 
                                 title={<><i className="fas fa-user"></i> {usuario?.nombre || 'Usuario'}</>} 

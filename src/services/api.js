@@ -1097,4 +1097,54 @@ export async function getLogsActividad(token) {
     } catch (error) {
         return { success: false, error: error.message };
     }
+}
+
+// ============================================
+// NOTIFICACIONES
+// ============================================
+
+export async function getNotificaciones(token) {
+    try {
+        const response = await fetch(`${API_URL}/api/notificaciones`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function getNotificacionesNoLeidas(token) {
+    try {
+        const response = await fetch(`${API_URL}/api/notificaciones/no-leidas`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function marcarNotificacionLeida(id, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/notificaciones/${id}/leer`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function marcarTodasNotificacionesLeidas(token) {
+    try {
+        const response = await fetch(`${API_URL}/api/notificaciones/leer-todas`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
 }

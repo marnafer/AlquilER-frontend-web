@@ -22,6 +22,7 @@ import Favoritos from './pages/Favoritos';
 import MisPropiedades from './pages/MisPropiedades';
 import MisReservas from './pages/MisReservas';
 import MisConsultas from './pages/MisConsultas';
+import Notificaciones from './pages/Notificaciones';
 import PropiedadForm from './pages/PropiedadForm';
 import NotFound from './pages/NotFound';
 // Páginas de administración
@@ -173,6 +174,14 @@ function AppRouter() {
                         element={
                             <PrivateRoute>
                                 <MisConsultas />
+                            </PrivateRoute>
+                        }
+                    />
+                    <Route
+                        path="/notificaciones"
+                        element={
+                            <PrivateRoute>
+                                <Notificaciones />
                             </PrivateRoute>
                         }
                     />

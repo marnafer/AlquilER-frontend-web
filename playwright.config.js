@@ -5,6 +5,10 @@ export default defineConfig({
     timeout: 45000,
     expect: { timeout: 15000 },
     fullyParallel: false,
+    // La suite comparte una misma BD y usuarios e2e: un solo worker
+    // evita carreras (ej: una propiedad creada por un test aparece
+    // primera en el catálogo que usa otro test en paralelo).
+    workers: 1,
     reporter: 'list',
     use: {
         baseURL: 'http://localhost:3000',
