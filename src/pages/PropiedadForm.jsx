@@ -44,7 +44,7 @@ function PropiedadForm() {
     const location = useLocation();
     const recienCreada = Boolean(location.state?.recienCreada);
     const { token, usuario } = useAuth();
-    const { confirm } = useUI();
+    const { confirm, showToast } = useUI();
 
     // Estados de datos
 const [loading, setLoading] = useState(true);
@@ -59,6 +59,7 @@ const [loading, setLoading] = useState(true);
     const [archivoImagen, setArchivoImagen] = useState(null);
     const [subiendoImagen, setSubiendoImagen] = useState(false);
     const [imagenError, setImagenError] = useState('');
+    const [archivosCrear, setArchivosCrear] = useState([]);
     const imagenInputRef = useRef(null);
     const imagenesSectionRef = useRef(null);
 
@@ -169,6 +170,44 @@ const [loading, setLoading] = useState(true);
         setArchivoImagen(e.target.files[0] || null);
         setImagenError('');
     };
+
+    const validarArchivo = (file) => {
+        const permitidos = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!permitidos.includes(file.type)) {
+            return 'Formato no permitido (usá JPG, PNG, GIF o WEBP).';
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            return `${file.name} supera los 5 MB.`;
+        }
+        return null;
+    };
+
+    const handleArchivosCrear = (e) => {
+        setImagenError('');
+        const seleccionados = Array.from(e.target.files || []);
+        if (seleccionados.length === 0) return;
+        const invalidos = seleccionados.map(validarArchivo).filter(Boolean);
+        if (invalidos.length > 0) {
+            setImagenError(invalidos[0]);
+            if (imagenInputRef.current) imagenInputRef.current.value = '';
+            return;
+        }
+        setArchivosCrear(prev => {
+            const total = prev.length + seleccionados.length;
+            if (total > 10) {
+                setImagenError('Máximo 10 imágenes por propiedad.');
+                return prev;
+            }
+            return [...prev, ...seleccionados];
+        });
+        if (imagenInputRef.current) imagenInputRef.current.value = '';
+    };
+
+    const quitarArchivoCrear = (index) => {
+        setArchivosCrear(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const urlArchivoCrear = (file) => URL.createObjectURL(file);
 
     const handleSubirImagen = async () => {
         if (!archivoImagen) {
@@ -336,7 +375,7 @@ const [loading, setLoading] = useState(true);
                 ? await updatePropiedad(id, payload, token)
                 : await createPropiedad(payload, token);
 
-            if (result.success) {
+if (result.success) {
                 const propiedadId = Number(id || result.data?.id || result.id);
                 if (propiedadId) {
                     if (esEdicion) {
@@ -345,18 +384,38 @@ const [loading, setLoading] = useState(true);
                             serviciosSeleccionados,
                             token
                         );
-                    } else if (serviciosSeleccionados.length > 0) {
-                        await guardarServiciosPropiedad(
-                            propiedadId,
-                            serviciosSeleccionados,
-                            token
-                        );
+                    } else {
+                        if (serviciosSeleccionados.length > 0) {
+                            await guardarServiciosPropiedad(
+                                propiedadId,
+                                serviciosSeleccionados,
+                                token
+                            );
+                        }
+                        // Subimos las fotos seleccionadas antes de publicar
+                        if (archivosCrear.length > 0) {
+                            let erroresSubida = 0;
+                            for (const archivo of archivosCrear) {
+                                const subida = await subirImagenPropiedad(propiedadId, archivo, token);
+                                if (!subida.success) erroresSubida += 1;
+                            }
+                            if (erroresSubida > 0) {
+                                showToast(
+                                    `Se publicó la propiedad pero ${erroresSubida} fotos no se pudieron subir.`,
+                                    'error'
+                                );
+                            } else {
+                                showToast('Propiedad publicada correctamente.', 'success');
+                            }
+                        }
                     }
                 }
-navigate(esEdicion || !propiedadId
+                navigate(esEdicion || !propiedadId
                     ? '/mis-propiedades'
                     : `/propiedades/${propiedadId}/editar`, {
-                    state: esEdicion ? undefined : { recienCreada: true }
+                    state: (esEdicion || archivosCrear.length > 0)
+                        ? undefined
+                        : { recienCreada: true }
                 });
             } else {
                 // Si el backend devuelve errores por campo (422)
@@ -679,139 +738,211 @@ navigate(esEdicion || !propiedadId
                     </section>
 
                     {/* ============================================
-                        SECCIÓN 4: IMÁGENES (SOLO EDICIÓN)
+                        SECCIÓN 4: IMÁGENES
                        ============================================ */}
-                    {esEdicion && (
-                        <section className="propform-card" ref={imagenesSectionRef}>
-                            <div className="propform-card-header">
-                                <h3>
-                                    <i className="fas fa-images"></i> Imágenes de la propiedad
-                                </h3>
-                            </div>
+                    <section className="propform-card" ref={imagenesSectionRef}>
+                        <div className="propform-card-header">
+                            <h3>
+                                <i className="fas fa-images"></i> Imágenes de la propiedad
+                            </h3>
+                        </div>
 
-                            {recienCreada && (
-                                <div style={{
-                                    background: '#d1fae5',
-                                    color: '#065f46',
-                                    padding: '12px 16px',
-                                    borderRadius: 12,
-                                    fontSize: 14,
-                                    marginBottom: 18
-                                }}>
-                                    <i className="fas fa-check-circle"></i>{' '}
-                                    Propiedad creada correctamente. ¡Sumale fotos ahora para que se vea en el catálogo!
-                                </div>
-                            )}
-
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    flexWrap: 'wrap',
-                                    gap: 12,
-                                    marginBottom: 18
-                                }}
-                            >
-                                {imagenes.length === 0 && (
-                                    <p className="form-help">
-                                        Todavía no hay imágenes. Subí la primera para que aparezca en el catálogo.
-                                    </p>
+                        {esEdicion ? (
+                            <>
+                                {recienCreada && (
+                                    <div style={{
+                                        background: '#d1fae5',
+                                        color: '#065f46',
+                                        padding: '12px 16px',
+                                        borderRadius: 12,
+                                        fontSize: 14,
+                                        marginBottom: 18
+                                    }}>
+                                        <i className="fas fa-check-circle"></i>{' '}
+                                        Propiedad creada correctamente. ¡Sumale fotos ahora para que se vea en el catálogo!
+                                    </div>
                                 )}
-                                {imagenes.map(img => (
-                                    <div
-                                        key={img.id}
-                                        style={{
-                                            width: 160,
-                                            border: Number(img.es_principal) === 1
-                                                ? '3px solid #16a34a'
-                                                : '1px solid #ddd',
-                                            borderRadius: 8,
-                                            overflow: 'hidden',
-                                            position: 'relative'
-                                        }}
-                                    >
-                                        <img
-                                            src={urlImagen(img)}
-                                            alt={img.descripcion || 'Imagen de la propiedad'}
-                                            style={{ width: '100%', height: 110, objectFit: 'cover', display: 'block' }}
-                                        />
-                                        <div style={{ padding: 8 }}>
-                                            {Number(img.es_principal) === 1 ? (
-                                                <span
-                                                    className="propform-gallery-principal"
-                                                    style={{
-                                                        color: '#16a34a',
-                                                        fontWeight: 700,
-                                                        fontSize: 13,
-                                                        display: 'block',
-                                                        marginBottom: 4
-                                                    }}
-                                                >
-                                                    <i className="fas fa-star" style={{ color: '#f59e0b' }}></i> Principal
-                                                </span>
-                                            ) : (
+
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        flexWrap: 'wrap',
+                                        gap: 12,
+                                        marginBottom: 18
+                                    }}
+                                >
+                                    {imagenes.length === 0 && (
+                                        <p className="form-help">
+                                            Todavía no hay imágenes. Subí la primera para que aparezca en el catálogo.
+                                        </p>
+                                    )}
+                                    {imagenes.map(img => (
+                                        <div
+                                            key={img.id}
+                                            style={{
+                                                width: 160,
+                                                border: Number(img.es_principal) === 1
+                                                    ? '3px solid #16a34a'
+                                                    : '1px solid #ddd',
+                                                borderRadius: 8,
+                                                overflow: 'hidden',
+                                                position: 'relative'
+                                            }}
+                                        >
+                                            <img
+                                                src={urlImagen(img)}
+                                                alt={img.descripcion || 'Imagen de la propiedad'}
+                                                style={{ width: '100%', height: 110, objectFit: 'cover', display: 'block' }}
+                                            />
+                                            <div style={{ padding: 8 }}>
+                                                {Number(img.es_principal) === 1 ? (
+                                                    <span
+                                                        className="propform-gallery-principal"
+                                                        style={{
+                                                            color: '#16a34a',
+                                                            fontWeight: 700,
+                                                            fontSize: 13,
+                                                            display: 'block',
+                                                            marginBottom: 4
+                                                        }}
+                                                    >
+                                                        <i className="fas fa-star" style={{ color: '#f59e0b' }}></i> Principal
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        className="btn-detalle btn-detalle-secundario"
+                                                        style={{ marginBottom: 4 }}
+                                                        onClick={() => handleSetPrincipal(img.id)}
+                                                    >
+                                                        <i className="fas fa-star"></i> Principal
+                                                    </button>
+                                                )}
                                                 <button
                                                     type="button"
-                                                    className="btn-detalle btn-detalle-secundario"
-                                                    style={{ marginBottom: 4 }}
-                                                    onClick={() => handleSetPrincipal(img.id)}
+                                                    className="btn-detalle btn-detalle-danger"
+                                                    onClick={() => handleEliminarImagen(img.id)}
                                                 >
-                                                    <i className="fas fa-star"></i> Principal
+                                                    <i className="fas fa-trash-alt"></i> Eliminar
                                                 </button>
-                                            )}
-                                            <button
-                                                type="button"
-                                                className="btn-detalle btn-detalle-danger"
-                                                onClick={() => handleEliminarImagen(img.id)}
-                                            >
-                                                <i className="fas fa-trash-alt"></i> Eliminar
-                                            </button>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="imagen-file-input">Agregar imagen</label>
-                                <input
-                                    id="imagen-file-input"
-                                    className="imagen-input"
-                                    type="file"
-                                    accept="image/jpeg,image/png,image/gif,image/webp"
-                                    onChange={handleArchivoImagen}
-                                    ref={imagenInputRef}
-                                />
-                                <span className="form-help">
-                                    Máx. 5 MB. Formatos: JPG, PNG, GIF, WEBP.
-                                </span>
-                                {archivoImagen && (
-                                    <span className="form-help">
-                                        Archivo seleccionado: {archivoImagen.name} ({(archivoImagen.size / 1024).toFixed(0)} KB)
-                                    </span>
-                                )}
-                                {imagenError && (
-                                    <span className="form-error">{imagenError}</span>
-                                )}
-                                <div style={{ marginTop: 10 }}>
-                                    <button
-                                        type="button"
-                                        className="btn-detalle btn-detalle-primario"
-                                        onClick={handleSubirImagen}
-                                        disabled={subiendoImagen || !archivoImagen}
-                                    >
-                                        {subiendoImagen ? (
-                                            <>
-                                                <i className="fas fa-spinner fa-spin"></i> Subiendo...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <i className="fas fa-upload"></i> Subir imagen
-                                            </>
-                                        )}
-                                    </button>
+                                    ))}
                                 </div>
-                            </div>
-                        </section>
-                    )}
+
+                                <div className="form-group">
+                                    <label htmlFor="imagen-file-input">Agregar imagen</label>
+                                    <input
+                                        id="imagen-file-input"
+                                        className="imagen-input"
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/gif,image/webp"
+                                        onChange={handleArchivoImagen}
+                                        ref={imagenInputRef}
+                                    />
+                                    <span className="form-help">
+                                        Máx. 5 MB. Formatos: JPG, PNG, GIF, WEBP.
+                                    </span>
+                                    {archivoImagen && (
+                                        <span className="form-help">
+                                            Archivo seleccionado: {archivoImagen.name} ({(archivoImagen.size / 1024).toFixed(0)} KB)
+                                        </span>
+                                    )}
+                                    {imagenError && (
+                                        <span className="form-error">{imagenError}</span>
+                                    )}
+                                    <div style={{ marginTop: 10 }}>
+                                        <button
+                                            type="button"
+                                            className="btn-detalle btn-detalle-primario"
+                                            onClick={handleSubirImagen}
+                                            disabled={subiendoImagen || !archivoImagen}
+                                        >
+                                            {subiendoImagen ? (
+                                                <>
+                                                    <i className="fas fa-spinner fa-spin"></i> Subiendo...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <i className="fas fa-upload"></i> Subir imagen
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <p className="form-help" style={{ marginBottom: 16 }}>
+                                    Elegí las fotos de la propiedad. Se subirán automáticamente al
+                                    publicar. Después podés elegir cuál es la principal.
+                                </p>
+
+                                <div className="form-group">
+                                    <label htmlFor="imagen-file-input-create">Agregar fotos</label>
+                                    <input
+                                        id="imagen-file-input-create"
+                                        className="imagen-input"
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/gif,image/webp"
+                                        multiple
+                                        onChange={handleArchivosCrear}
+                                        ref={imagenInputRef}
+                                    />
+                                    <span className="form-help">
+                                        Máx. 5 MB cada una y hasta 10 imágenes. Formatos: JPG, PNG, GIF, WEBP.
+                                    </span>
+                                    {imagenError && (
+                                        <span className="form-error">{imagenError}</span>
+                                    )}
+                                </div>
+
+                                {archivosCrear.length > 0 && (
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexWrap: 'wrap',
+                                            gap: 12,
+                                            marginTop: 6
+                                        }}
+                                    >
+                                        {archivosCrear.map((archivo, index) => (
+                                            <div
+                                                key={`${archivo.name}-${archivo.lastModified}-${index}`}
+                                                style={{
+                                                    width: 160,
+                                                    border: '1px solid #ddd',
+                                                    borderRadius: 8,
+                                                    overflow: 'hidden',
+                                                    position: 'relative'
+                                                }}
+                                            >
+                                                <img
+                                                    src={urlArchivoCrear(archivo)}
+                                                    alt={`Foto ${index + 1}`}
+                                                    style={{ width: '100%', height: 110, objectFit: 'cover', display: 'block' }}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    className="btn-detalle btn-detalle-danger"
+                                                    style={{
+                                                        width: '100%',
+                                                        borderRadius: 0,
+                                                        fontSize: 12,
+                                                        padding: '6px 8px'
+                                                    }}
+                                                    onClick={() => quitarArchivoCrear(index)}
+                                                    aria-label={`Quitar foto ${index + 1}`}
+                                                >
+                                                    <i className="fas fa-times"></i> Quitar
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </section>
 
                     {/* ============================================
                         SECCIÓN 5: SERVICIOS

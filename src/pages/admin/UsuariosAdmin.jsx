@@ -3,6 +3,7 @@ import PanelCrud from '../../components/admin/PanelCrud';
 import {
     getUsuarios,
     getRoles,
+    getUsuario,
     updatePerfil,
     deleteUsuario,
     restoreUsuario,
@@ -29,11 +30,14 @@ const config = {
     ],
     detalle: {
         titulo: (item) => `Perfil de ${item.nombre} ${item.apellido}`,
-        cargar: (item, token) => Promise.all([
-            Promise.resolve(item),
-            getResenasByUsuario(item.id, token),
-            getFavoritosByUsuario(item.id, token)
-        ]),
+        cargar: (item, token) => {
+            const detalle = getUsuario(item.id, token).then((res) => res?.data || {});
+            return Promise.all([
+                detalle,
+                getResenasByUsuario(item.id, token),
+                getFavoritosByUsuario(item.id, token)
+            ]);
+        },
         filas: [
             { label: 'Email', valor: (d) => d?.[0]?.email || '—' },
             { label: 'Teléfono', valor: (d) => d?.[0]?.telefono || '—' },

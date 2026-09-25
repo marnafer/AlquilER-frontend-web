@@ -1958,6 +1958,17 @@ img {
     box-shadow: 0 6px 14px -8px rgba(13, 148, 136, 0.6);
 }
 
+.dash-reserva-icon.warning {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    box-shadow: 0 6px 14px -8px rgba(245, 158, 11, 0.6);
+}
+
+.dash-reserva-icon.muted {
+    background: #e2e8f0;
+    color: #64748b;
+    box-shadow: none;
+}
+
 .dash-reserva-info {
     flex: 1;
     min-width: 0;
@@ -2019,6 +2030,11 @@ img {
 .dash-reserva-badge.finalizada {
     background: #e0e7ff;
     color: #4f46e5;
+}
+
+.dash-reserva-badge.no-leida {
+    background: #ccfbf1;
+    color: #0f766e;
 }
 
 .dash-empty {
@@ -6133,6 +6149,10 @@ img {
     display: flex;
     flex-direction: column;
     gap: 10px;
+}
+
+.notificaciones-paginacion {
+    margin-top: 28px;
 }
 
 .notificaciones-item {

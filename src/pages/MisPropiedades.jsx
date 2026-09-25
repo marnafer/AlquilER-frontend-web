@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { getMisPropiedades, deletePropiedad, updatePropiedad } from '../services/api';
+import { rutaImagenPropiedad } from '../utils/imagenes';
 import { useUI } from '../context/UIContext';
 import Loader from '../components/Loader';
 
@@ -144,17 +145,23 @@ function MisPropiedades() {
                 {/* GRID O EMPTY STATE */}
                 {propiedades.length > 0 ? (
                     <section className="misprops-grid">
-                        {propiedades.map(prop => (
+                        {propiedades.map(prop => {
+                            const imagen = rutaImagenPropiedad(prop);
+                            return (
                             <div className="misprops-card" key={prop.id}>
                                 <div className="misprops-card-image">
-                                    <img
-                                        src={`/uploads/propiedades/${prop.id}.jpg`}
-                                        alt={prop.titulo}
-                                        onError={(e) => {
-                                            e.target.style.display = 'none';
-                                            e.target.parentElement.classList.add('sin-imagen');
-                                        }}
-                                    />
+                                    {imagen ? (
+                                        <img
+                                            src={imagen}
+                                            alt={prop.titulo}
+                                            onError={(e) => {
+                                                e.target.style.display = 'none';
+                                                e.target.parentElement.classList.add('sin-imagen');
+                                            }}
+                                        />
+                                    ) : (
+                                        <div className="sin-imagen"></div>
+                                    )}
                                     <span className={`misprops-estado ${prop.disponible ? 'disponible' : 'alquilada'}`}>
                                         {prop.disponible ? 'Disponible' : 'Alquilada'}
                                     </span>
@@ -216,7 +223,8 @@ function MisPropiedades() {
                                     </div>
                                 </div>
                             </div>
-                        ))}
+                            );
+                        })}
                     </section>
                 ) : (
                     <div className="propiedades-empty">

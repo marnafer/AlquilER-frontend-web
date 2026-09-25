@@ -5,6 +5,7 @@ import { useUI } from '../context/UIContext';
 import { Navbar, Nav, NavDropdown, Container, Button } from 'react-bootstrap';
 import {
     getNotificaciones,
+    getNotificacionesNoLeidas,
     marcarNotificacionLeida,
     marcarTodasNotificacionesLeidas
 } from '../services/api';
@@ -25,38 +26,50 @@ function Header() {
     const dropdownRef = useRef(null);
     const ultimasNoLeidas = useRef(0);
 
-    const cargarNotificaciones = useCallback(async () => {
+const cargarConteo = useCallback(async () => {
+        if (!esUsuario || !token) return;
+        try {
+            const result = await getNotificacionesNoLeidas(token);
+            const actuales = Number(result?.data?.no_leidas) || 0;
+            setNoLeidas(actuales);
+            if (actuales > ultimasNoLeidas.current && actuales > 0) {
+                showToast('Tienes notificaciones nuevas', 'info');
+            }
+            ultimasNoLeidas.current = actuales;
+        } catch (error) {
+            // Silencioso: el polling no debe molestar
+        }
+    }, [esUsuario, token, showToast]);
+
+    const cargarLista = useCallback(async () => {
         if (!esUsuario || !token) return;
         setCargandoNotif(true);
         try {
             const result = await getNotificaciones(token);
             if (result.success && result.data) {
                 setNotificaciones(result.data.items || []);
-                setNoLeidas(Number(result.data.no_leidas) || 0);
-                const nuevas = Number(result.data.no_leidas) || 0;
-                if (nuevas > ultimasNoLeidas.current && nuevas > 0) {
-                    showToast('Tienes notificaciones nuevas', 'info');
-                }
-                ultimasNoLeidas.current = nuevas;
+                const actuales = Number(result.data.no_leidas) || 0;
+                setNoLeidas(actuales);
+                ultimasNoLeidas.current = actuales;
             }
         } catch (error) {
-            // Silencioso: el polling no debe molestar
+            // Silencioso
         } finally {
             setCargandoNotif(false);
         }
-    }, [esUsuario, token, showToast]);
+    }, [esUsuario, token]);
 
     useEffect(() => {
         if (esUsuario && token) {
             ultimasNoLeidas.current = 0;
-            cargarNotificaciones();
-            const intervalo = setInterval(cargarNotificaciones, 30000);
+            cargarConteo();
+            const intervalo = setInterval(cargarConteo, 30000);
             return () => clearInterval(intervalo);
         }
         setNotificaciones([]);
         setNoLeidas(0);
         ultimasNoLeidas.current = 0;
-    }, [esUsuario, token, cargarNotificaciones]);
+    }, [esUsuario, token, cargarConteo]);
 
     // Cerrar el dropdown al hacer clic fuera
     useEffect(() => {
@@ -169,7 +182,11 @@ function Header() {
                                 <Button
                                     variant="link"
                                     className="notif-btn"
-                                    onClick={() => setVerDropdown(!verDropdown)}
+                                    onClick={() => {
+                                        const abrir = !verDropdown;
+                                        setVerDropdown(abrir);
+                                        if (abrir) cargarLista();
+                                    }}
                                     aria-label={noLeidas > 0
                                         ? `Notificaciones, ${noLeidas} sin leer`
                                         : 'Notificaciones'}

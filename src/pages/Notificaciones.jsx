@@ -9,6 +9,8 @@ import {
 } from '../services/api';
 import Loader from '../components/Loader';
 
+const POR_PAGINA = 8;
+
 const ICONOS_POR_TIPO = {
     reserva_confirmada: 'fa-check-circle',
     reserva_rechazada: 'fa-times-circle',
@@ -26,6 +28,7 @@ function Notificaciones() {
     const [error, setError] = useState('');
     const [marcandoId, setMarcandoId] = useState(null);
     const [marcandoTodas, setMarcandoTodas] = useState(false);
+    const [pagina, setPagina] = useState(1);
 
     const extraerItems = (res) => {
         if (Array.isArray(res)) return res;
@@ -54,6 +57,10 @@ function Notificaciones() {
     useEffect(() => {
         cargar();
     }, [cargar]);
+
+    useEffect(() => {
+        setPagina(1);
+    }, [items.length]);
 
     const marcarLeida = async (id) => {
         setMarcandoId(id);
@@ -107,6 +114,21 @@ function Notificaciones() {
     const iconoDe = (tipo) => ICONOS_POR_TIPO[tipo] || 'fa-bell';
 
     const noLeidas = items.filter(n => !n.leida).length;
+
+    const totalPaginas = Math.max(1, Math.ceil(items.length / POR_PAGINA));
+    const paginaSegura = Math.min(pagina, totalPaginas);
+    const visibles = items.slice(
+        (paginaSegura - 1) * POR_PAGINA,
+        paginaSegura * POR_PAGINA
+    );
+    const irAPagina = (p) => setPagina(Math.min(Math.max(1, p), totalPaginas));
+    const paginasVisibles = () => {
+        if (totalPaginas <= 7) {
+            return Array.from({ length: totalPaginas }, (_, i) => i + 1);
+        }
+        const inicio = Math.max(1, Math.min(paginaSegura - 3, totalPaginas - 6));
+        return Array.from({ length: 7 }, (_, i) => inicio + i);
+    };
 
     if (loading) return <Loader />;
 
@@ -172,7 +194,7 @@ function Notificaciones() {
 
                 {items.length > 0 ? (
                     <div className="notificaciones-lista">
-                        {items.map(n => (
+                        {visibles.map(n => (
                             <div
                                 key={n.id}
                                 className={`notificaciones-item ${!n.leida ? 'no-leida' : ''}`}
@@ -223,6 +245,68 @@ function Notificaciones() {
                         <Link to="/propiedades" className="btn-ver-todas" style={{ marginTop: '20px', display: 'inline-block' }}>
                             <i className="fas fa-search"></i> Explorar propiedades
                         </Link>
+                    </div>
+                )}
+
+                {items.length > POR_PAGINA && (
+                    <div className="props-paginacion notificaciones-paginacion">
+                        <button
+                            type="button"
+                            className="pag-btn"
+                            onClick={() => irAPagina(paginaSegura - 1)}
+                            disabled={paginaSegura <= 1}
+                            aria-label="Página anterior"
+                        >
+                            <i className="fas fa-chevron-left"></i>
+                        </button>
+
+                        {totalPaginas > 7 && paginaSegura > 4 && (
+                            <button
+                                type="button"
+                                className="pag-btn"
+                                onClick={() => irAPagina(1)}
+                            >
+                                1
+                            </button>
+                        )}
+                        {totalPaginas > 7 && paginaSegura > 5 && (
+                            <span className="pag-dots">…</span>
+                        )}
+
+                        {paginasVisibles().map(p => (
+                            <button
+                                type="button"
+                                key={p}
+                                className={`pag-btn ${p === paginaSegura ? 'active' : ''}`}
+                                onClick={() => irAPagina(p)}
+                                aria-current={p === paginaSegura ? 'page' : undefined}
+                            >
+                                {p}
+                            </button>
+                        ))}
+
+                        {totalPaginas > 7 && paginaSegura < totalPaginas - 4 && (
+                            <span className="pag-dots">…</span>
+                        )}
+                        {totalPaginas > 7 && paginaSegura < totalPaginas - 3 && (
+                            <button
+                                type="button"
+                                className="pag-btn"
+                                onClick={() => irAPagina(totalPaginas)}
+                            >
+                                {totalPaginas}
+                            </button>
+                        )}
+
+                        <button
+                            type="button"
+                            className="pag-btn"
+                            onClick={() => irAPagina(paginaSegura + 1)}
+                            disabled={paginaSegura >= totalPaginas}
+                            aria-label="Página siguiente"
+                        >
+                            <i className="fas fa-chevron-right"></i>
+                        </button>
                     </div>
                 )}
             </div>
