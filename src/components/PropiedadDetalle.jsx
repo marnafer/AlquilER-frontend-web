@@ -13,6 +13,7 @@ import {
     deleteResena
 } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
+import { iconoServicio } from '../utils/servicios';
 import { useAuth } from '../hooks/useAuth';
 import { useUI } from '../context/UIContext';
 import Loader from './Loader';
@@ -388,7 +389,7 @@ function PropiedadDetalle() {
                                 <div className="detalle-servicios-lista">
                                     {servicios.map(serv => (
                                         <span className="detalle-servicio-badge" key={serv.id}>
-                                            <i className="fas fa-circle-check"></i> {serv.nombre}
+                                            <i className={`fas ${iconoServicio(serv.servicio?.nombre ?? serv.nombre)}`}></i> {serv.servicio?.nombre ?? serv.nombre}
                                         </span>
                                     ))}
                                 </div>

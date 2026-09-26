@@ -2,29 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getPropiedades, getPropiedadesDestacadas, getCategorias, getServicios, getLocalidades } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
+import { iconoServicio } from '../utils/servicios';
 import Loader from '../components/Loader';
-
-const ICONOS_SERVICIO = {
-    'Wifi': 'fa-wifi',
-    'Aire Acondicionado': 'fa-snowflake',
-    'Calefacción': 'fa-fire',
-    'Piscina': 'fa-swimming-pool',
-    'Estacionamiento': 'fa-car',
-    'TV Cable': 'fa-tv',
-    'Cocina Equipada': 'fa-utensils',
-    'Seguridad': 'fa-shield-halved',
-    'Limpieza': 'fa-broom',
-    'Amueblado': 'fa-couch',
-    'Balcón': 'fa-building',
-    'Mascotas': 'fa-paw',
-};
-
-const iconoServicio = (nombre) => {
-    const key = Object.keys(ICONOS_SERVICIO).find(
-        k => k.toLowerCase() === (nombre || '').toLowerCase()
-    );
-    return ICONOS_SERVICIO[key] || 'fa-circle-check';
-};
 
 function Home() {
     const [propiedades, setPropiedades] = useState([]);
