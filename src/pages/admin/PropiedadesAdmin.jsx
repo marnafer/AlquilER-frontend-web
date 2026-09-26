@@ -18,13 +18,13 @@ const destacados = [
 ];
 
 const estadoBadge = (disponible) => (
-    <span className={`admin-badge ${disponible ? 'admin-badge-usuario' : 'admin-badge-admin'}`}>
+    <span className={`admin-badge ${disponible ? 'estado-disponible' : 'estado-no-disponible'}`}>
         {disponible ? 'Disponible' : 'No disponible'}
     </span>
 );
 
 const destacadaBadge = (destacada) => (
-    <span className={`admin-badge ${destacada ? 'admin-badge-admin' : 'admin-badge-usuario'}`}>
+    <span className={`admin-badge ${destacada ? 'estado-destacada' : 'estado-neutra'}`}>
         {destacada ? 'Destacada' : '—'}
     </span>
 );

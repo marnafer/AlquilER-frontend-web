@@ -4743,6 +4743,29 @@ img {
     color: #475569;
 }
 
+/* Estados de las propiedades. No se reutilizan las clases de rol
+   (admin-badge-admin / admin-badge-usuario) porque esas significan
+   "administrador" / "usuario" en UsuariosAdmin, no disponibilidad. */
+.admin-badge.estado-disponible {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.admin-badge.estado-no-disponible {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.admin-badge.estado-destacada {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.admin-badge.estado-neutra {
+    background: #f1f5f9;
+    color: #475569;
+}
+
 .admin-badge.estado-pendiente {
     background: #fef3c7;
     color: #d97706;
