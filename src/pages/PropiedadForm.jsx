@@ -129,9 +129,14 @@ const [loading, setLoading] = useState(true);
             }
 
             const servicios = await getServiciosByPropiedad(id);
+            // La API devuelve las filas del pivote: el id del servicio viene
+            // en "servicio.id" (o en "servicio_id" si viniera plano). Usar
+            // el "id" de la fila del pivote marcaba ninguno al editar.
             setServiciosSeleccionados(
                 Array.isArray(servicios)
-                    ? servicios.map(s => Number(s.id)).filter(Boolean)
+                    ? servicios
+                        .map(s => Number(s.servicio?.id ?? s.servicio_id ?? s.id))
+                        .filter(Boolean)
                     : []
             );
 
