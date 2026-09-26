@@ -165,6 +165,20 @@ export async function getPropiedades() {
     }
 }
 
+export async function getPropiedadesDestacadas() {
+    try {
+        const response = await fetch(`${API_URL}/api/propiedades/destacadas`);
+        const result = await response.json();
+        if (result.success && result.data && result.data.items) {
+            return result.data.items;
+        }
+        return result.data || [];
+    } catch (error) {
+        console.error('Error en getPropiedadesDestacadas:', error);
+        return [];
+    }
+}
+
 export async function getMisPropiedades(token) {
     try {
         const response = await fetch(`${API_URL}/api/propiedades/mis-propiedades`, {

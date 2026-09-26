@@ -12,9 +12,20 @@ const estados = [
     { value: 0, label: 'No disponible' }
 ];
 
+const destacados = [
+    { value: 1, label: 'Sí, destacada' },
+    { value: 0, label: 'No destacada' }
+];
+
 const estadoBadge = (disponible) => (
     <span className={`admin-badge ${disponible ? 'admin-badge-usuario' : 'admin-badge-admin'}`}>
         {disponible ? 'Disponible' : 'No disponible'}
+    </span>
+);
+
+const destacadaBadge = (destacada) => (
+    <span className={`admin-badge ${destacada ? 'admin-badge-admin' : 'admin-badge-usuario'}`}>
+        {destacada ? 'Destacada' : '—'}
     </span>
 );
 
@@ -31,7 +42,8 @@ const config = {
     eliminar: (id, token) => deletePropiedad(id, token),
     normalizarEdicion: (item) => ({
         ...item,
-        disponible: item.disponible ? 1 : 0
+        disponible: item.disponible ? 1 : 0,
+        destacada: item.destacada ? 1 : 0
     }),
     campos: [
         { name: 'titulo', label: 'Título', requerido: true, min: 3, max: 120 },
@@ -44,10 +56,19 @@ const config = {
             opciones: 'estados',
             requerido: true,
             ayuda: 'Si la marcás como no disponible, desaparece del catálogo público.'
+        },
+        {
+            name: 'destacada',
+            label: 'Destacada',
+            type: 'select',
+            opciones: 'destacados',
+            requerido: true,
+            ayuda: 'Las destacadas se muestran en el inicio de la web.'
         }
     ],
     externos: [
-        { clave: 'estados', cargar: () => Promise.resolve(estados) }
+        { clave: 'estados', cargar: () => Promise.resolve(estados) },
+        { clave: 'destacados', cargar: () => Promise.resolve(destacados) }
     ],
     papelera: {
         obtener: (token) => getPropiedadesAdmin(token, true),
@@ -76,6 +97,11 @@ const config = {
             key: 'disponible',
             label: 'Estado',
             render: (item) => estadoBadge(item.disponible)
+        },
+        {
+            key: 'destacada',
+            label: 'Destacada',
+            render: (item) => destacadaBadge(item.destacada)
         },
         {
             key: 'usuario',

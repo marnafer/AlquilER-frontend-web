@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getPropiedades, getCategorias, getServicios, getLocalidades } from '../services/api';
+import { getPropiedades, getPropiedadesDestacadas, getCategorias, getServicios, getLocalidades } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
 import Loader from '../components/Loader';
 
@@ -28,6 +28,7 @@ const iconoServicio = (nombre) => {
 
 function Home() {
     const [propiedades, setPropiedades] = useState([]);
+    const [destacadas, setDestacadas] = useState([]);
     const [categorias, setCategorias] = useState([]);
     const [servicios, setServicios] = useState([]);
     const [localidades, setLocalidades] = useState([]);
@@ -43,14 +44,16 @@ function Home() {
 
     const cargarDatos = async () => {
         try {
-            const [props, cats, serv, localidadesRes] = await Promise.all([
+            const [props, dest, cats, serv, localidadesRes] = await Promise.all([
                 getPropiedades(),
+                getPropiedadesDestacadas(),
                 getCategorias(),
                 getServicios(),
                 getLocalidades()
             ]);
 
             setPropiedades(props);
+            setDestacadas(Array.isArray(dest) ? dest : []);
             setCategorias(cats);
             setServicios(Array.isArray(serv) ? serv : []);
             setLocalidades(Array.isArray(localidadesRes) ? localidadesRes : []);
@@ -74,6 +77,16 @@ function Home() {
     const disponibles = propiedades.filter(p =>
         p.disponible !== false && p.disponible !== 0 && p.disponible !== '0'
     );
+
+    const destacadasDisponibles = destacadas.filter(p =>
+        p.disponible !== false && p.disponible !== 0 && p.disponible !== '0'
+    );
+
+    const hayDestacadas = destacadasDisponibles.length > 0;
+
+    const propiedadesAMostrar = hayDestacadas
+        ? destacadasDisponibles.slice(0, 6)
+        : disponibles.slice(0, 6);
 
     const onImgError = (e) => {
         const img = e.currentTarget;
@@ -140,22 +153,22 @@ function Home() {
                 </div>
             </section>
 
-            {/* PROPIEDADES RECIENTES */}
+            {/* PROPIEDADES DESTACADAS */}
             <section className="propiedades-destacadas">
                 <div className="container">
                     <div className="section-header">
                         <span className="section-badge">Catálogo</span>
-                        <h2>Propiedades Recientes</h2>
-                        <p>Las últimas publicaciones en AlquilER</p>
+                        <h2>{hayDestacadas ? 'Propiedades Destacadas' : 'Propiedades Recientes'}</h2>
+                        <p>{hayDestacadas ? 'Las propiedades destacadas por nuestro equipo' : 'Las últimas publicaciones en AlquilER'}</p>
                     </div>
 
                     <div className="propiedades-grid">
-                        {disponibles.length === 0 && (
+                        {propiedadesAMostrar.length === 0 && (
                             <p className="form-help" style={{ textAlign: 'center' }}>
                                 Todavía no hay propiedades disponibles.
                             </p>
                         )}
-                        {disponibles.slice(0, 6).map(prop => (
+                        {propiedadesAMostrar.map(prop => (
                             <div className="propiedad-card" key={prop.id}>
                                 <div className="propiedad-image">
                                     <img
