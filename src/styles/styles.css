@@ -2887,6 +2887,46 @@ img {
     color: #0f766e;
 }
 
+.misprops-servicios {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.misprops-servicio {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #ecfdf5;
+    color: #0f766e;
+    border: 1px solid #ccfbf1;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.misprops-servicios-mas {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #475569;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.misprops-servicios-mas:hover {
+    background: #e2e8f0;
+}
+
+.misprops-servicios-vacio {
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 600;
+    margin: 0 0 16px;
+}
+
 .misprops-actions {
     display: flex;
     gap: 8px;

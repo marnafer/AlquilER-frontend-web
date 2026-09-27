@@ -1,10 +1,52 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { getMisPropiedades, deletePropiedad, updatePropiedad } from '../services/api';
+import { getMisPropiedades, deletePropiedad, updatePropiedad, getServiciosByPropiedad } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
+import { iconoServicio } from '../utils/servicios';
 import { useUI } from '../context/UIContext';
 import Loader from '../components/Loader';
+
+const MAX_SERVICIOS_VISIBLES = 4;
+
+// /api/propiedades/{id}/servicios devuelve filas pivote
+// ({id, propiedad_id, servicio_id, servicio:{id,nombre}}), no servicios planos.
+const aServicios = (filas) => (Array.isArray(filas) ? filas : [])
+    .map(fila => ({
+        id: fila.servicio?.id ?? fila.servicio_id ?? fila.id,
+        nombre: fila.servicio?.nombre ?? fila.nombre
+    }))
+    .filter(servicio => servicio.nombre);
+
+function ServiciosTarjeta({ cargando, servicios, expandido, onToggle }) {
+    if (cargando) return null;
+    if (servicios.length === 0) {
+        return <p className="misprops-servicios-vacio">Sin servicios cargados</p>;
+    }
+
+    const visibles = expandido ? servicios : servicios.slice(0, MAX_SERVICIOS_VISIBLES);
+    const ocultos = servicios.length - visibles.length;
+
+    return (
+        <div className="misprops-servicios">
+            {visibles.map(servicio => (
+                <span className="misprops-servicio" key={servicio.id}>
+                    <i className={`fas ${iconoServicio(servicio.nombre)}`}></i> {servicio.nombre}
+                </span>
+            ))}
+            {ocultos > 0 && (
+                <button type="button" className="misprops-servicio misprops-servicios-mas" onClick={onToggle}>
+                    +{ocultos} más
+                </button>
+            )}
+            {expandido && servicios.length > MAX_SERVICIOS_VISIBLES && (
+                <button type="button" className="misprops-servicio misprops-servicios-mas" onClick={onToggle}>
+                    Ver menos
+                </button>
+            )}
+        </div>
+    );
+}
 
 function MisPropiedades() {
     const { token, usuario } = useAuth();
@@ -14,17 +56,34 @@ function MisPropiedades() {
     const [eliminando, setEliminando] = useState(false);
     const [propiedadAEliminar, setPropiedadAEliminar] = useState(null);
     const [actualizando, setActualizando] = useState(null);
+    const [serviciosPorPropiedad, setServiciosPorPropiedad] = useState({});
+    const [serviciosCargando, setServiciosCargando] = useState(false);
+    const [serviciosExpandidos, setServiciosExpandidos] = useState({});
 
     useEffect(() => {
         cargarPropiedades();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [usuario]);
 
+    // El listado no incluye los servicios, asi que se piden en paralelo
+    // despues de pintar las tarjetas para no bloquear la pantalla.
+    const cargarServicios = async (lista) => {
+        setServiciosCargando(true);
+        const pares = await Promise.all(lista.map(async (prop) => {
+            const filas = await getServiciosByPropiedad(prop.id);
+            return [prop.id, aServicios(filas)];
+        }));
+        setServiciosPorPropiedad(Object.fromEntries(pares));
+        setServiciosCargando(false);
+    };
+
     const cargarPropiedades = async () => {
         if (!usuario) return;
         try {
             const resultado = await getMisPropiedades(token);
-            setPropiedades(Array.isArray(resultado) ? resultado : []);
+            const lista = Array.isArray(resultado) ? resultado : [];
+            setPropiedades(lista);
+            await cargarServicios(lista);
         } catch (error) {
             console.error('Error cargando propiedades:', error);
         } finally {
@@ -49,6 +108,10 @@ function MisPropiedades() {
                 setPropiedades(prev =>
                     prev.filter(p => p.id !== propiedadAEliminar.id)
                 );
+                setServiciosPorPropiedad(prev => {
+                    const { [propiedadAEliminar.id]: _eliminados, ...resto } = prev;
+                    return resto;
+                });
                 setPropiedadAEliminar(null);
                 showToast('Propiedad eliminada correctamente.');
             } else {
@@ -79,6 +142,10 @@ function MisPropiedades() {
         } finally {
             setActualizando(null);
         }
+    };
+
+    const toggleServicios = (id) => {
+        setServiciosExpandidos(prev => ({ ...prev, [id]: !prev[id] }));
     };
 
     if (loading) return <Loader />;
@@ -184,6 +251,13 @@ function MisPropiedades() {
                                             <span><i className="fas fa-bath"></i> {prop.cantidad_banos || 0}</span>
                                         </div>
                                     </div>
+
+                                    <ServiciosTarjeta
+                                        cargando={serviciosCargando}
+                                        servicios={serviciosPorPropiedad[prop.id] || []}
+                                        expandido={!!serviciosExpandidos[prop.id]}
+                                        onToggle={() => toggleServicios(prop.id)}
+                                    />
 
                                     <div className="misprops-actions">
                                         <button
