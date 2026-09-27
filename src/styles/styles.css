@@ -769,6 +769,38 @@ img {
     gap: 16px;
 }
 
+/* Catalogo completo de servicios: grilla mas ancha que la del Home. */
+.servicios-grid-catalogo {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.servicios-ver-todos {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    background: #ccfbf1;
+    color: #0f766e;
+    padding: 8px 18px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 700;
+    transition: var(--transition);
+}
+
+.servicios-ver-todos:hover {
+    background: #0f766e;
+    color: var(--white);
+}
+
+@media (max-width: 992px) {
+    .servicios-grid-catalogo {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
 .servicio-card {
     background: var(--white);
     padding: 20px 12px;

@@ -209,6 +209,12 @@ function Home() {
                         <span className="section-badge">Servicios</span>
                         <h2>Servicios Destacados</h2>
                         <p>Comodidades que ofrecen nuestras propiedades</p>
+                        {servicios.length > 8 && (
+                            <Link to="/servicios" className="servicios-ver-todos">
+                                Ver todos los servicios
+                                <i className="fas fa-arrow-right"></i>
+                            </Link>
+                        )}
                     </div>
 
                     <div className="servicios-grid">

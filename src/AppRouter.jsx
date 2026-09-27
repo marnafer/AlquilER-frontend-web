@@ -11,6 +11,7 @@ import PropiedadDetalle from './components/PropiedadDetalle';
 import Home from './pages/Home';
 import Contacto from './pages/Contacto';
 import PreguntasFrecuentes from './pages/PreguntasFrecuentes';
+import Servicios from './pages/Servicios';
 import Terminos from './pages/Terminos';
 import Privacidad from './pages/Privacidad';
 import Login from './pages/Login';
@@ -79,6 +80,7 @@ function AppRouter() {
                     <Route path="/" element={<Home />} />
                     <Route path="/home" element={<Home />} />
                     <Route path="/propiedades" element={<Propiedades />} />
+                    <Route path="/servicios" element={<Servicios />} />
                     <Route path="/contacto" element={<Contacto />} />
                     <Route path="/preguntas-frecuentes" element={<PreguntasFrecuentes />} />
                     <Route path="/terminos" element={<Terminos />} />
