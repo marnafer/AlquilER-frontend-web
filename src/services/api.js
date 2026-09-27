@@ -386,16 +386,24 @@ export async function getRoles(soloEliminados = false) {
     }
 }
 
-export async function getServiciosByPropiedad(propiedadId) {
+export async function getServiciosByPropiedad(propiedadId, opciones = {}) {
+    // Por defecto traga el error y devuelve [] como el resto de los helpers.
+    // Con propagarError el llamador puede distinguir "no tiene servicios"
+    // de "no se pudo consultar", que si no se muestran como estado vacio.
+    const propagarError = opciones.propagarError === true;
     try {
         const response = await fetch(`${API_URL}/api/propiedades/${propiedadId}/servicios`);
         const result = await response.json();
+        if (propagarError && !result.success) {
+            throw new Error(result.message || 'No se pudieron obtener los servicios');
+        }
         if (result.success && result.data && result.data.items) {
             return result.data.items;
         }
         return result.data || [];
     } catch (error) {
         console.error('Error en getServiciosByPropiedad:', error);
+        if (propagarError) throw error;
         return [];
     }
 }

@@ -18,8 +18,11 @@ const aServicios = (filas) => (Array.isArray(filas) ? filas : [])
     }))
     .filter(servicio => servicio.nombre);
 
-function ServiciosTarjeta({ cargando, servicios, expandido, onToggle }) {
-    if (cargando) return null;
+function ServiciosTarjeta({ servicios, enCarga, conError, expandido, onToggle }) {
+    if (conError) {
+        return <p className="misprops-servicios-error">No se pudieron cargar los servicios</p>;
+    }
+    if (enCarga) return null;
     if (servicios.length === 0) {
         return <p className="misprops-servicios-vacio">Sin servicios cargados</p>;
     }
@@ -57,6 +60,7 @@ function MisPropiedades() {
     const [propiedadAEliminar, setPropiedadAEliminar] = useState(null);
     const [actualizando, setActualizando] = useState(null);
     const [serviciosPorPropiedad, setServiciosPorPropiedad] = useState({});
+    const [serviciosConError, setServiciosConError] = useState([]);
     const [serviciosCargando, setServiciosCargando] = useState(false);
     const [serviciosExpandidos, setServiciosExpandidos] = useState({});
 
@@ -67,15 +71,39 @@ function MisPropiedades() {
 
     // El listado no incluye los servicios, asi que se piden en paralelo
     // despues de pintar las tarjetas para no bloquear la pantalla.
+    // allSettled separa las consultas ok de las fallidas: una que falla no
+    // debe verse como una propiedad sin servicios.
     const cargarServicios = async (lista) => {
         setServiciosCargando(true);
-        const pares = await Promise.all(lista.map(async (prop) => {
-            const filas = await getServiciosByPropiedad(prop.id);
-            return [prop.id, aServicios(filas)];
-        }));
-        setServiciosPorPropiedad(Object.fromEntries(pares));
+        setServiciosConError([]);
+        const resultados = await Promise.allSettled(
+            lista.map(prop => getServiciosByPropiedad(prop.id, { propagarError: true }))
+        );
+
+        const cargados = {};
+        const fallidos = [];
+        resultados.forEach((resultado, indice) => {
+            const id = lista[indice].id;
+            if (resultado.status === 'fulfilled') {
+                cargados[id] = aServicios(resultado.value);
+            } else {
+                fallidos.push(id);
+            }
+        });
+
+        setServiciosPorPropiedad(cargados);
+        setServiciosConError(fallidos);
         setServiciosCargando(false);
     };
+
+    // Cada tarjeta resuelve su propio estado, asi una lenta no frena a las demas.
+    const estadoServicios = (id) => ({
+        servicios: serviciosPorPropiedad[id] || [],
+        conError: serviciosConError.includes(id),
+        enCarga: serviciosCargando
+            && serviciosPorPropiedad[id] === undefined
+            && !serviciosConError.includes(id)
+    });
 
     const cargarPropiedades = async () => {
         if (!usuario) return;
@@ -112,6 +140,7 @@ function MisPropiedades() {
                     const { [propiedadAEliminar.id]: _eliminados, ...resto } = prev;
                     return resto;
                 });
+                setServiciosConError(prev => prev.filter(id => id !== propiedadAEliminar.id));
                 setPropiedadAEliminar(null);
                 showToast('Propiedad eliminada correctamente.');
             } else {
@@ -253,8 +282,7 @@ function MisPropiedades() {
                                     </div>
 
                                     <ServiciosTarjeta
-                                        cargando={serviciosCargando}
-                                        servicios={serviciosPorPropiedad[prop.id] || []}
+                                        {...estadoServicios(prop.id)}
                                         expandido={!!serviciosExpandidos[prop.id]}
                                         onToggle={() => toggleServicios(prop.id)}
                                     />
