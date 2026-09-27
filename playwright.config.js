@@ -10,6 +10,7 @@ export default defineConfig({
     // primera en el catálogo que usa otro test en paralelo).
     workers: 1,
     reporter: 'list',
+    globalTeardown: './e2e/global-teardown.js',
     use: {
         baseURL: 'http://localhost:3000',
         headless: true,
