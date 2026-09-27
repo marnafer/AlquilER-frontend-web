@@ -2959,18 +2959,6 @@ img {
     margin: 0 0 16px;
 }
 
-.misprops-servicios-error {
-    font-size: 12px;
-    color: #b45309;
-    background: #fffbeb;
-    border: 1px solid #fde68a;
-    border-radius: 999px;
-    padding: 4px 9px;
-    font-weight: 600;
-    margin: 0 0 16px;
-    display: inline-block;
-}
-
 .misprops-actions {
     display: flex;
     gap: 8px;

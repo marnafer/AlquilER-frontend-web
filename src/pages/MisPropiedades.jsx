@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { getMisPropiedades, deletePropiedad, updatePropiedad, getServiciosByPropiedad } from '../services/api';
+import { getMisPropiedades, deletePropiedad, updatePropiedad } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
 import { iconoServicio } from '../utils/servicios';
 import { useUI } from '../context/UIContext';
@@ -9,20 +9,17 @@ import Loader from '../components/Loader';
 
 const MAX_SERVICIOS_VISIBLES = 4;
 
-// /api/propiedades/{id}/servicios devuelve filas pivote
-// ({id, propiedad_id, servicio_id, servicio:{id,nombre}}), no servicios planos.
+// /api/propiedades/mis-propiedades trae los servicios en cada propiedad
+// (con pivot). Acepta tambien la forma anidada de /propiedades/{id}/servicios
+// para no romper si el payload cambia.
 const aServicios = (filas) => (Array.isArray(filas) ? filas : [])
     .map(fila => ({
-        id: fila.servicio?.id ?? fila.servicio_id ?? fila.id,
-        nombre: fila.servicio?.nombre ?? fila.nombre
+        id: fila.id ?? fila.servicio_id ?? fila.servicio?.id,
+        nombre: fila.nombre ?? fila.servicio?.nombre
     }))
     .filter(servicio => servicio.nombre);
 
-function ServiciosTarjeta({ servicios, enCarga, conError, expandido, onToggle }) {
-    if (conError) {
-        return <p className="misprops-servicios-error">No se pudieron cargar los servicios</p>;
-    }
-    if (enCarga) return null;
+function ServiciosTarjeta({ servicios, expandido, onToggle }) {
     if (servicios.length === 0) {
         return <p className="misprops-servicios-vacio">Sin servicios cargados</p>;
     }
@@ -59,59 +56,27 @@ function MisPropiedades() {
     const [eliminando, setEliminando] = useState(false);
     const [propiedadAEliminar, setPropiedadAEliminar] = useState(null);
     const [actualizando, setActualizando] = useState(null);
-    const [serviciosPorPropiedad, setServiciosPorPropiedad] = useState({});
-    const [serviciosConError, setServiciosConError] = useState([]);
-    const [serviciosCargando, setServiciosCargando] = useState(false);
     const [serviciosExpandidos, setServiciosExpandidos] = useState({});
 
     useEffect(() => {
         cargarPropiedades();
+        // Depende de usuario.id y no de usuario: AuthContext reemplaza el objeto
+        // cuando llega /usuarios/me, y depender del objeto hacia que el panel
+        // pidiera todas las propiedades otra vez.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [usuario]);
+    }, [usuario?.id]);
 
-    // El listado no incluye los servicios, asi que se piden en paralelo
-    // despues de pintar las tarjetas para no bloquear la pantalla.
-    // allSettled separa las consultas ok de las fallidas: una que falla no
-    // debe verse como una propiedad sin servicios.
-    const cargarServicios = async (lista) => {
-        setServiciosCargando(true);
-        setServiciosConError([]);
-        const resultados = await Promise.allSettled(
-            lista.map(prop => getServiciosByPropiedad(prop.id, { propagarError: true }))
-        );
-
-        const cargados = {};
-        const fallidos = [];
-        resultados.forEach((resultado, indice) => {
-            const id = lista[indice].id;
-            if (resultado.status === 'fulfilled') {
-                cargados[id] = aServicios(resultado.value);
-            } else {
-                fallidos.push(id);
-            }
-        });
-
-        setServiciosPorPropiedad(cargados);
-        setServiciosConError(fallidos);
-        setServiciosCargando(false);
-    };
-
-    // Cada tarjeta resuelve su propio estado, asi una lenta no frena a las demas.
-    const estadoServicios = (id) => ({
-        servicios: serviciosPorPropiedad[id] || [],
-        conError: serviciosConError.includes(id),
-        enCarga: serviciosCargando
-            && serviciosPorPropiedad[id] === undefined
-            && !serviciosConError.includes(id)
-    });
-
+    // Los servicios ya vienen en cada propiedad, asi que no hace falta pedir
+    // /propiedades/{id}/servicios por cada una (era un N+1).
     const cargarPropiedades = async () => {
         if (!usuario) return;
         try {
             const resultado = await getMisPropiedades(token);
-            const lista = Array.isArray(resultado) ? resultado : [];
+            const lista = (Array.isArray(resultado) ? resultado : []).map(prop => ({
+                ...prop,
+                servicios: aServicios(prop.servicios)
+            }));
             setPropiedades(lista);
-            await cargarServicios(lista);
         } catch (error) {
             console.error('Error cargando propiedades:', error);
         } finally {
@@ -136,11 +101,6 @@ function MisPropiedades() {
                 setPropiedades(prev =>
                     prev.filter(p => p.id !== propiedadAEliminar.id)
                 );
-                setServiciosPorPropiedad(prev => {
-                    const { [propiedadAEliminar.id]: _eliminados, ...resto } = prev;
-                    return resto;
-                });
-                setServiciosConError(prev => prev.filter(id => id !== propiedadAEliminar.id));
                 setPropiedadAEliminar(null);
                 showToast('Propiedad eliminada correctamente.');
             } else {
@@ -282,7 +242,7 @@ function MisPropiedades() {
                                     </div>
 
                                     <ServiciosTarjeta
-                                        {...estadoServicios(prop.id)}
+                                        servicios={prop.servicios || []}
                                         expandido={!!serviciosExpandidos[prop.id]}
                                         onToggle={() => toggleServicios(prop.id)}
                                     />
