@@ -1214,6 +1214,103 @@ img {
     grid-column: span 2;
 }
 
+.multi-select {
+    position: relative;
+}
+
+.multi-select-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 14px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    background: var(--white);
+    color: #1e293b;
+    font-size: 14px;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.multi-select-btn:hover:not(:disabled) {
+    border-color: #cbd5e1;
+}
+
+.multi-select-btn:focus {
+    outline: none;
+    border-color: #0d9488;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
+}
+
+.multi-select-btn:disabled {
+    cursor: not-allowed;
+    background: #f8fafc;
+    color: #94a3b8;
+}
+
+.multi-select-btn i {
+    color: #94a3b8;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.multi-select-panel {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 30;
+    max-height: 260px;
+    overflow-y: auto;
+    background: var(--white);
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(16, 24, 40, 0.12);
+    padding: 6px;
+}
+
+/* Los items usan label, asi que hay que anular el estilo del label del grupo */
+.multi-select .multi-select-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 8px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: normal;
+    color: #334155;
+    cursor: pointer;
+    text-overflow: unset;
+}
+
+.multi-select .multi-select-item:hover {
+    background: #f1f5f9;
+}
+
+.multi-select .multi-select-item input {
+    width: 15px;
+    height: 15px;
+    padding: 0;
+    margin: 0;
+    accent-color: #0d9488;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.multi-select-vacio {
+    display: block;
+    padding: 10px;
+    font-size: 13px;
+    color: #94a3b8;
+    text-align: center;
+}
+
 .btn-limpiar {
     padding: 10px 18px;
     background: #fee2e2;

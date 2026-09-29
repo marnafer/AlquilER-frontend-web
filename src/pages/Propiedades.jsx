@@ -1,8 +1,23 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { getPropiedades, getCategorias, getProvincias, getLocalidades, getFavoritos } from '../services/api';
+import { getPropiedades, getCategorias, getProvincias, getLocalidades, getFavoritos, getServicios } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import PropiedadCard from '../components/PropiedadCard';
+import MultiSelect from '../components/MultiSelect';
+
+// Acepta el valor repetido (categoria_id=1&categoria_id=2) y tambien el
+// separado por comas (categoria_id=1,2), que es como vienen los links viejos.
+const leerMultiples = (params, clave) => {
+    const repetidos = params.getAll(clave);
+    const crudos = repetidos.length > 0
+        ? repetidos
+        : (params.get(clave) ? [params.get(clave)] : []);
+
+    return crudos
+        .flatMap(valor => String(valor).split(','))
+        .map(valor => Number(valor.trim()))
+        .filter(valor => Number.isInteger(valor) && valor > 0);
+};
 
 function Propiedades() {
     const { token } = useAuth();
@@ -11,15 +26,22 @@ function Propiedades() {
     const [categorias, setCategorias] = useState([]);
     const [provincias, setProvincias] = useState([]);
     const [localidades, setLocalidades] = useState([]);
+    const [servicios, setServicios] = useState([]);
     const [favoritoIds, setFavoritoIds] = useState(() => new Set());
     const [loading, setLoading] = useState(true);
 
     // Filtros
     const [search, setSearch] = useState(searchParams.get('q') || '');
-    const [categoriaId, setCategoriaId] = useState(searchParams.get('categoria_id') || '');
+    const [categoriaIds, setCategoriaIds] = useState(() => leerMultiples(searchParams, 'categoria_id'));
     const [provinciaId, setProvinciaId] = useState(searchParams.get('provincia_id') || '');
-    const [localidadId, setLocalidadId] = useState(searchParams.get('localidad_id') || '');
+    const [localidadIds, setLocalidadIds] = useState(() => leerMultiples(searchParams, 'localidad_id'));
+    const [servicioIds, setServicioIds] = useState(() => leerMultiples(searchParams, 'servicio_id'));
+    const [precioMin, setPrecioMin] = useState(searchParams.get('precio_min') || '');
     const [precioMax, setPrecioMax] = useState(searchParams.get('precio_max') || '');
+    const [ambientes, setAmbientes] = useState(searchParams.get('cantidad_ambientes') || '');
+    const [dormitorios, setDormitorios] = useState(searchParams.get('cantidad_dormitorios') || '');
+    const [banos, setBanos] = useState(searchParams.get('cantidad_banos') || '');
+    const [capacidad, setCapacidad] = useState(searchParams.get('capacidad') || '');
     const [orden, setOrden] = useState(searchParams.get('orden') || 'recientes');
     const [pagina, setPagina] = useState(Number(searchParams.get('pagina')) || 1);
 
@@ -29,31 +51,40 @@ function Propiedades() {
         cargarDatos();
     }, []);
 
-    // Sincronizar filtros con la URL
+    // Sincronizar filtros con la URL. Los filtros con varias opciones van como
+    // arreglo para que React Router los escriba repetidos (categoria_id=1&...).
     useEffect(() => {
         const params = {};
         if (search) params.q = search;
-        if (categoriaId) params.categoria_id = categoriaId;
+        if (categoriaIds.length > 0) params.categoria_id = categoriaIds.map(String);
         if (provinciaId) params.provincia_id = provinciaId;
-        if (localidadId) params.localidad_id = localidadId;
+        if (localidadIds.length > 0) params.localidad_id = localidadIds.map(String);
+        if (servicioIds.length > 0) params.servicio_id = servicioIds.map(String);
+        if (precioMin) params.precio_min = precioMin;
         if (precioMax) params.precio_max = precioMax;
+        if (ambientes) params.cantidad_ambientes = ambientes;
+        if (dormitorios) params.cantidad_dormitorios = dormitorios;
+        if (banos) params.cantidad_banos = banos;
+        if (capacidad) params.capacidad = capacidad;
         if (orden !== 'recientes') params.orden = orden;
         if (pagina > 1) params.pagina = pagina;
         setSearchParams(params, { replace: true });
-    }, [search, categoriaId, provinciaId, localidadId, precioMax, orden, pagina]);
+    }, [search, categoriaIds, provinciaId, localidadIds, servicioIds, precioMin, precioMax, ambientes, dormitorios, banos, capacidad, orden, pagina]);
 
     const cargarDatos = async () => {
         try {
-            const [props, cats, provs, locs] = await Promise.all([
+            const [props, cats, provs, locs, servs] = await Promise.all([
                 getPropiedades(),
                 getCategorias(),
                 getProvincias(),
-                getLocalidades()
+                getLocalidades(),
+                getServicios()
             ]);
             setPropiedades(props);
             setCategorias(cats);
             setProvincias(provs);
             setLocalidades(locs);
+            setServicios(servs);
         } catch (error) {
             console.error('Error cargando propiedades:', error);
         } finally {
@@ -102,6 +133,17 @@ function Propiedades() {
         return localidades.filter(loc => String(loc.provincia_id) === String(provinciaId));
     }, [localidades, provinciaId]);
 
+    // Ids de los servicios de cada propiedad, para filtrar sin volver a pedirlo
+    const serviciosPorPropiedad = useMemo(() => {
+        const map = {};
+        propiedades.forEach(p => {
+            map[String(p.id)] = new Set(
+                (p.servicios || []).map(s => String(s.id))
+            );
+        });
+        return map;
+    }, [propiedades]);
+
     // Filtrado y ordenamiento
     const filtradas = useMemo(() => {
         let resultado = [...propiedades];
@@ -120,8 +162,10 @@ function Propiedades() {
             );
         }
 
-        if (categoriaId) {
-            resultado = resultado.filter(p => String(p.categoria_id) === String(categoriaId));
+        // Categorías y localidades: con que coincida con alguna alcanza (whereIn)
+        if (categoriaIds.length > 0) {
+            const elegidas = categoriaIds.map(String);
+            resultado = resultado.filter(p => elegidas.includes(String(p.categoria_id)));
         }
 
         if (provinciaId) {
@@ -130,12 +174,44 @@ function Propiedades() {
             );
         }
 
-        if (localidadId) {
-            resultado = resultado.filter(p => String(p.localidad_id) === String(localidadId));
+        if (localidadIds.length > 0) {
+            const elegidas = localidadIds.map(String);
+            resultado = resultado.filter(p => elegidas.includes(String(p.localidad_id)));
+        }
+
+        // Servicios: tiene que tener TODOS los elegidos, no al menos uno
+        if (servicioIds.length > 0) {
+            const exigidos = servicioIds.map(String);
+            resultado = resultado.filter(p => {
+                const deLaPropiedad = serviciosPorPropiedad[String(p.id)];
+                return deLaPropiedad
+                    && exigidos.every(id => deLaPropiedad.has(id));
+            });
+        }
+
+        // Los filtros numéricos son "al menos", igual que los >= del backend
+        if (precioMin) {
+            resultado = resultado.filter(p => Number(p.precio) >= Number(precioMin));
         }
 
         if (precioMax) {
             resultado = resultado.filter(p => Number(p.precio) <= Number(precioMax));
+        }
+
+        if (ambientes) {
+            resultado = resultado.filter(p => Number(p.cantidad_ambientes) >= Number(ambientes));
+        }
+
+        if (dormitorios) {
+            resultado = resultado.filter(p => Number(p.cantidad_dormitorios) >= Number(dormitorios));
+        }
+
+        if (banos) {
+            resultado = resultado.filter(p => Number(p.cantidad_banos) >= Number(banos));
+        }
+
+        if (capacidad) {
+            resultado = resultado.filter(p => Number(p.capacidad) >= Number(capacidad));
         }
 
         switch (orden) {
@@ -153,7 +229,7 @@ function Propiedades() {
         }
 
         return resultado;
-    }, [propiedades, search, categoriaId, provinciaId, localidadId, localidadProvinciaMap, precioMax, orden]);
+    }, [propiedades, search, categoriaIds, provinciaId, localidadIds, localidadProvinciaMap, servicioIds, serviciosPorPropiedad, precioMin, precioMax, ambientes, dormitorios, banos, capacidad, orden]);
 
     // Paginación
     const totalPaginas = Math.max(1, Math.ceil(filtradas.length / POR_PAGINA));
@@ -165,10 +241,16 @@ function Propiedades() {
 
     const limpiarFiltros = () => {
         setSearch('');
-        setCategoriaId('');
+        setCategoriaIds([]);
         setProvinciaId('');
-        setLocalidadId('');
+        setLocalidadIds([]);
+        setServicioIds([]);
+        setPrecioMin('');
         setPrecioMax('');
+        setAmbientes('');
+        setDormitorios('');
+        setBanos('');
+        setCapacidad('');
         setOrden('recientes');
         setPagina(1);
     };
@@ -185,7 +267,18 @@ function Propiedades() {
         });
     };
 
-    const hayFiltros = search || categoriaId || provinciaId || localidadId || precioMax || orden !== 'recientes';
+    const hayFiltros = search
+        || categoriaIds.length > 0
+        || provinciaId
+        || localidadIds.length > 0
+        || servicioIds.length > 0
+        || precioMin
+        || precioMax
+        || ambientes
+        || dormitorios
+        || banos
+        || capacidad
+        || orden !== 'recientes';
 
     return (
         <div className="props-page">
@@ -202,24 +295,19 @@ function Propiedades() {
                         />
                     </div>
 
-                    <div className="filtro-group">
-                        <label><i className="fas fa-tag"></i> Categoría</label>
-                        <select
-                            value={categoriaId}
-                            onChange={(e) => { setCategoriaId(e.target.value); setPagina(1); }}
-                        >
-                            <option value="">Todas</option>
-                            {categorias.map(cat => (
-                                <option key={cat.id} value={cat.id}>{cat.nombre}</option>
-                            ))}
-                        </select>
-                    </div>
+                    <MultiSelect
+                        label="Categoría"
+                        icon="fa-tag"
+                        options={categorias}
+                        selected={categoriaIds}
+                        onChange={valores => { setCategoriaIds(valores); setPagina(1); }}
+                    />
 
                     <div className="filtro-group">
                         <label><i className="fas fa-map-marker-alt"></i> Provincia</label>
                         <select
                             value={provinciaId}
-                            onChange={(e) => { setProvinciaId(e.target.value); setLocalidadId(''); setPagina(1); }}
+                            onChange={(e) => { setProvinciaId(e.target.value); setLocalidadIds([]); setPagina(1); }}
                         >
                             <option value="">Todas</option>
                             {provincias.map(prov => (
@@ -228,27 +316,85 @@ function Propiedades() {
                         </select>
                     </div>
 
+                    <MultiSelect
+                        label="Localidad"
+                        icon="fa-city"
+                        options={localidadesDeProvincia}
+                        selected={localidadIds}
+                        onChange={valores => { setLocalidadIds(valores); setPagina(1); }}
+                        disabled={localidadesDeProvincia.length === 0}
+                    />
+
+                    <MultiSelect
+                        label="Servicios"
+                        icon="fa-plug"
+                        options={servicios}
+                        selected={servicioIds}
+                        onChange={valores => { setServicioIds(valores); setPagina(1); }}
+                    />
+
                     <div className="filtro-group">
-                        <label><i className="fas fa-city"></i> Localidad</label>
-                        <select
-                            value={localidadId}
-                            onChange={(e) => { setLocalidadId(e.target.value); setPagina(1); }}
-                            disabled={localidadesDeProvincia.length === 0}
-                        >
-                            <option value="">Todas</option>
-                            {localidadesDeProvincia.map(loc => (
-                                <option key={loc.id} value={loc.id}>{loc.nombre}</option>
-                            ))}
-                        </select>
+                        <label><i className="fas fa-dollar-sign"></i> Precio mín.</label>
+                        <input
+                            type="number"
+                            placeholder="Ej: 100000"
+                            value={precioMin}
+                            onChange={(e) => { setPrecioMin(e.target.value); setPagina(1); }}
+                            min="0"
+                        />
                     </div>
 
                     <div className="filtro-group">
-                        <label><i className="fas fa-dollar-sign"></i> Precio máximo</label>
+                        <label><i className="fas fa-dollar-sign"></i> Precio máx.</label>
                         <input
                             type="number"
-                            placeholder="Ej: 50000"
+                            placeholder="Ej: 250000"
                             value={precioMax}
                             onChange={(e) => { setPrecioMax(e.target.value); setPagina(1); }}
+                            min="0"
+                        />
+                    </div>
+
+                    <div className="filtro-group">
+                        <label><i className="fas fa-couch"></i> Ambientes</label>
+                        <input
+                            type="number"
+                            placeholder="Mín."
+                            value={ambientes}
+                            onChange={(e) => { setAmbientes(e.target.value); setPagina(1); }}
+                            min="0"
+                        />
+                    </div>
+
+                    <div className="filtro-group">
+                        <label><i className="fas fa-bed"></i> Dormitorios</label>
+                        <input
+                            type="number"
+                            placeholder="Mín."
+                            value={dormitorios}
+                            onChange={(e) => { setDormitorios(e.target.value); setPagina(1); }}
+                            min="0"
+                        />
+                    </div>
+
+                    <div className="filtro-group">
+                        <label><i className="fas fa-bath"></i> Baños</label>
+                        <input
+                            type="number"
+                            placeholder="Mín."
+                            value={banos}
+                            onChange={(e) => { setBanos(e.target.value); setPagina(1); }}
+                            min="0"
+                        />
+                    </div>
+
+                    <div className="filtro-group">
+                        <label><i className="fas fa-users"></i> Capacidad</label>
+                        <input
+                            type="number"
+                            placeholder="Mín. personas"
+                            value={capacidad}
+                            onChange={(e) => { setCapacidad(e.target.value); setPagina(1); }}
                             min="0"
                         />
                     </div>
