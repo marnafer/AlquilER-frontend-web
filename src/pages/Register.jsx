@@ -191,7 +191,7 @@ function Register() {
             </form>
 
             <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: '#64748b' }}>
-                ¿Ya tenés cuenta? <Link to="/login" style={{ color: '#0d9488', fontWeight: '600' }}>Iniciá sesión</Link>
+                ¿Ya tenés cuenta? <Link to="/login" style={{ color: '#1D4ED8', fontWeight: '600' }}>Iniciá sesión</Link>
             </p>
         </div>
     );

@@ -109,7 +109,7 @@ function RestablecerContrasena() {
 
             <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: '#64748b' }}>
                 ¿Recordás tu contraseña?{' '}
-                <Link to="/login" style={{ color: '#0d9488', fontWeight: '600' }}>Iniciá sesión</Link>
+                <Link to="/login" style={{ color: '#1D4ED8', fontWeight: '600' }}>Iniciá sesión</Link>
             </p>
         </div>
     );

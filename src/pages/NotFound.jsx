@@ -40,7 +40,7 @@ function NotFound() {
                 style={{ 
                     display: 'inline-block',
                     padding: '12px 32px',
-                    background: '#2563EB',
+                    background: '#1D4ED8',
                     color: 'white',
                     borderRadius: '8px',
                     fontWeight: '600',
@@ -48,10 +48,10 @@ function NotFound() {
                     transition: 'all 0.3s ease'
                 }}
                 onMouseEnter={(e) => {
-                    e.target.style.background = '#1D4ED8';
+                    e.target.style.background = '#1E40AF';
                 }}
                 onMouseLeave={(e) => {
-                    e.target.style.background = '#2563EB';
+                    e.target.style.background = '#1D4ED8';
                 }}
             >
                 Volver al inicio

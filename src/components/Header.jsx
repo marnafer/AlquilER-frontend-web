@@ -147,9 +147,9 @@ const cargarConteo = useCallback(async () => {
                         />
                         <defs>
                             <linearGradient id="gradientHouse" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="#0f766e" />
-                                <stop offset="50%" stopColor="#059669" />
-                                <stop offset="100%" stopColor="#0d9488" />
+                                <stop offset="0%" stopColor="#1E40AF" />
+                                <stop offset="50%" stopColor="#1D4ED8" />
+                                <stop offset="100%" stopColor="#3B82F6" />
                             </linearGradient>
                         </defs>
                     </svg>
@@ -158,7 +158,7 @@ const cargarConteo = useCallback(async () => {
                         style={{ 
                             fontWeight: 700, 
                             fontSize: '22px',
-                            background: 'linear-gradient(135deg, #0f766e 0%, #059669 50%, #0d9488 100%)',
+                            background: 'linear-gradient(135deg, #1E40AF 0%, #1D4ED8 50%, #3B82F6 100%)',
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent'
                         }}
@@ -306,7 +306,7 @@ const cargarConteo = useCallback(async () => {
                                         className="ms-2"
                                         onClick={() => setExpanded(false)}
                                         style={{ 
-                                            background: 'linear-gradient(135deg, #0f766e 0%, #059669 50%, #0d9488 100%)',
+                                            background: 'linear-gradient(135deg, #1E40AF 0%, #1D4ED8 50%, #3B82F6 100%)',
                                             border: 'none'
                                         }}
                                     >
