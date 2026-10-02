@@ -37,15 +37,27 @@ export default async function globalTeardown() {
 
     const titulos = TITULOS_E2E.map(t => `titulo LIKE '${t}'`).join(' OR ');
 
-    // Propiedades a eliminar: las soft-delete de corridas anteriores mas las
-    // que quedaron activas porque un test fallo antes de su propio DELETE.
-    const props = `(SELECT id FROM propiedades WHERE deleted_at IS NOT NULL OR ${titulos})`;
+    // Propiedades a eliminar: solo las que creo la suite, borradas o no.
+    //
+    // No hay que agregar "deleted_at IS NOT NULL": eso matchea toda propiedad
+    // soft-deleted de la app y al borrarlas arrastra las reservas de esas
+    // propiedades con su historial real. El prefijo de titulo ya cubre las E2E
+    // tanto soft-delete como activas, asi que ese clause no aporta nada.
+    const props = `(SELECT id FROM propiedades WHERE ${titulos})`;
+
+    // Cuentas de la suite: no se borran, pero si sus reservas, porque hay specs
+    // que reservan sobre propiedades seed, fuera del alcance de props.
+    const usuariosE2E = `(SELECT id FROM usuarios WHERE email LIKE 'e2e.%@test.com')`;
 
     const pasos = [
         ['mensajes de consultas', `DELETE FROM mensajes_consultas WHERE consulta_id IN (SELECT id FROM consultas WHERE propiedad_id IN ${props})`],
         ['consultas', `DELETE FROM consultas WHERE propiedad_id IN ${props}`],
         ['favoritos', `DELETE FROM favoritos WHERE propiedad_id IN ${props}`],
+        // resenas va antes que reservas: resenas.reserva_id tiene FK a reservas.
+        ['resenas de reservas e2e', `DELETE FROM resenas WHERE reserva_id IN (SELECT id FROM reservas WHERE propiedad_id IN ${props})`],
+        ['resenas de cuentas e2e', `DELETE FROM resenas WHERE reserva_id IN (SELECT id FROM reservas WHERE usuario_id IN ${usuariosE2E})`],
         ['reservas', `DELETE FROM reservas WHERE propiedad_id IN ${props}`],
+        ['reservas de cuentas e2e', `DELETE FROM reservas WHERE usuario_id IN ${usuariosE2E}`],
         ['imagenes', `DELETE FROM propiedad_imagenes WHERE propiedad_id IN ${props}`],
         ['servicios', `DELETE FROM propiedad_servicio WHERE propiedad_id IN ${props}`],
         ['propiedades', `DELETE FROM propiedades WHERE id IN ${props}`],
@@ -70,6 +82,9 @@ export default async function globalTeardown() {
                 : `\n[teardown] ${DB} ya estaba limpia.`
         );
     } catch (error) {
-        console.log(`\n[teardown] No se pudo limpiar ${DB}: ${error.message.split('\n')[0]}`);
+        // stderr trae el error real de MySQL (FK, sintaxis, permiso). Mostrar
+        // solo el comando dejaba el teardown fallando en silencio.
+        const detalle = String(error.stderr || error.message).trim().split('\n').slice(0, 2).join(' | ');
+        console.log(`\n[teardown] No se pudo limpiar ${DB}: ${detalle}`);
     }
 }
