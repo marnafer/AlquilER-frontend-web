@@ -1,8 +1,140 @@
+/* eslint-env node */
+import purgeCSSPlugin from '@fullhuman/postcss-purgecss'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-export default defineConfig({
+// Clases que el codigo construye en runtime y el analisis estatico no puede ver.
+const DINAMICAS_PROPIAS = [
+  'estado-pendiente',
+  'estado-confirmada',
+  'estado-cancelada',
+  'estado-rechazada',
+  'estado-finalizada',
+  'register-link'
+]
+
+// Bootstrap y react-bootstrap agregan estas clases por JavaScript.
+const DINAMICAS_BOOTSTRAP = [
+  'show',
+  'showing',
+  'hide',
+  'collapsing',
+  'collapse',
+  'fade',
+  'modal-open',
+  'modal-static',
+  'modal-backdrop',
+  'offcanvas',
+  'offcanvas-backdrop',
+  'dropdown-menu-end',
+  'dropdown-menu-start',
+  'dropdown-menu-up',
+  'dropleft',
+  'dropright',
+  'dropup',
+  'was-validated',
+  'is-invalid',
+  'is-valid',
+  'invalid-feedback',
+  'valid-feedback',
+  'disabled',
+  'active',
+  'btn-check',
+  'visually-hidden-focusable',
+  // Clases por defecto de los componentes de react-bootstrap que usa el Header.
+  'navbar',
+  'navbar-expand',
+  'navbar-brand',
+  'navbar-toggler',
+  'navbar-toggler-icon',
+  'navbar-collapse',
+  'nav',
+  'nav-item',
+  'nav-link',
+  'dropdown',
+  'dropdown-toggle',
+  'dropdown-menu',
+  'dropdown-item',
+  'dropdown-divider',
+  'dropdown-header',
+  'container',
+  'container-fluid',
+  'btn',
+  'btn-primary',
+  'btn-secondary',
+  'btn-outline-primary',
+  'btn-outline-light',
+  'btn-sm',
+  'btn-lg',
+  // Clases que react-bootstrap compone con template string a partir de props.
+  'navbar-expand-lg',
+  'navbar-dark',
+  'navbar-nav',
+  'nav-item',
+  'bg-dark',
+  'fixed-top',
+  'btn-link'
+]
+
+// Clases de estado y utilidad de FontAwesome, elegidas por JavaScript.
+const DINAMICAS_FONTAWESOME = [
+  'fa-toggle-on',
+  'fa-toggle-off',
+  'fa-spin',
+  'fa-spin-reverse',
+  'fa-pulse',
+  'fa-fw',
+  'fa-li',
+  'fa-ul',
+  'fa-border',
+  'fa-pull-left',
+  'fa-pull-right',
+  'fa-stack',
+  'fa-inverse',
+  'fa-fade',
+  'fa-beat',
+  'fa-flip-horizontal',
+  'fa-flip-vertical',
+  'fa-rotate-90',
+  'fa-rotate-180',
+  'fa-rotate-270',
+  'fa-swap-opacity',
+  'fa-width-auto',
+  'fa-xs',
+  'fa-sm',
+  'fa-lg',
+  'fa-1x',
+  'fa-2x',
+  'fa-3x'
+]
+
+export default defineConfig(({ command }) => ({
   plugins: [react()],
+  css: {
+    postcss: {
+      // La purga corre solo en build. En desarrollo se conserva el CSS completo
+      // para que las clases que aparecen en caliente sigan teniendo estilo.
+      plugins:
+        command === 'build'
+          ? [
+              purgeCSSPlugin({
+                content: [
+                  './index.html',
+                  './src/**/*.jsx',
+                  './src/**/*.js',
+                  // react-bootstrap arma sus classNames por JavaScript, asi que
+                  // hay que leer su codigo o se pierden .navbar, .btn y .dropdown-menu.
+                  './node_modules/react-bootstrap/**/*.js'
+                ],
+                defaultExtractor: (content) => content.match(/[\w-/:]+(?:#\w+)?/g) || [],
+                safelist: [...DINAMICAS_PROPIAS, ...DINAMICAS_BOOTSTRAP, ...DINAMICAS_FONTAWESOME],
+                fontFace: false,
+                keyframes: false
+              })
+            ]
+          : []
+    }
+  },
   server: {
     port: 3000,
     open: true,
@@ -21,4 +153,4 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: false
   }
-})
+}))
