@@ -1,46 +1,47 @@
 // Enrutador principal de la aplicación
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 // Hook personalizado para autenticación
 import { useAuth } from './hooks/useAuth';
-// Componentes comunes
+// Componentes del shell: se cargan siempre, no se parten
 import Header from './components/Header';
 import Footer from './components/Footer';
-import PropiedadDetalle from './components/PropiedadDetalle';
-// Páginas implementadas
-import Home from './pages/Home';
-import Contacto from './pages/Contacto';
-import PreguntasFrecuentes from './pages/PreguntasFrecuentes';
-import Servicios from './pages/Servicios';
-import Terminos from './pages/Terminos';
-import Privacidad from './pages/Privacidad';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import RecuperarContrasena from './pages/RecuperarContrasena';
-import RestablecerContrasena from './pages/RestablecerContrasena';
-import Perfil from './pages/Perfil';
-import Propiedades from './pages/Propiedades';
-import Dashboard from './pages/Dashboard';
-import Favoritos from './pages/Favoritos';
-import MisPropiedades from './pages/MisPropiedades';
-import MisReservas from './pages/MisReservas';
-import MisConsultas from './pages/MisConsultas';
-import Notificaciones from './pages/Notificaciones';
-import PropiedadForm from './pages/PropiedadForm';
-import NotFound from './pages/NotFound';
+import Loader from './components/Loader';
+// Páginas implementadas: cada una viaja en su propio chunk
+const Home = lazy(() => import('./pages/Home'));
+const Contacto = lazy(() => import('./pages/Contacto'));
+const PreguntasFrecuentes = lazy(() => import('./pages/PreguntasFrecuentes'));
+const Servicios = lazy(() => import('./pages/Servicios'));
+const Terminos = lazy(() => import('./pages/Terminos'));
+const Privacidad = lazy(() => import('./pages/Privacidad'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const RecuperarContrasena = lazy(() => import('./pages/RecuperarContrasena'));
+const RestablecerContrasena = lazy(() => import('./pages/RestablecerContrasena'));
+const Perfil = lazy(() => import('./pages/Perfil'));
+const Propiedades = lazy(() => import('./pages/Propiedades'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Favoritos = lazy(() => import('./pages/Favoritos'));
+const MisPropiedades = lazy(() => import('./pages/MisPropiedades'));
+const MisReservas = lazy(() => import('./pages/MisReservas'));
+const MisConsultas = lazy(() => import('./pages/MisConsultas'));
+const Notificaciones = lazy(() => import('./pages/Notificaciones'));
+const PropiedadForm = lazy(() => import('./pages/PropiedadForm'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+const PropiedadDetalle = lazy(() => import('./components/PropiedadDetalle'));
 // Páginas de administración
-import AdminHome from './pages/admin/AdminHome';
-import UsuariosAdmin from './pages/admin/UsuariosAdmin';
-import CategoriasAdmin from './pages/admin/CategoriasAdmin';
-import ProvinciasAdmin from './pages/admin/ProvinciasAdmin';
-import LocalidadesAdmin from './pages/admin/LocalidadesAdmin';
-import RolesAdmin from './pages/admin/RolesAdmin';
-import ServiciosAdmin from './pages/admin/ServiciosAdmin';
-import ResenasAdmin from './pages/admin/ResenasAdmin';
-import ReservasAdmin from './pages/admin/ReservasAdmin';
-import ConsultasAdmin from './pages/admin/ConsultasAdmin';
-import LogsAdmin from './pages/admin/LogsAdmin';
-import PropiedadesAdmin from './pages/admin/PropiedadesAdmin';
+const AdminHome = lazy(() => import('./pages/admin/AdminHome'));
+const UsuariosAdmin = lazy(() => import('./pages/admin/UsuariosAdmin'));
+const CategoriasAdmin = lazy(() => import('./pages/admin/CategoriasAdmin'));
+const ProvinciasAdmin = lazy(() => import('./pages/admin/ProvinciasAdmin'));
+const LocalidadesAdmin = lazy(() => import('./pages/admin/LocalidadesAdmin'));
+const RolesAdmin = lazy(() => import('./pages/admin/RolesAdmin'));
+const ServiciosAdmin = lazy(() => import('./pages/admin/ServiciosAdmin'));
+const ResenasAdmin = lazy(() => import('./pages/admin/ResenasAdmin'));
+const ReservasAdmin = lazy(() => import('./pages/admin/ReservasAdmin'));
+const ConsultasAdmin = lazy(() => import('./pages/admin/ConsultasAdmin'));
+const LogsAdmin = lazy(() => import('./pages/admin/LogsAdmin'));
+const PropiedadesAdmin = lazy(() => import('./pages/admin/PropiedadesAdmin'));
 
 // ============================================
 // RUTAS PROTEGIDAS
@@ -73,6 +74,7 @@ function AppRouter() {
         <>
             <Header />
             <main className="main">
+                <Suspense fallback={<Loader />}>
                 <Routes>
                     {/* ============================================
                         RUTAS PÚBLICAS
@@ -319,6 +321,7 @@ function AppRouter() {
                        ============================================ */}
                     <Route path="*" element={<NotFound />} />
                 </Routes>
+                </Suspense>
             </main>
             <Footer />
         </>
