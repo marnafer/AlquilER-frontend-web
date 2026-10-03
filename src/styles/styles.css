@@ -1643,6 +1643,28 @@ img {
     100% { background-position: -100% 0; }
 }
 
+/* ========== CARGA DE RUTAS (code splitting) ========== */
+.ruta-carga {
+    min-height: 400px;
+    padding: 40px 0;
+}
+
+.ruta-carga-esqueleto {
+    display: flex;
+    flex-direction: column;
+    max-width: 760px;
+}
+
+.ruta-carga-esqueleto .skeleton-line {
+    margin-bottom: 14px;
+}
+
+.ruta-carga-titulo {
+    height: 30px !important;
+    width: 45%;
+    margin-bottom: 28px !important;
+}
+
 /* ========== EMPTY STATE ========== */
 .propiedades-empty {
     text-align: center;

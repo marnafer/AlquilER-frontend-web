@@ -1,12 +1,11 @@
 // Enrutador principal de la aplicación
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 // Hook personalizado para autenticación
 import { useAuth } from './hooks/useAuth';
 // Componentes del shell: se cargan siempre, no se parten
 import Header from './components/Header';
 import Footer from './components/Footer';
-import Loader from './components/Loader';
 // Páginas implementadas: cada una viaja en su propio chunk
 const Home = lazy(() => import('./pages/Home'));
 const Contacto = lazy(() => import('./pages/Contacto'));
@@ -69,12 +68,47 @@ function AdminRoute({ children }) {
     return Number(usuario?.rol_id) === 2 ? children : <Navigate to="/" replace />;
 }
 
+// ============================================
+// FALLBACK DE CARGA DE RUTAS
+// ============================================
+
+// Los chunks suelen resolverse entre 150 y 300 ms. Mostrar un indicador para
+// ese intervalo se percibe como un parpadeo, asi que primero se reserva el
+// espacio sin pintar nada y recien despues se muestra el esqueleto.
+const RETARDO_INDICADOR_MS = 300;
+
+function CargaRuta() {
+    const [mostrar, setMostrar] = useState(false);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setMostrar(true), RETARDO_INDICADOR_MS);
+        return () => clearTimeout(timer);
+    }, []);
+
+    if (!mostrar) {
+        return <div className="ruta-carga" aria-hidden="true"></div>;
+    }
+
+    return (
+        <div className="ruta-carga" aria-busy="true">
+            <span className="visually-hidden">Cargando contenido...</span>
+            <div className="ruta-carga-esqueleto" aria-hidden="true">
+                <div className="skeleton skeleton-line ruta-carga-titulo"></div>
+                <div className="skeleton skeleton-line"></div>
+                <div className="skeleton skeleton-line" style={{ width: '92%' }}></div>
+                <div className="skeleton skeleton-line"></div>
+                <div className="skeleton skeleton-line" style={{ width: '68%' }}></div>
+            </div>
+        </div>
+    );
+}
+
 function AppRouter() {
     return (
         <>
             <Header />
             <main className="main">
-                <Suspense fallback={<Loader />}>
+                <Suspense fallback={<CargaRuta />}>
                 <Routes>
                     {/* ============================================
                         RUTAS PÚBLICAS
