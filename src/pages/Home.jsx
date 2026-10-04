@@ -71,7 +71,7 @@ function Home() {
         const img = e.currentTarget;
         if (img.dataset.fallback !== '1') {
             img.dataset.fallback = '1';
-            img.src = '/assets/img/logo.png';
+            img.src = '/assets/img/logo.webp';
         } else {
             img.style.display = 'none';
         }
@@ -116,7 +116,7 @@ function Home() {
 
                         <div className="hero-image">
                             <img
-                                src="/assets/img/logo.png"
+                                src="/assets/img/logo.webp"
                                 alt="AlquilER"
                                 style={{ maxHeight: '500px', width: 'auto' }}
                                 onError={ocultarHero}
@@ -151,7 +151,7 @@ function Home() {
                             <div className="propiedad-card" key={prop.id}>
                                 <div className="propiedad-image">
                                     <img
-                                        src={rutaImagenPropiedad(prop) || '/assets/img/logo.png'}
+                                        src={rutaImagenPropiedad(prop) || '/assets/img/logo.webp'}
                                         alt={prop.titulo}
                                         onError={onImgError}
                                     />
