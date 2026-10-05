@@ -1,5 +1,16 @@
 export const API_URL = import.meta.env.VITE_API_URL || '';
 
+// Cuando la API esta caida, el navegador lanza errores como "Failed to fetch"
+// o errores de parseo de JSON. Eso es informacion tecnica, no un mensaje
+// para el usuario final: se muestra un mensaje generico y el error original
+// queda en la consola del navegador para poder diagnosticarlo.
+const MENSAJE_SIN_CONEXION = 'No pudimos conectar con el servidor. Probá de nuevo en unos momentos.';
+
+function errorDeConexion(error) {
+    console.error('Error de red al llamar a la API:', error);
+    return MENSAJE_SIN_CONEXION;
+}
+
 // ============================================
 // AUTENTICACIÓN Y USUARIOS
 // ============================================
@@ -22,7 +33,7 @@ export async function login(email, password) {
         }
         return result;
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -47,7 +58,7 @@ export async function register(userData) {
 
         return result;
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -64,7 +75,7 @@ export async function logout(token, refreshToken) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -78,7 +89,7 @@ export async function getPerfil(token) {
         result.status = response.status;
         return result;
     } catch (error) {
-        return { success: false, error: error.message, status: 0 };
+        return { success: false, error: errorDeConexion(error), status: 0 };
     }
 }
 
@@ -94,7 +105,7 @@ export async function updatePerfil(id, userData, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -111,7 +122,7 @@ export async function recuperarContrasena(email) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -126,7 +137,7 @@ export async function restablecerContrasena(data) {
         result.status = response.status;
         return result;
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -143,7 +154,7 @@ export async function enviarMensajeContacto(data) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -221,7 +232,7 @@ export async function createPropiedad(data, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -237,7 +248,7 @@ export async function updatePropiedad(id, data, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -249,7 +260,7 @@ export async function deletePropiedad(id, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -263,7 +274,7 @@ export async function getPropiedadesAdmin(token, soloEliminados = false) {
         result.status = response.status;
         return result;
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -279,7 +290,7 @@ export async function subirImagenPropiedad(propiedadId, file, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -291,7 +302,7 @@ export async function establecerImagenPrincipal(id, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -303,7 +314,7 @@ export async function eliminarImagenPropiedad(id, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -412,7 +423,7 @@ export async function guardarServiciosPropiedad(propiedadId, ids, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -428,7 +439,7 @@ export async function sincronizarServiciosPropiedad(propiedadId, ids, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -443,7 +454,7 @@ export async function getFavoritos(token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -459,7 +470,7 @@ export async function addFavorito(propiedadId, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -471,7 +482,7 @@ export async function removeFavorito(propiedadId, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -487,7 +498,7 @@ export async function getReservas(token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -501,7 +512,7 @@ export async function getReservasAdmin(token, soloEliminados = false) {
         result.status = response.status;
         return result;
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -519,7 +530,7 @@ export async function crearReservaAdmin(data, token) {
         result.status = response.status;
         return result;
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -535,7 +546,7 @@ export async function createReserva(data, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -552,7 +563,7 @@ export async function confirmarReserva(id, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -564,7 +575,7 @@ export async function rechazarReserva(id, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -576,7 +587,7 @@ export async function finalizarReserva(id, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -588,7 +599,7 @@ export async function cancelarReserva(id, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -601,7 +612,7 @@ export async function getReserva(id, token) {
         result.status = response.status;
         return result;
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -617,7 +628,7 @@ export async function updateReservaEstado(id, estado, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -629,7 +640,7 @@ export async function deleteReserva(id, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -640,7 +651,7 @@ export async function getReservasByPropiedad(propiedadId, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -660,7 +671,7 @@ export async function createConsulta(data, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -671,7 +682,7 @@ export async function getConsultas(token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -685,7 +696,7 @@ export async function getConsultasAdmin(token, soloEliminados = false) {
         result.status = response.status;
         return result;
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -697,7 +708,7 @@ export async function deleteConsulta(id, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -708,7 +719,7 @@ export async function getConsultasByPropiedad(propiedadId, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -719,7 +730,7 @@ export async function getConsultasByUsuario(usuarioId, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -730,7 +741,7 @@ export async function getMensajesConsulta(consultaId, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -746,7 +757,7 @@ export async function enviarMensajeConsulta(consultaId, mensaje, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -766,7 +777,7 @@ export async function createResena(data, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -775,7 +786,7 @@ export async function getResenasByPropiedad(propiedadId) {
         const response = await fetch(`${API_URL}/api/resenas/propiedad/${propiedadId}`);
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -794,7 +805,7 @@ export async function getUsuarios(token, soloEliminados = false) {
         result.status = response.status;
         return result;
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -812,7 +823,7 @@ export async function crearUsuarioAdmin(data, token) {
         result.status = response.status;
         return result;
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -825,7 +836,7 @@ export async function getUsuario(id, token) {
         result.status = response.status;
         return result;
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -836,7 +847,7 @@ export async function getResenasByUsuario(id, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -847,7 +858,7 @@ export async function getFavoritosByUsuario(id, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -859,7 +870,7 @@ export async function deleteUsuario(id, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -879,7 +890,7 @@ export async function createCategoria(data, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -895,7 +906,7 @@ export async function updateCategoria(id, data, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -907,7 +918,7 @@ export async function deleteCategoria(id, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -927,7 +938,7 @@ export async function createProvincia(data, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -943,7 +954,7 @@ export async function updateProvincia(id, data, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -955,7 +966,7 @@ export async function deleteProvincia(id, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -975,7 +986,7 @@ export async function createLocalidad(data, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -991,7 +1002,7 @@ export async function updateLocalidad(id, data, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -1003,7 +1014,7 @@ export async function deleteLocalidad(id, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -1023,7 +1034,7 @@ export async function createRol(data, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -1039,7 +1050,7 @@ export async function updateRol(id, data, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -1051,7 +1062,7 @@ export async function deleteRol(id, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -1071,7 +1082,7 @@ export async function createServicio(data, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -1087,7 +1098,7 @@ export async function updateServicio(id, data, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -1099,7 +1110,7 @@ export async function deleteServicio(id, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -1122,7 +1133,7 @@ export async function getResenas(token, soloEliminados = false, filtros = {}) {
         result.status = response.status;
         return result;
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -1138,7 +1149,7 @@ export async function updateResena(id, data, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -1156,7 +1167,7 @@ export async function crearResenaAdmin(data, token) {
         result.status = response.status;
         return result;
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -1168,7 +1179,7 @@ export async function deleteResena(id, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -1184,7 +1195,7 @@ const restore = (endpoint) => async (id, token) => {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 };
 
@@ -1212,7 +1223,7 @@ export async function getLogsActividad(token) {
         result.status = response.status;
         return result;
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -1227,7 +1238,7 @@ export async function getNotificaciones(token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -1238,7 +1249,7 @@ export async function getNotificacionesNoLeidas(token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -1250,7 +1261,7 @@ export async function marcarNotificacionLeida(id, token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
 
@@ -1262,6 +1273,6 @@ export async function marcarTodasNotificacionesLeidas(token) {
         });
         return await response.json();
     } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: errorDeConexion(error) };
     }
 }
