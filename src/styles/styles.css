@@ -3541,15 +3541,19 @@ img {
         text-align: center;
     }
 
+    /* Con el menu hamburguesa abierto, el desplegable puede caer fuera del
+       navbar y quedar sobre el fondo claro de la pagina. Por eso necesita
+       fondo propio: si queda transparente, el texto blanco se pierde. */
     .dropdown-menu {
-        background: transparent;
-        border: none;
-        padding-left: 16px;
+        background: var(--navy);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     }
 
     .dropdown-menu .dropdown-item {
-        color: rgba(255, 255, 255, 0.7);
-        padding: 6px 0;
+        color: rgba(255, 255, 255, 0.85);
+        padding: 8px 20px;
     }
 
     .dropdown-menu .dropdown-divider {
