@@ -147,15 +147,19 @@ img {
     text-decoration: none !important;
 }
 
+/* El bundle de Vite deja el CSS de Bootstrap despues de este archivo, asi que
+   gana el empate de especificidad con su fondo blanco. Hay que forzar el color. */
 .dropdown-menu {
-    background: var(--navy);
+    background: var(--navy) !important;
+    background-color: var(--navy) !important;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 8px 0;
 }
 
 .dropdown-menu .dropdown-item {
-    color: rgba(255, 255, 255, 0.8);
+    background: transparent;
+    color: #ffffffcc !important;
     padding: 8px 20px;
     transition: var(--transition);
     text-decoration: none !important;
@@ -3545,14 +3549,16 @@ img {
        navbar y quedar sobre el fondo claro de la pagina. Por eso necesita
        fondo propio: si queda transparente, el texto blanco se pierde. */
     .dropdown-menu {
-        background: var(--navy);
+        background: var(--navy) !important;
+        background-color: var(--navy) !important;
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 12px;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     }
 
     .dropdown-menu .dropdown-item {
-        color: rgba(255, 255, 255, 0.85);
+        background: transparent;
+        color: rgba(255, 255, 255, 0.85) !important;
         padding: 8px 20px;
     }
 
