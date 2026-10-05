@@ -1,24 +1,24 @@
 import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
-    testDir: './e2e',
-    timeout: 45000,
-    expect: { timeout: 15000 },
-    fullyParallel: false,
-    // La suite comparte una misma BD y usuarios e2e: un solo worker
-    // evita carreras (ej: una propiedad creada por un test aparece
-    // primera en el catálogo que usa otro test en paralelo).
-    workers: 1,
-    reporter: 'list',
-    globalTeardown: './e2e/global-teardown.js',
-    use: {
-        baseURL: 'http://localhost:3000',
-        headless: true,
-        viewport: { width: 1280, height: 900 },
-        actionTimeout: 15000,
-        trace: 'off'
-    },
-    projects: [
-        { name: 'chromium', use: { browserName: 'chromium' } }
-    ]
+  testDir: './tests',
+  timeout: 45000,
+  reporter: [['list']],
+  use: {
+    baseURL: 'http://127.0.0.1:3000',
+    trace: 'off',
+    screenshot: 'off',
+  },
+  projects: [
+    { name: 'movil-390',   use: { browserName: 'chromium', viewport: { width: 390,  height: 844 } } },
+    { name: 'tablet-768',  use: { browserName: 'chromium', viewport: { width: 768,  height: 1024 } } },
+    { name: 'desktop-1024',use: { browserName: 'chromium', viewport: { width: 1024, height: 768 } } },
+    { name: 'desktop-1440',use: { browserName: 'chromium', viewport: { width: 1440, height: 900 } } },
+  ],
+  webServer: {
+    command: 'npm run dev -- --host 127.0.0.1 --port 3000',
+    url: 'http://127.0.0.1:3000',
+    reuseExistingServer: true,
+    timeout: 60000,
+  },
 });

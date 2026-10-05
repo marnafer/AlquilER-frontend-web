@@ -1461,10 +1461,17 @@ img {
     flex-wrap: wrap;
 }
 
-.detalle-chips .propiedad-badge {
+/* Los dos chips van en el mismo flex, uno al lado del otro.
+   Sin esto, .propiedad-categoria conserva el position:absolute de la
+   regla global de la tarjeta y se sale del flujo: queda pegada al
+   centro de la imagen y encima del badge. */
+.detalle-chips .propiedad-badge,
+.detalle-chips .propiedad-categoria {
     position: static;
     bottom: auto;
     right: auto;
+    left: auto;
+    top: auto;
 }
 
 .detalle-precio-pill {
