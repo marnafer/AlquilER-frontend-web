@@ -16,6 +16,16 @@ function PropiedadCard({ propiedad, categoriaNombre, esFavoritoInicial = false, 
 
     const imagen = rutaImagenPropiedad(propiedad);
 
+    // Vista previa de la descripcion para la tarjeta: recorta por caracteres
+    // para que todas las tarjetas ocupen lo mismo, sin depender del ancho.
+    const descripcion = (() => {
+        const texto = (propiedad.descripcion || '').trim();
+        if (!texto) return '';
+        return texto.length > 150
+            ? `${texto.slice(0, 150).trimEnd()}...`
+            : texto;
+    })();
+
     // Normalizar disponibilidad (por si el backend no la envía)
     const disponible = propiedad.disponible !== false;
 
@@ -96,6 +106,9 @@ function PropiedadCard({ propiedad, categoriaNombre, esFavoritoInicial = false, 
                     <i className="fas fa-map-marker-alt"></i>{' '}
                     {propiedad.direccion || 'Dirección no especificada'}
                 </p>
+                {descripcion && (
+                    <p className="propiedad-card-descripcion">{descripcion}</p>
+                )}
                 <div className="propiedad-features">
                     <span><i className="fas fa-bed"></i> {propiedad.cantidad_dormitorios || 0}</span>
                     <span><i className="fas fa-bath"></i> {propiedad.cantidad_banos || 0}</span>

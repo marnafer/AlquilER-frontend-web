@@ -396,7 +396,9 @@ function PropiedadDetalle() {
                             </div>
                         )}
 
-                        <p className="propiedad-detalle-descripcion">
+                        <p
+                            className={`propiedad-detalle-descripcion${propiedad.descripcion ? '' : ' vacia'}`}
+                        >
                             {propiedad.descripcion || 'Sin descripción'}
                         </p>
 

@@ -1511,11 +1511,42 @@ img {
     margin: 8px 0 0;
 }
 
+/* Descripcion en la ficha: bloque con barra lateral para que el texto
+   se lea como cita y se separe del resto de los datos. */
 .propiedad-detalle-descripcion {
-    color: #475569;
-    font-size: 15.5px;
-    line-height: 1.8;
+    background: var(--primary-bg);
+    border-left: 4px solid var(--primary);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    color: var(--gray-700);
+    font-size: 16px;
+    line-height: 1.75;
+    padding: 20px 24px;
     margin-bottom: 24px;
+    white-space: pre-line;
+}
+
+.propiedad-detalle-descripcion:empty {
+    display: none;
+}
+
+/* Sin descripcion: se avisa con un tono de aviso, no como texto normal. */
+.propiedad-detalle-descripcion.vacia {
+    background: var(--gray-100);
+    border-left-color: var(--gray-400);
+    color: var(--gray-500);
+    font-style: italic;
+}
+
+/* Vista previa en la tarjeta del listado. */
+.propiedad-card-descripcion {
+    color: var(--gray-600);
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 14px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .propiedad-detalle-features {
