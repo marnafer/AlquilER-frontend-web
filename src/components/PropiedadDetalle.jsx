@@ -283,7 +283,15 @@ function PropiedadDetalle() {
     const categoriaNombre = categorias.find(c => c.id === propiedad.categoria_id)?.nombre;
     const disponible = propiedad.disponible !== false;
     const imagen = rutaImagenPropiedad(propiedad);
-    const hoy = new Date().toISOString().slice(0, 10);
+    // toISOString() devuelve la fecha en UTC. Argentina es UTC-3, asi que despues
+    // de las 21:00 marcaria el dia siguiente como minimo y no dejaria reservar
+    // para hoy. Armamos el string con la fecha local.
+    const hoy = (() => {
+        const d = new Date();
+        const mes = String(d.getMonth() + 1).padStart(2, '0');
+        const dia = String(d.getDate()).padStart(2, '0');
+        return `${d.getFullYear()}-${mes}-${dia}`;
+    })();
 
     const abrirModal = () => {
         setErrorReserva('');
