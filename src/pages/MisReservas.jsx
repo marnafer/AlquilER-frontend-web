@@ -4,7 +4,6 @@ import { useAuth } from '../hooks/useAuth';
 import { useUI } from '../context/UIContext';
 import {
     getReservas,
-    getReservasByPropiedad,
     getMisPropiedades,
     getPropiedades,
     aprobarReserva,
@@ -91,36 +90,32 @@ function MisReservas() {
             const mapPropiedad = {};
             [...misProps, ...catalogo].forEach(p => { if (p) mapPropiedad[p.id] = p; });
 
+            // Una sola llamada a /api/reservas trae las propias y las recibidas sobre
+            // mis propiedades, pero sin indicar cual es cual. Decidimos el origen
+            // mirando usuario_id contra el propietario de la propiedad.
             const propias = [];
-            const propiasRes = await getReservas(token);
-            const itemsPropias = propiasRes?.data?.items || propiasRes?.data || propiasRes || [];
-            (Array.isArray(itemsPropias) ? itemsPropias : []).forEach(r => {
-                propias.push({
-                    ...r,
-                    origen: 'propia',
-                    propiedad: mapPropiedad[r.propiedad_id] || null
-                });
+            const recibidas = [];
+
+            const todasRes = await getReservas(token);
+            const itemsTodas = todasRes?.data?.items || todasRes?.data || todasRes || [];
+
+            (Array.isArray(itemsTodas) ? itemsTodas : []).forEach(r => {
+                const esMia = String(r.usuario_id) === String(usuario.id);
+                const propiedad = mapPropiedad[r.propiedad_id] || null;
+
+                // Una reserva de otra persona solo cuenta como recibida si la propiedad
+                // es mia. Cualquier otro caso se descarta.
+                const esRecibida = !esMia && Boolean(propiedad)
+                    && String(propiedad.usuario_id) === String(usuario.id);
+
+                if (esMia) {
+                    propias.push({ ...r, origen: 'propia', propiedad });
+                } else if (esRecibida) {
+                    recibidas.push({ ...r, origen: 'recibida', propiedad });
+                }
             });
 
-            const recibidas = [];
-            if (esGestion) {
-                for (const p of misProps) {
-                    const res = await getReservasByPropiedad(p.id, token);
-                    const items = res?.data?.reservas || res?.data || [];
-                    (Array.isArray(items) ? items : []).forEach(r => {
-                        recibidas.push({
-                            ...r,
-                            origen: 'recibida',
-                            propiedad: p
-                        });
-                    });
-                }
-            }
-
-            // Deduplicamos por id porque GET /api/reservas (admin) ya devuelve todo
-            const porId = new Map();
-            [...propias, ...recibidas].forEach(r => porId.set(String(r.id || 0), r));
-            const todas = Array.from(porId.values()).sort((a, b) =>
+            const todas = [...propias, ...recibidas].sort((a, b) =>
                 String(b.id || 0).localeCompare(String(a.id || 0), undefined, { numeric: true })
             );
             setReservas(todas);
@@ -130,7 +125,10 @@ function MisReservas() {
         } finally {
             setLoading(false);
         }
-    }, [token, usuario, esGestion]);
+    // esGestion NO va como dependencia: se calcula adentro a partir de misProps.
+    // Si fuera dependencia, el setEsGestion del primer render recrearia el
+    // callback y dispararia el useEffect otra vez, con el doble de requests.
+    }, [token, usuario]);
 
     useEffect(() => {
         cargarDatos();
