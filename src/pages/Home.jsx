@@ -3,9 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { getPropiedades, getPropiedadesDestacadas, getCategorias, getServicios, getLocalidades } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
 import { iconoServicio } from '../utils/servicios';
+import { useSEO } from '../hooks/useSEO';
 import Loader from '../components/Loader';
 
 function Home() {
+    useSEO(
+        'Alquiler de propiedades',
+        'AlquilER: encontrá el departamento, casa o local comercial que necesitás. Departamentos, casas y locales en alquiler con búsqueda por provincia, categoría y precio.'
+    );
     const [propiedades, setPropiedades] = useState([]);
     const [destacadas, setDestacadas] = useState([]);
     const [categorias, setCategorias] = useState([]);
@@ -96,10 +101,12 @@ function Home() {
                                 <input
                                     type="text"
                                     placeholder="¿Dónde querés vivir?"
+                                    aria-label="Buscar propiedad por dirección o título"
                                     value={busqueda}
                                     onChange={(e) => setBusqueda(e.target.value)}
                                 />
                                 <select
+                                    aria-label="Filtrar por categoría"
                                     value={categoriaBusqueda}
                                     onChange={(e) => setCategoriaBusqueda(e.target.value)}
                                 >

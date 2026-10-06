@@ -42,6 +42,15 @@ const FORM_INICIAL = {
 function PropiedadForm() {
     const { id } = useParams();
     const esEdicion = Boolean(id);
+
+    // El titulo cambia segun sea alta o edicion, asi que va despues del useParams.
+    useSEO(
+        esEdicion ? 'Editar propiedad' : 'Publicar propiedad',
+        esEdicion
+            ? 'Modificá los datos y las fotos de tu propiedad publicada en AlquilER.'
+            : 'Publicá tu propiedad en AlquilER gratis. Completá los datos, subí fotos y encontrá inquilinos.',
+        { noindex: true }
+    );
     const navigate = useNavigate();
     const location = useLocation();
     const recienCreada = Boolean(location.state?.recienCreada);

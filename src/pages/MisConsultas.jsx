@@ -12,6 +12,8 @@ import { rutaImagenPropiedad } from '../utils/imagenes';
 import Loader from '../components/Loader';
 
 function MisConsultas() {
+    useSEO('Mis consultas', 'Tus consultas enviadas a propietarios de propiedades.', { noindex: true });
+
     const { token, usuario } = useAuth();
 
     const [items, setItems] = useState([]);

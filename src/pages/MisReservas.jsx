@@ -42,6 +42,8 @@ const ORIGENES = [
 const soloDia = (f) => (f ? String(f).slice(0, 10) : '—');
 
 function MisReservas() {
+    useSEO('Mis reservas', 'Tus reservas de propiedades en alquiler y sus estados.', { noindex: true });
+
     const { token, usuario } = useAuth();
     const { confirm, showToast } = useUI();
     const [loading, setLoading] = useState(true);

@@ -20,6 +20,8 @@ const ICONOS_POR_TIPO = {
 };
 
 function Notificaciones() {
+    useSEO('Notificaciones', 'Avisos de reservas, consultas y mensajes en AlquilER.', { noindex: true });
+
     const { token } = useAuth();
     const { showToast } = useUI();
 

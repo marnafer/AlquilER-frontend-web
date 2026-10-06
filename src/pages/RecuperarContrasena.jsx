@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { recuperarContrasena } from '../services/api';
+import { useSEO } from '../hooks/useSEO';
 
 function RecuperarContrasena() {
+    useSEO('Recuperar contraseña', 'Olvidaste tu contraseña de AlquilER. Te enviamos un email para que puedas restablecerla.', { noindex: true });
     const [email, setEmail] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);

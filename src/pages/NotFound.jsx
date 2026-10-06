@@ -3,8 +3,10 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useSEO } from '../hooks/useSEO';
 
 function NotFound() {
+    useSEO('Página no encontrada', 'La página que buscás no existe o fue movida.', { noindex: true });
     return (
         <div style={{ 
             textAlign: 'center', 

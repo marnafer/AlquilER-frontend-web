@@ -16,6 +16,7 @@ import { rutaImagenPropiedad } from '../utils/imagenes';
 import { iconoServicio } from '../utils/servicios';
 import { useAuth } from '../hooks/useAuth';
 import { useUI } from '../context/UIContext';
+import { useSEO } from '../hooks/useSEO';
 import Loader from './Loader';
 
 function PropiedadDetalle() {
@@ -245,6 +246,22 @@ function PropiedadDetalle() {
             setEnviandoConsulta(false);
         }
     };
+
+    // El SEO va antes de los returns tempranos porque los hooks no se pueden
+    // llamar condicionalmente: hay que declararlo siempre, incluso mientras
+    // carga. Con la propiedad todavia en null, useSEO no pisa nada.
+    // La API devuelve solo localidad_id, no el nombre resuelto, asi que el titulo
+    // se arma con el titulo de la propiedad y la direccion.
+    const localidadTexto = propiedad?.direccion || '';
+    const tituloSEO = propiedad?.titulo || '';
+
+    const descripcionSEO = propiedad
+        ? `${propiedad.titulo || 'Propiedad'} en alquiler${localidadTexto ? ` en ${localidadTexto}` : ''}. ${propiedad.cantidad_ambientes ? `${propiedad.cantidad_ambientes} ambientes. ` : ''}${Number(propiedad.precio || 0).toLocaleString('es-AR')} por mes. Reservá online o consultá directamente con el propietario.`
+        : '';
+
+    const imagenSEO = rutaImagenPropiedad(propiedad) || '/assets/img/logo.webp';
+
+    useSEO(tituloSEO, descripcionSEO, { imagen: imagenSEO });
 
     if (loading) return <Loader />;
     if (!propiedad) {

@@ -49,6 +49,8 @@ function ServiciosTarjeta({ servicios, expandido, onToggle }) {
 }
 
 function MisPropiedades() {
+    useSEO('Mis propiedades', 'Gestioná las propiedades que publicaste en AlquilER.', { noindex: true });
+
     const { token, usuario } = useAuth();
     const { showToast } = useUI();
     const [loading, setLoading] = useState(true);

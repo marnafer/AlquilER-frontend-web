@@ -1,7 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useSEO } from '../hooks/useSEO';
 
 function Terminos() {
+    useSEO(
+        'Términos y condiciones',
+        'Términos y condiciones de uso de AlquilER: condiciones del servicio, responsabilidades de inquilinos y propietarios, y tratamiento de las reservas.'
+    );
     return (
         <div className="estatica-page">
             <div className="container">

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { enviarMensajeContacto } from '../services/api';
+import { useSEO } from '../hooks/useSEO';
 
 const DATOS = [
     { icono: 'fa-envelope', titulo: 'Email', detalle: 'contacto@alquiler.com.ar', enlace: 'mailto:contacto@alquiler.com.ar' },
@@ -10,6 +11,11 @@ const DATOS = [
 ];
 
 function Contacto() {
+    useSEO(
+        'Contacto',
+        '¿Tenés una consulta sobre un alquiler en AlquilER? Escribinos y te respondemos. También podés llamarnos o visitarnos.'
+    );
+
     const [formData, setFormData] = useState({ nombre: '', email: '', asunto: '', mensaje: '' });
     const [errores, setErrores] = useState({});
     const [errorApi, setErrorApi] = useState('');

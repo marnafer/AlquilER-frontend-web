@@ -2,9 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getServicios } from '../services/api';
 import { iconoServicio } from '../utils/servicios';
+import { useSEO } from '../hooks/useSEO';
 import Loader from '../components/Loader';
 
 function Servicios() {
+    useSEO(
+        'Servicios para el alquiler',
+        'Conocé los servicios disponibles para tu alquiler en AlquilER: luz, gas, agua, internet y mucho más. Elegí los que necesitás al publicar tu propiedad.'
+    );
+
     const [servicios, setServicios] = useState([]);
     const [loading, setLoading] = useState(true);
 

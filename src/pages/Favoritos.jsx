@@ -2,10 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { getFavoritos, removeFavorito } from '../services/api';
+import { useSEO } from '../hooks/useSEO';
 import PropiedadCard from '../components/PropiedadCard';
 import Loader from '../components/Loader';
 
 function Favoritos() {
+    useSEO('Mis favoritos', 'Tus propiedades guardadas en AlquilER.', { noindex: true });
+
     const { token } = useAuth();
     const [favoritos, setFavoritos] = useState([]);
     const [loading, setLoading] = useState(true);

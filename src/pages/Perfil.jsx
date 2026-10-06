@@ -3,9 +3,12 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useUI } from '../context/UIContext';
 import { updatePerfil } from '../services/api';
+import { useSEO } from '../hooks/useSEO';
 import Loader from '../components/Loader';
 
 function Perfil() {
+    useSEO('Mi perfil', 'Gestioná tus datos personales y tu contraseña en AlquilER.', { noindex: true });
+
     const { usuario, token, loading, refreshUser } = useAuth();
 
     const [editando, setEditando] = useState(false);

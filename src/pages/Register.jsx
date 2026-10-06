@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { register } from '../services/api';
 import { useUI } from '../context/UIContext';
+import { useSEO } from '../hooks/useSEO';
 
 function Register() {
+    useSEO('Crear cuenta', 'Registrate gratis en AlquilER para publicar propiedades o reservar tu próxima vivienda.', { noindex: true });
     const [formData, setFormData] = useState({
         nombre: '',
         apellido: '',

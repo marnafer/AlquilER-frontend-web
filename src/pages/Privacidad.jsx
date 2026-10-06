@@ -1,7 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useSEO } from '../hooks/useSEO';
 
 function Privacidad() {
+    useSEO(
+        'Política de privacidad',
+        'Cómo AlquilER maneja tus datos personales: qué información recopilamos, para qué la usamos y cómo pedir su eliminación.'
+    );
     return (
         <div className="estatica-page">
             <div className="container">

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { getMisPropiedades, getReservas, getFavoritos, getConsultas, getNotificaciones } from '../services/api';
+import { useSEO } from '../hooks/useSEO';
 import Loader from '../components/Loader';
 
 const ICONOS_NOTIF = {
@@ -13,6 +14,8 @@ const ICONOS_NOTIF = {
 };
 
 function Dashboard() {
+    useSEO('Mi panel', 'Resumen de tus propiedades, reservas, consultas y notificaciones en AlquilER.', { noindex: true });
+
     const { token, usuario } = useAuth();
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({

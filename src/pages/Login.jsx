@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useSEO } from '../hooks/useSEO';
 import { login } from '../services/api';
 
 function Login() {
+    useSEO('Iniciar sesión', 'Entrá a tu cuenta de AlquilER para reservar propiedades y gestionar tus alquileres.', { noindex: true });
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');

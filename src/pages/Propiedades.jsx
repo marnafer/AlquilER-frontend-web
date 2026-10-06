@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { getPropiedades, getCategorias, getProvincias, getLocalidades, getFavoritos, getServicios } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
+import { useSEO } from '../hooks/useSEO';
 import PropiedadCard from '../components/PropiedadCard';
 import MultiSelect from '../components/MultiSelect';
 
@@ -46,6 +47,14 @@ function Propiedades() {
     const [pagina, setPagina] = useState(Number(searchParams.get('pagina')) || 1);
 
     const POR_PAGINA = 9;
+
+    // La description refleja la busqueda activa: si el visitante llego desde
+    // Google con "departamentos en Rosario", el snippet debe coincidir.
+    const descripcionSEO = search.trim()
+        ? `Resultados para "${search.trim()}" en alquiler. Filtrá por provincia, categoría, cantidad de ambientes y precio.`
+        : 'AlquilER: buscá propiedades en alquiler por provincia, categoría, ambientes y precio. Departamentos, casas y locales comerciales.';
+
+    useSEO('Propiedades en alquiler', descripcionSEO);
 
     useEffect(() => {
         cargarDatos();
@@ -286,8 +295,9 @@ function Propiedades() {
                 {/* BUSCADOR + FILTROS */}
                 <div className="props-filtros">
                     <div className="filtro-group filtro-search">
-                        <label><i className="fas fa-search"></i> Buscar</label>
+                        <label htmlFor="filtro-buscar"><i className="fas fa-search"></i> Buscar</label>
                         <input
+                            id="filtro-buscar"
                             type="text"
                             placeholder="Título o dirección..."
                             value={search}

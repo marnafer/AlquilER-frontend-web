@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { restablecerContrasena } from '../services/api';
+import { useSEO } from '../hooks/useSEO';
 
 function RestablecerContrasena() {
+    useSEO('Restablecer contraseña', 'Elegí una nueva contraseña para tu cuenta de AlquilER.', { noindex: true });
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 

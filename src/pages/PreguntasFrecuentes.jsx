@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useSEO } from '../hooks/useSEO';
 
 const PREGUNTAS = [
     {
@@ -33,6 +34,10 @@ const PREGUNTAS = [
 ];
 
 function PreguntasFrecuentes() {
+    useSEO(
+        'Preguntas frecuentes',
+        'Resolvemos tus dudas sobre AlquilER: cómo alquilar una propiedad, cuánto cuesta publicarla, cómo funcionan las reservas y las reseñas.'
+    );
     return (
         <div className="estatica-page">
             <div className="container">
