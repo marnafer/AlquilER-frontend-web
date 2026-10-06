@@ -122,7 +122,7 @@ function Dashboard() {
 
                 {/* ESTADÍSTICAS */}
                 <section className="dash-stats">
-                    <div className="dash-stat-card">
+                    <Link to="/mis-propiedades" className="dash-stat-card">
                         <div className="dash-stat-icon teal">
                             <i className="fas fa-building"></i>
                         </div>
@@ -130,9 +130,10 @@ function Dashboard() {
                             <span className="dash-stat-number">{stats.propiedades}</span>
                             <span className="dash-stat-label">Propiedades</span>
                         </div>
-                    </div>
+                        <span className="dash-stat-ver">Ver</span>
+                    </Link>
 
-                    <div className="dash-stat-card">
+                    <Link to="/reservas" className="dash-stat-card">
                         <div className="dash-stat-icon emerald">
                             <i className="fas fa-calendar-check"></i>
                         </div>
@@ -140,9 +141,10 @@ function Dashboard() {
                             <span className="dash-stat-number">{stats.reservas}</span>
                             <span className="dash-stat-label">Reservas</span>
                         </div>
-                    </div>
+                        <span className="dash-stat-ver">Ver</span>
+                    </Link>
 
-                    <div className="dash-stat-card">
+                    <Link to="/favoritos" className="dash-stat-card">
                         <div className="dash-stat-icon rose">
                             <i className="fas fa-heart"></i>
                         </div>
@@ -150,9 +152,10 @@ function Dashboard() {
                             <span className="dash-stat-number">{stats.favoritos}</span>
                             <span className="dash-stat-label">Favoritos</span>
                         </div>
-                    </div>
+                        <span className="dash-stat-ver">Ver</span>
+                    </Link>
 
-                    <div className="dash-stat-card">
+                    <Link to="/consultas" className="dash-stat-card">
                         <div className="dash-stat-icon amber">
                             <i className="fas fa-comments"></i>
                         </div>
@@ -160,7 +163,8 @@ function Dashboard() {
                             <span className="dash-stat-number">{stats.consultas}</span>
                             <span className="dash-stat-label">Consultas</span>
                         </div>
-                    </div>
+                        <span className="dash-stat-ver">Ver</span>
+                    </Link>
                 </section>
 
                 {/* GRID PRINCIPAL */}

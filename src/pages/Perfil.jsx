@@ -189,16 +189,6 @@ function Perfil() {
                             <h3>
                                 <i className="fas fa-id-card"></i> Datos personales
                             </h3>
-                            {!editando && (
-                                <button
-                                    className="perfil-edit-btn"
-                                    onClick={() => setEditando(true)}
-                                    title="Editar"
-                                    aria-label="Editar datos personales"
-                                >
-                                    <i className="fas fa-pen"></i>
-                                </button>
-                            )}
                         </div>
 
                         {editando ? (
