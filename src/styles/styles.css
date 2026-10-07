@@ -32,6 +32,9 @@
     --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.15);
     --radius: 12px;
     --transition: all 0.3s ease;
+    /* Tipografías: Inter para cuerpo, Plus Jakarta Sans para titulos */
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-heading: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* ========== RESET Y BASE ========== */
@@ -46,7 +49,7 @@ html {
 }
 
 body {
-    font-family: var(--bs-body-font-family);
+    font-family: var(--font-body);
     background: var(--primary-bg);
     color: #1e293b;
     min-height: 100vh;
@@ -55,6 +58,13 @@ body {
     padding-top: 72px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+/* Titulos: Plus Jakarta Sans en toda la interfaz */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
 }
 
 /* Links: sin subrayado por defecto */
