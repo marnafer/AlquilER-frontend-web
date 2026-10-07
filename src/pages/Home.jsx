@@ -125,7 +125,7 @@ function Home() {
                             <img
                                 src="/assets/img/logo.webp"
                                 alt="AlquilER"
-                                style={{ maxHeight: '500px', width: 'auto' }}
+                                style={{ maxHeight: '720px', width: 'auto' }}
                                 onError={ocultarHero}
                             />
                         </div>
