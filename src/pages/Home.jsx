@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { getPropiedades, getPropiedadesDestacadas, getCategorias, getServicios, getLocalidades } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
 import { iconoServicio } from '../utils/servicios';
+import { iconoCategoria } from '../utils/categorias';
 import { useSEO } from '../hooks/useSEO';
 import Loader from '../components/Loader';
 
@@ -200,7 +201,9 @@ function Home() {
                     <div className="categorias-grid">
                         {categorias.slice(0, 4).map(cat => (
                             <Link to={`/propiedades?categoria_id=${cat.id}`} className="categoria-card" key={cat.id}>
-                                <div className="categoria-icon">🏠</div>
+                                <div className="categoria-icon">
+                                    <i className={`fas ${iconoCategoria(cat.nombre)}`}></i>
+                                </div>
                                 <h3>{cat.nombre}</h3>
                                 <span>Ver propiedades</span>
                             </Link>

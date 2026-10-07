@@ -1836,6 +1836,13 @@ img {
     color: #93C5FD;
 }
 
+.dash-hero-text h1 .dash-hello-icon {
+    color: #93C5FD;
+    font-size: 0.75em;
+    margin-left: 8px;
+    vertical-align: baseline;
+}
+
 .dash-hero-text p {
     color: rgba(255, 255, 255, 0.85);
     font-size: 15px;

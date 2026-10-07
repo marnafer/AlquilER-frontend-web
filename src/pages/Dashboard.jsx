@@ -110,7 +110,7 @@ function Dashboard() {
                                 <i className="fas fa-bolt"></i> Panel de control
                             </span>
                             <h1>
-                                Hola, <span>{usuario?.nombre || 'Usuario'}</span> 👋
+                                Hola, <span>{usuario?.nombre || 'Usuario'}</span> <i className="fas fa-hand-sparkles dash-hello-icon"></i>
                             </h1>
                             <p>
                                 Este es tu resumen de actividad en AlquilER.
