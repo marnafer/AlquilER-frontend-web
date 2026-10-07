@@ -129,39 +129,11 @@ function Header() {
         <Navbar bg="dark" variant="dark" expand="lg" fixed="top" expanded={expanded}>
             <Container>
                 <Navbar.Brand as={Link} to="/" className="d-flex align-items-center">
-                    {/* Ícono de casa minimalista */}
-                    <svg
-                        width="30"
-                        height="30"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        style={{ marginRight: '10px' }}
-                        aria-hidden="true"
-                        focusable="false"
-                    >
-                        <defs>
-                            <linearGradient id="gradientHouse" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="#1E40AF" />
-                                <stop offset="50%" stopColor="#1D4ED8" />
-                                <stop offset="100%" stopColor="#3B82F6" />
-                            </linearGradient>
-                        </defs>
-                        <path
-                            d="M3 10.5 L12 3 L21 10.5"
-                            stroke="url(#gradientHouse)"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                        <path
-                            d="M5.5 9.5 V20 A1 1 0 0 0 6.5 21 H9.5 V15.5 A1 1 0 0 1 10.5 14.5 H13.5 A1 1 0 0 1 14.5 15.5 V21 H17.5 A1 1 0 0 0 18.5 20 V9.5"
-                            stroke="url(#gradientHouse)"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                    </svg>
+                    <img
+                        src="/assets/img/logo-header.webp"
+                        alt="AlquilER"
+                        className="navbar-brand-logo"
+                    />
 
                     <span
                         style={{
