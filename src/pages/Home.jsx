@@ -134,7 +134,7 @@ function Home() {
 
                 <div className="wave-divider">
                     <svg viewBox="0 0 1440 100" xmlns="http://www.w3.org/2000/svg">
-                        <path fill="#f0fdf4" d="M0,50 C360,100 720,0 1080,50 C1260,75 1380,85 1440,90 L1440,100 L0,100 Z"/>
+                        <path fill="var(--primary-bg)" d="M0,50 C360,100 720,0 1080,50 C1260,75 1380,85 1440,90 L1440,100 L0,100 Z"/>
                     </svg>
                 </div>
             </section>
