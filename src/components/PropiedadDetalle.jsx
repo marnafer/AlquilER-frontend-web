@@ -421,6 +421,15 @@ function PropiedadDetalle() {
                             </div>
                         )}
 
+                        <div className="detalle-politicas">
+                            <span className={`detalle-politica-badge ${propiedad.acepta_mascotas ? 'si' : 'no'}`}>
+                                <i className="fas fa-paw"></i> {propiedad.acepta_mascotas ? 'Se aceptan mascotas' : 'No se aceptan mascotas'}
+                            </span>
+                            <span className={`detalle-politica-badge ${propiedad.acepta_hijos ? 'si' : 'no'}`}>
+                                <i className="fas fa-children"></i> {propiedad.acepta_hijos ? 'Se aceptan niños' : 'No se aceptan niños'}
+                            </span>
+                        </div>
+
                         <p
                             className={`propiedad-detalle-descripcion${propiedad.descripcion ? '' : ' vacia'}`}
                         >

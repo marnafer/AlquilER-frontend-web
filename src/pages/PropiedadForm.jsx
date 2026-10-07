@@ -33,6 +33,8 @@ const FORM_INICIAL = {
     cantidad_dormitorios: 1,
     cantidad_banos: 1,
     capacidad: '',
+    acepta_mascotas: 0,
+    acepta_hijos: 0,
     disponible: 1,
     categoria_id: '',
     localidad_id: '',
@@ -159,6 +161,8 @@ const [loading, setLoading] = useState(true);
                 cantidad_dormitorios: prop.cantidad_dormitorios ?? 1,
                 cantidad_banos: prop.cantidad_banos ?? 1,
                 capacidad: prop.capacidad ?? '',
+                acepta_mascotas: prop.acepta_mascotas ? 1 : 0,
+                acepta_hijos: prop.acepta_hijos ? 1 : 0,
                 disponible: prop.disponible ? 1 : 0,
                 categoria_id: prop.categoria_id ?? '',
                 localidad_id: prop.localidad_id ?? '',
@@ -399,6 +403,8 @@ const [loading, setLoading] = useState(true);
                 cantidad_dormitorios: Number(formData.cantidad_dormitorios),
                 cantidad_banos: Number(formData.cantidad_banos),
                 capacidad: formData.capacidad ? Number(formData.capacidad) : null,
+                acepta_mascotas: Number(formData.acepta_mascotas),
+                acepta_hijos: Number(formData.acepta_hijos),
                 disponible: Number(formData.disponible),
                 categoria_id: Number(formData.categoria_id),
                 localidad_id: Number(formData.localidad_id)
@@ -730,7 +736,66 @@ if (result.success) {
                     </section>
 
                     {/* ============================================
-                        SECCIÓN 3: PRECIO Y DISPONIBILIDAD
+                        SECCIÓN 3: POLÍTICAS
+                       ============================================ */}
+                    <section className="propform-card">
+                        <div className="propform-card-header">
+                            <h3>
+                                <i className="fas fa-house-circle-check"></i> Políticas de la propiedad
+                            </h3>
+                        </div>
+
+                        <div className="policias-grid">
+                            <div className="politica-item">
+                                <span className="politica-info">
+                                    <i className="fas fa-paw"></i>
+                                    <span>
+                                        <strong>Mascotas</strong>
+                                        <small>¿Podés llevar mascotas?</small>
+                                    </span>
+                                </span>
+                                <div className="politica-toggle" role="group" aria-label="Mascotas">
+                                    <button
+                                        type="button"
+                                        className={`politica-btn ${formData.acepta_mascotas ? 'si' : 'no'}`}
+                                        onClick={() => setFormData(prev => ({ ...prev, acepta_mascotas: prev.acepta_mascotas ? 0 : 1 }))}
+                                        aria-pressed={formData.acepta_mascotas === 1}
+                                    >
+                                        <i className={`fas ${formData.acepta_mascotas ? 'fa-check' : 'fa-xmark'}`}></i>
+                                        {formData.acepta_mascotas ? 'Sí' : 'No'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="politica-item">
+                                <span className="politica-info">
+                                    <i className="fas fa-children"></i>
+                                    <span>
+                                        <strong>Hijos</strong>
+                                        <small>¿Se aceptan niños?</small>
+                                    </span>
+                                </span>
+                                <div className="politica-toggle" role="group" aria-label="Hijos">
+                                    <button
+                                        type="button"
+                                        className={`politica-btn ${formData.acepta_hijos ? 'si' : 'no'}`}
+                                        onClick={() => setFormData(prev => ({ ...prev, acepta_hijos: prev.acepta_hijos ? 0 : 1 }))}
+                                        aria-pressed={formData.acepta_hijos === 1}
+                                    >
+                                        <i className={`fas ${formData.acepta_hijos ? 'fa-check' : 'fa-xmark'}`}></i>
+                                        {formData.acepta_hijos ? 'Sí' : 'No'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <span className="form-help">
+                            Estas políticas se muestran en la tarjeta y el detalle de tu propiedad,
+                            para que inquilinos con mascotas o hijos sepan si pueden alquilar.
+                        </span>
+                    </section>
+
+                    {/* ============================================
+                        SECCIÓN 4: PRECIO Y DISPONIBILIDAD
                        ============================================ */}
                     <section className="propform-card">
                         <div className="propform-card-header">
@@ -803,7 +868,7 @@ if (result.success) {
                     </section>
 
                     {/* ============================================
-                        SECCIÓN 4: IMÁGENES
+                        SECCIÓN 5: IMÁGENES
                        ============================================ */}
                     <section className="propform-card" ref={imagenesSectionRef}>
                         <div className="propform-card-header">
@@ -1010,7 +1075,7 @@ if (result.success) {
                     </section>
 
                     {/* ============================================
-                        SECCIÓN 5: SERVICIOS
+                        SECCIÓN 6: SERVICIOS
                        ============================================ */}
                     <section className="propform-card">
                         <div className="propform-card-header">

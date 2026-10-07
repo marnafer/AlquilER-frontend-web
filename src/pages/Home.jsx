@@ -199,7 +199,7 @@ function Home() {
                     </div>
 
                     <div className="categorias-grid">
-                        {categorias.slice(0, 4).map(cat => (
+                        {categorias.map(cat => (
                             <Link to={`/propiedades?categoria_id=${cat.id}`} className="categoria-card" key={cat.id}>
                                 <div className="categoria-icon">
                                     <i className={`fas ${iconoCategoria(cat.nombre)}`}></i>

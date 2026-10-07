@@ -43,6 +43,8 @@ function Propiedades() {
     const [dormitorios, setDormitorios] = useState(searchParams.get('cantidad_dormitorios') || '');
     const [banos, setBanos] = useState(searchParams.get('cantidad_banos') || '');
     const [capacidad, setCapacidad] = useState(searchParams.get('capacidad') || '');
+    const [aceptaMascotas, setAceptaMascotas] = useState(searchParams.get('acepta_mascotas') || '');
+    const [aceptaHijos, setAceptaHijos] = useState(searchParams.get('acepta_hijos') || '');
     const [orden, setOrden] = useState(searchParams.get('orden') || 'recientes');
     const [pagina, setPagina] = useState(Number(searchParams.get('pagina')) || 1);
 
@@ -75,10 +77,12 @@ function Propiedades() {
         if (dormitorios) params.cantidad_dormitorios = dormitorios;
         if (banos) params.cantidad_banos = banos;
         if (capacidad) params.capacidad = capacidad;
+        if (aceptaMascotas) params.acepta_mascotas = aceptaMascotas;
+        if (aceptaHijos) params.acepta_hijos = aceptaHijos;
         if (orden !== 'recientes') params.orden = orden;
         if (pagina > 1) params.pagina = pagina;
         setSearchParams(params, { replace: true });
-    }, [search, categoriaIds, provinciaId, localidadIds, servicioIds, precioMin, precioMax, ambientes, dormitorios, banos, capacidad, orden, pagina]);
+    }, [search, categoriaIds, provinciaId, localidadIds, servicioIds, precioMin, precioMax, ambientes, dormitorios, banos, capacidad, aceptaMascotas, aceptaHijos, orden, pagina]);
 
     const cargarDatos = async () => {
         try {
@@ -199,6 +203,14 @@ function Propiedades() {
         }
 
         // Los filtros numéricos son "al menos", igual que los >= del backend
+        if (aceptaMascotas === '1') {
+            resultado = resultado.filter(p => p.acepta_mascotas === true || p.acepta_mascotas === 1 || p.acepta_mascotas === '1');
+        }
+
+        if (aceptaHijos === '1') {
+            resultado = resultado.filter(p => p.acepta_hijos === true || p.acepta_hijos === 1 || p.acepta_hijos === '1');
+        }
+
         if (precioMin) {
             resultado = resultado.filter(p => Number(p.precio) >= Number(precioMin));
         }
@@ -238,7 +250,7 @@ function Propiedades() {
         }
 
         return resultado;
-    }, [propiedades, search, categoriaIds, provinciaId, localidadIds, localidadProvinciaMap, servicioIds, serviciosPorPropiedad, precioMin, precioMax, ambientes, dormitorios, banos, capacidad, orden]);
+    }, [propiedades, search, categoriaIds, provinciaId, localidadIds, localidadProvinciaMap, servicioIds, serviciosPorPropiedad, precioMin, precioMax, ambientes, dormitorios, banos, capacidad, aceptaMascotas, aceptaHijos, orden]);
 
     // Paginación
     const totalPaginas = Math.max(1, Math.ceil(filtradas.length / POR_PAGINA));
@@ -260,6 +272,8 @@ function Propiedades() {
         setDormitorios('');
         setBanos('');
         setCapacidad('');
+        setAceptaMascotas('');
+        setAceptaHijos('');
         setOrden('recientes');
         setPagina(1);
     };
@@ -287,6 +301,8 @@ function Propiedades() {
         || dormitorios
         || banos
         || capacidad
+        || aceptaMascotas
+        || aceptaHijos
         || orden !== 'recientes';
 
     return (
@@ -342,6 +358,28 @@ function Propiedades() {
                         selected={servicioIds}
                         onChange={valores => { setServicioIds(valores); setPagina(1); }}
                     />
+
+                    <div className="filtro-group">
+                        <label><i className="fas fa-paw"></i> Mascotas</label>
+                        <select
+                            value={aceptaMascotas}
+                            onChange={(e) => { setAceptaMascotas(e.target.value); setPagina(1); }}
+                        >
+                            <option value="">Todas</option>
+                            <option value="1">Se aceptan</option>
+                        </select>
+                    </div>
+
+                    <div className="filtro-group">
+                        <label><i className="fas fa-children"></i> Hijos</label>
+                        <select
+                            value={aceptaHijos}
+                            onChange={(e) => { setAceptaHijos(e.target.value); setPagina(1); }}
+                        >
+                            <option value="">Todos</option>
+                            <option value="1">Se aceptan</option>
+                        </select>
+                    </div>
 
                     <div className="filtro-group">
                         <label><i className="fas fa-dollar-sign"></i> Precio mín.</label>

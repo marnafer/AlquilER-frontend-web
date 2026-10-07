@@ -114,6 +114,14 @@ function PropiedadCard({ propiedad, categoriaNombre, esFavoritoInicial = false, 
                     <span><i className="fas fa-bath"></i> {propiedad.cantidad_banos || 0}</span>
                     <span><i className="fas fa-arrows-alt"></i> {propiedad.cantidad_ambientes || 0}</span>
                 </div>
+                <div className="propiedad-politicas">
+                    <span className={`politica-badge ${propiedad.acepta_mascotas ? 'si' : 'no'}`}>
+                        <i className="fas fa-paw"></i> Mascotas
+                    </span>
+                    <span className={`politica-badge ${propiedad.acepta_hijos ? 'si' : 'no'}`}>
+                        <i className="fas fa-children"></i> Hijos
+                    </span>
+                </div>
                 <Link to={`/propiedades/${propiedad.id}`} className="btn-ver">
                     Ver detalle <i className="fas fa-arrow-right"></i>
                 </Link>

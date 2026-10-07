@@ -5,12 +5,14 @@
 const ICONOS_CATEGORIA = {
     'Casa': 'fa-house',
     'Departamento': 'fa-building',
-    'Cabaña': 'fa-cabin',
+    'Cabaña': 'fa-campground',
     'Local Comercial': 'fa-store',
+    'Duplex': 'fa-layer-group',
+    'Monoambiente': 'fa-door-open',
     'Oficina': 'fa-briefcase',
-    'Terreno': 'fa-vector-square',
+    'Terreno': 'fa-mountain',
     'Cochera': 'fa-square-parking',
-    'PH': 'fa-building-columns',
+    'PH': 'fa-building-user',
 };
 
 const normalizar = (texto) => (texto || '')
