@@ -93,3 +93,29 @@ img {
     width: 100%;
 }
 
+/* ========== MICRO-INTERACCIONES (GLOBALES) ========== */
+
+/* Feedback al presionar: atenua el boton sin moverlo del layout.
+   Solo filter para no chocar con transform de los hover. */
+button:not(:disabled):active {
+    filter: brightness(0.92);
+}
+
+/* Foco visible consistente al navegar con teclado */
+:focus-visible {
+    outline: 2px solid var(--primary-light);
+    outline-offset: 2px;
+}
+
+/* Respeta la preferencia de movimiento reducida del sistema */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
