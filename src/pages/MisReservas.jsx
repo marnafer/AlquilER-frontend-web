@@ -85,6 +85,16 @@ function MisReservas() {
         );
     };
 
+    const estaVencidaNoFinalizada = (reserva) => {
+        if (reserva.estado !== 'confirmada') return false;
+        const finStr = reserva.fecha_fin_alquiler
+            ? String(reserva.fecha_fin_alquiler).slice(0, 10)
+            : null;
+        if (!finStr) return false;
+        const hoyStr = new Date().toISOString().slice(0, 10);
+        return finStr < hoyStr;
+    };
+
     const puedeCalificar = (reserva) =>
         reserva.estado === 'finalizada' && !yaCalificoReserva(reserva);
 
@@ -369,10 +379,17 @@ function MisReservas() {
                                         </div>
 
                                         <div className="misreservas-item-acciones">
-                                            <span className={`dash-reserva-badge ${reserva.estado}`}>
-                                                <i className={`fas ${ESTADO_INFO[reserva.estado]?.icono || 'fa-circle'}`}></i>
-                                                {ESTADO_INFO[reserva.estado]?.etiqueta || reserva.estado}
-                                            </span>
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'flex-end', alignItems: 'center' }}>
+                                                <span className={`dash-reserva-badge ${reserva.estado}`}>
+                                                    <i className={`fas ${ESTADO_INFO[reserva.estado]?.icono || 'fa-circle'}`}></i>
+                                                    {ESTADO_INFO[reserva.estado]?.etiqueta || reserva.estado}
+                                                </span>
+                                                {estaVencidaNoFinalizada(reserva) && (
+                                                    <span className="dash-reserva-badge" style={{ background: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d' }}>
+                                                        <i className="fas fa-exclamation-triangle"></i> Vencida
+                                                    </span>
+                                                )}
+                                            </div>
 
                                             {puedeAprobar(reserva) && (
                                                 <button
@@ -389,7 +406,8 @@ function MisReservas() {
                                                     onClick={() => ejecutarAccion('finalizar', reserva)}
                                                     disabled={accionando === reserva.id}
                                                 >
-                                                    <i className="fas fa-flag-checkered"></i> Finalizar
+                                                    <i className="fas fa-flag-checkered"></i>{' '}
+                                                    {estaVencidaNoFinalizada(reserva) ? 'Finalizar (vencida)' : 'Finalizar'}
                                                 </button>
                                             )}
                                             {puedeRechazar(reserva) && (
