@@ -10,7 +10,8 @@ import {
     rechazarReserva,
     finalizarReserva,
     cancelarReserva,
-    createResena
+    createResena,
+    getResenasByUsuario
 } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
 import { useSEO } from '../hooks/useSEO';
@@ -61,6 +62,8 @@ function MisReservas() {
     const [errorCalificacion, setErrorCalificacion] = useState('');
     const [validacionCalificacion, setValidacionCalificacion] = useState({});
 
+    const [misResenasHechas, setMisResenasHechas] = useState([]);
+
     const [esGestion, setEsGestion] = useState(false);
 
     const puedeAprobar = (reserva) =>
@@ -75,7 +78,15 @@ function MisReservas() {
     const puedeCancelar = (reserva) =>
         ['pendiente', 'confirmada'].includes(reserva.estado);
 
-    const puedeCalificar = (reserva) => reserva.estado === 'finalizada';
+    const yaCalificoReserva = (reserva) => {
+        const tipo = reserva.origen === 'propia' ? 'propiedad' : 'inquilino';
+        return misResenasHechas.some(
+            (r) => String(r.reserva_id) === String(reserva.id) && r.tipo === tipo
+        );
+    };
+
+    const puedeCalificar = (reserva) =>
+        reserva.estado === 'finalizada' && !yaCalificoReserva(reserva);
 
     const cargarDatos = useCallback(async () => {
         if (!usuario) return;
@@ -88,6 +99,10 @@ function MisReservas() {
 
             const esPropietario = misProps.length > 0;
             setEsGestion(esPropietario);
+
+            const resHechas = await getResenasByUsuario(usuario.id, token);
+            const itemsHechas = resHechas?.data?.items || resHechas?.items || [];
+            setMisResenasHechas(Array.isArray(itemsHechas) ? itemsHechas : []);
 
             const mapPropiedad = {};
             [...misProps, ...catalogo].forEach(p => { if (p) mapPropiedad[p.id] = p; });
@@ -413,14 +428,19 @@ function MisReservas() {
                                                     <i className="fas fa-ban"></i> Cancelar
                                                 </button>
                                             )}
-                                            {puedeCalificar(reserva) && (
-                                                <button
-                                                    className="btn-detalle btn-detalle-secundario"
-                                                    onClick={() => abrirCalificacion(reserva)}
-                                                >
-                                                    <i className="fas fa-star"></i> Calificar
-                                                </button>
-                                            )}
+                                             {puedeCalificar(reserva) && (
+                                                 <button
+                                                     className="btn-detalle btn-detalle-secundario"
+                                                     onClick={() => abrirCalificacion(reserva)}
+                                                 >
+                                                     <i className="fas fa-star"></i> Calificar
+                                                 </button>
+                                             )}
+                                             {reserva.estado === 'finalizada' && yaCalificoReserva(reserva) && (
+                                                 <span className="dash-reserva-badge" style={{ background: '#f1f5f9', color: '#475569' }}>
+                                                     <i className="fas fa-star"></i> Ya calificaste
+                                                 </span>
+                                             )}
                                         </div>
                                     </div>
                                 );
