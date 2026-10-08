@@ -841,3 +841,37 @@
     margin-top: 4px;
 }
 
+/* ========== SCROLL REVEAL ========== */
+.reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition:
+        opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+}
+
+.reveal-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Variantes de dirección */
+.reveal-right { transform: translateX(50px); }
+.reveal-left  { transform: translateX(-50px); }
+.reveal-zoom  { transform: scale(0.92); }
+
+.reveal-right.reveal-visible,
+.reveal-left.reveal-visible,
+.reveal-zoom.reveal-visible {
+    transform: none;
+}
+
+/* Accesibilidad: si el usuario prefiere menos movimiento, mostramos todo directo */
+@media (prefers-reduced-motion: reduce) {
+    .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}

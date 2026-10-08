@@ -5,6 +5,7 @@ import { rutaImagenPropiedad } from '../utils/imagenes';
 import ServicioIcono from '../components/ServicioIcono';
 import { iconoCategoria } from '../utils/categorias';
 import { useSEO } from '../hooks/useSEO';
+import { useScrollReveal } from '../hooks/useScrollReveal';
 import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
 import Loader from '../components/Loader';
@@ -14,6 +15,8 @@ function Home() {
         'Alquiler de propiedades',
         'AlquilER: encontrá el departamento, casa o duplex que necesitás. Departamentos, casas, dúplex y monoambientes en alquiler con búsqueda por provincia, categoría y precio.'
     );
+    useScrollReveal();
+
     const [propiedades, setPropiedades] = useState([]);
     const [destacadas, setDestacadas] = useState([]);
     const [categorias, setCategorias] = useState([]);
@@ -160,7 +163,7 @@ function Home() {
             {/* PROPIEDADES DESTACADAS */}
             <section className="propiedades-destacadas">
                 <div className="container">
-                    <div className="section-header">
+                    <div className="section-header reveal">
                         <span className="section-badge">Catálogo</span>
                         <h2>{hayDestacadas ? 'Propiedades Destacadas' : 'Propiedades Recientes'}</h2>
                         <p>{hayDestacadas ? 'Las propiedades destacadas por nuestro equipo' : 'Las últimas publicaciones en AlquilER'}</p>
@@ -174,8 +177,12 @@ function Home() {
                                 descripcion="Pronto vas a encontrar departamentos, casas y más en alquiler."
                             />
                         )}
-                        {propiedadesAMostrar.map(prop => (
-                            <div className="propiedad-card" key={prop.id}>
+                        {propiedadesAMostrar.map((prop, i) => (
+                            <div
+                                className="propiedad-card reveal"
+                                key={prop.id}
+                                style={{ transitionDelay: `${i * 80}ms` }}
+                            >
                                 <div className="propiedad-image">
                                     <img
                                         src={rutaImagenPropiedad(prop) || '/assets/img/logo.webp'}
@@ -204,7 +211,7 @@ function Home() {
                         ))}
                     </div>
 
-                    <div className="section-footer">
+                    <div className="section-footer reveal">
                         <Link to="/propiedades" className="btn-ver-todas">Ver todas las propiedades</Link>
                     </div>
                 </div>
@@ -213,15 +220,20 @@ function Home() {
             {/* CATEGORÍAS */}
             <section className="categorias">
                 <div className="container">
-                    <div className="section-header">
+                    <div className="section-header reveal">
                         <span className="section-badge">Categorías</span>
                         <h2>Explorar por Categoría</h2>
                         <p>Encontrá lo que buscás</p>
                     </div>
 
                     <div className="categorias-grid">
-                        {categorias.map(cat => (
-                            <Link to={`/propiedades?categoria_id=${cat.id}`} className="categoria-card" key={cat.id}>
+                        {categorias.map((cat, i) => (
+                            <Link
+                                to={`/propiedades?categoria_id=${cat.id}`}
+                                className="categoria-card reveal"
+                                key={cat.id}
+                                style={{ transitionDelay: `${i * 80}ms` }}
+                            >
                                 <div className="categoria-icon">
                                     <i className={`fas ${iconoCategoria(cat.nombre)}`}></i>
                                 </div>
@@ -236,7 +248,7 @@ function Home() {
             {/* SERVICIOS */}
             <section className="servicios">
                 <div className="container">
-                    <div className="section-header">
+                    <div className="section-header reveal">
                         <span className="section-badge">Servicios</span>
                         <h2>Servicios Destacados</h2>
                         <p>Comodidades que ofrecen nuestras propiedades</p>
@@ -256,8 +268,12 @@ function Home() {
                                 descripcion="Pronto vas a poder filtrar las propiedades por servicios."
                             />
                         )}
-                        {servicios.slice(0, 8).map(serv => (
-                            <div className="servicio-card" key={serv.id}>
+                        {servicios.slice(0, 8).map((serv, i) => (
+                            <div
+                                className="servicio-card reveal"
+                                key={serv.id}
+                                style={{ transitionDelay: `${i * 70}ms` }}
+                            >
                                 <ServicioIcono nombre={serv.nombre} className="servicio-icon" />
                                 <h4>{serv.nombre}</h4>
                             </div>
@@ -270,22 +286,21 @@ function Home() {
             <section className="estadisticas">
                 <div className="container">
                     <div className="stats-grid">
-                        <div className="stat-item">
-                            <span className="stat-number">{disponibles.length}</span>
-                            <span className="stat-label">Propiedades publicadas</span>
-                        </div>
-                        <div className="stat-item">
-                            <span className="stat-number">{categorias.length}</span>
-                            <span className="stat-label">Categorías disponibles</span>
-                        </div>
-                        <div className="stat-item">
-                            <span className="stat-number">{servicios.length}</span>
-                            <span className="stat-label">Servicios ofrecidos</span>
-                        </div>
-                        <div className="stat-item">
-                            <span className="stat-number">{localidades.length}</span>
-                            <span className="stat-label">Ciudades disponibles</span>
-                        </div>
+                        {[
+                            { numero: disponibles.length, label: 'Propiedades publicadas' },
+                            { numero: categorias.length, label: 'Categorías disponibles' },
+                            { numero: servicios.length, label: 'Servicios ofrecidos' },
+                            { numero: localidades.length, label: 'Ciudades disponibles' },
+                        ].map((stat, i) => (
+                            <div
+                                className="stat-item reveal"
+                                key={stat.label}
+                                style={{ transitionDelay: `${i * 100}ms` }}
+                            >
+                                <span className="stat-number">{stat.numero}</span>
+                                <span className="stat-label">{stat.label}</span>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </section>
