@@ -5,6 +5,7 @@ import { useUI } from '../context/UIContext';
 import { updatePerfil } from '../services/api';
 import { useSEO } from '../hooks/useSEO';
 import Loader from '../components/Loader';
+import EmptyState from '../components/EmptyState';
 
 function Perfil() {
     useSEO('Mi perfil', 'Gestioná tus datos personales y tu contraseña en AlquilER.', { noindex: true });
@@ -121,14 +122,16 @@ function Perfil() {
         return (
             <div className="perfil-page">
                 <div className="container">
-                    <div className="propiedades-empty">
-                        <div className="empty-icon"><i className="fas fa-user-slash"></i></div>
-                        <h3>No pudimos cargar tu perfil</h3>
-                        <p>Probá iniciando sesión nuevamente.</p>
-                        <Link to="/login" className="btn-ver-todas" style={{ marginTop: '20px', display: 'inline-block' }}>
-                            Ir al login
-                        </Link>
-                    </div>
+                    <EmptyState
+                        icono="fa-user-slash"
+                        titulo="No pudimos cargar tu perfil"
+                        descripcion="Probá iniciando sesión nuevamente."
+                        action={
+                            <Link to="/login" className="btn-ver-todas" style={{ marginTop: '20px', display: 'inline-block' }}>
+                                Ir al login
+                            </Link>
+                        }
+                    />
                 </div>
             </div>
         );

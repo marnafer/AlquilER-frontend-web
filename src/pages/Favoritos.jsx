@@ -5,6 +5,7 @@ import { getFavoritos, removeFavorito } from '../services/api';
 import { useSEO } from '../hooks/useSEO';
 import PropiedadCard from '../components/PropiedadCard';
 import Loader from '../components/Loader';
+import EmptyState from '../components/EmptyState';
 
 function Favoritos() {
     useSEO('Mis favoritos', 'Tus propiedades guardadas en AlquilER.', { noindex: true });
@@ -130,19 +131,16 @@ function Favoritos() {
                         </div>
                     </>
                 ) : (
-                    <div className="propiedades-empty">
-                        <div className="empty-icon">
-                            <i className="far fa-heart"></i>
-                        </div>
-                        <h3>No tenés favoritos todavía</h3>
-                        <p>
-                            Cuando encuentres una propiedad que te guste, tocá el corazón
-                            para guardarla acá.
-                        </p>
-                        <Link to="/propiedades" className="btn-ver-todas" style={{ marginTop: '20px', display: 'inline-block' }}>
-                            <i className="fas fa-search"></i> Explorar propiedades
-                        </Link>
-                    </div>
+                    <EmptyState
+                        icono="fa-heart"
+                        titulo="No tenés favoritos todavía"
+                        descripcion="Cuando encuentres una propiedad que te guste, tocá el corazón para guardarla acá."
+                        action={
+                            <Link to="/propiedades" className="btn-ver-todas" style={{ marginTop: '20px', display: 'inline-block' }}>
+                                <i className="fas fa-search"></i> Explorar propiedades
+                            </Link>
+                        }
+                    />
                 )}
 
             </div>

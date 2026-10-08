@@ -1884,6 +1884,55 @@ img {
     font-size: 15px;
 }
 
+/* ========== ESTADO VACÍO / ERROR (REUTILIZABLE) ========== */
+.estado-vacio,
+.estado-error {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.estado-vacio-icono,
+.estado-error-icono {
+    width: 84px;
+    height: 84px;
+    margin: 0 auto 22px;
+    border-radius: 50%;
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+    font-size: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.18);
+}
+
+.estado-error-icono {
+    background: #FEF3C7;
+    color: #B45309;
+    box-shadow: inset 0 0 0 1px rgba(180, 83, 9, 0.18);
+}
+
+.estado-vacio h3,
+.estado-error h3 {
+    font-size: 20px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 8px;
+}
+
+.estado-vacio p,
+.estado-error p {
+    color: #64748b;
+    font-size: 15px;
+    max-width: 420px;
+    margin: 0 auto 20px;
+}
+
+.estado-error .btn-ver-todas,
+.estado-vacio .btn-ver-todas {
+    padding: 12px 32px;
+}
+
 /* ========== DASHBOARD ========== */
 .dashboard-page {
     padding: 40px 0 60px;

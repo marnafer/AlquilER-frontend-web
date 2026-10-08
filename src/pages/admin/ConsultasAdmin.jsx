@@ -12,6 +12,7 @@ import {
     restoreConsulta
 } from '../../services/api';
 import Loader from '../../components/Loader';
+import EmptyState from '../../components/EmptyState';
 
 function ConsultasAdmin() {
     const { token, usuario } = useAuth();
@@ -385,17 +386,15 @@ function ConsultasAdmin() {
                         </div>
                     </div>
                 ) : (
-                    <div className="propiedades-empty">
-                        <div className="empty-icon">
-                            <i className={`fas ${modoPapelera ? 'fa-trash-can-arrow-up' : 'fa-comments'}`}></i>
-                        </div>
-                        <h3>{modoPapelera ? 'La papelera está vacía' : 'No hay consultas'}</h3>
-                        <p>
-                            {modoPapelera
+                    <EmptyState
+                        icono={modoPapelera ? 'fa-trash-can-arrow-up' : 'fa-comments'}
+                        titulo={modoPapelera ? 'La papelera está vacía' : 'No hay consultas'}
+                        descripcion={
+                            modoPapelera
                                 ? 'Las consultas eliminadas aparecerán acá y podrás restaurarlas.'
-                                : 'Los interesados consultan sobre las propiedades y las respuestas llegan a este panel.'}
-                        </p>
-                    </div>
+                                : 'Los interesados consultan sobre las propiedades y las respuestas llegan a este panel.'
+                        }
+                    />
                 )}
             </div>
         </div>

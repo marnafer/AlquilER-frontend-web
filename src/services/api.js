@@ -11,6 +11,17 @@ function errorDeConexion(error) {
     return MENSAJE_SIN_CONEXION;
 }
 
+// Los getters de listados solian devolver [] en un error de red, lo que en el
+// frontend se interpretaba como "no hay resultados". Para que las pantallas
+// puedan mostrar un estado de error real en vez de vacio, estos getters lanzan
+// esta excepcion cuando falla la red o el servidor.
+class ErrorRed extends Error {
+    constructor(mensaje = MENSAJE_SIN_CONEXION) {
+        super(mensaje);
+        this.name = 'ErrorRed';
+    }
+}
+
 // ============================================
 // AUTENTICACIÓN Y USUARIOS
 // ============================================
@@ -171,8 +182,7 @@ export async function getPropiedades() {
         }
         return result.data || [];
     } catch (error) {
-        console.error('Error en getPropiedades:', error);
-        return [];
+        throw new ErrorRed('No pudimos conectar con el servidor para cargar las propiedades. Probá de nuevo en unos momentos.');
     }
 }
 
@@ -185,8 +195,7 @@ export async function getPropiedadesDestacadas() {
         }
         return result.data || [];
     } catch (error) {
-        console.error('Error en getPropiedadesDestacadas:', error);
-        return [];
+        throw new ErrorRed('No pudimos conectar con el servidor para cargar las propiedades destacadas.');
     }
 }
 
@@ -201,8 +210,7 @@ export async function getMisPropiedades(token) {
         }
         return result.data || [];
     } catch (error) {
-        console.error('Error en getMisPropiedades:', error);
-        return [];
+        throw new ErrorRed('No pudimos conectar con el servidor para cargar tus propiedades.');
     }
 }
 
@@ -332,8 +340,7 @@ export async function getCategorias(soloEliminados = false) {
         }
         return result.data || [];
     } catch (error) {
-        console.error('Error en getCategorias:', error);
-        return [];
+        throw new ErrorRed('No pudimos conectar con el servidor para cargar las categorías.');
     }
 }
 
@@ -347,8 +354,7 @@ export async function getProvincias(soloEliminados = false) {
         }
         return result.data || [];
     } catch (error) {
-        console.error('Error en getProvincias:', error);
-        return [];
+        throw new ErrorRed('No pudimos conectar con el servidor para cargar las provincias.');
     }
 }
 
@@ -362,8 +368,7 @@ export async function getLocalidades(soloEliminados = false) {
         }
         return result.data || [];
     } catch (error) {
-        console.error('Error en getLocalidades:', error);
-        return [];
+        throw new ErrorRed('No pudimos conectar con el servidor para cargar las localidades.');
     }
 }
 
@@ -377,8 +382,7 @@ export async function getServicios(soloEliminados = false) {
         }
         return result.data || [];
     } catch (error) {
-        console.error('Error en getServicios:', error);
-        return [];
+        throw new ErrorRed('No pudimos conectar con el servidor para cargar los servicios.');
     }
 }
 

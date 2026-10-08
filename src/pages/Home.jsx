@@ -2,15 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getPropiedades, getPropiedadesDestacadas, getCategorias, getServicios, getLocalidades } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
-import { iconoServicio } from '../utils/servicios';
+import ServicioIcono from '../components/ServicioIcono';
 import { iconoCategoria } from '../utils/categorias';
 import { useSEO } from '../hooks/useSEO';
+import EmptyState from '../components/EmptyState';
+import ErrorState from '../components/ErrorState';
 import Loader from '../components/Loader';
 
 function Home() {
     useSEO(
         'Alquiler de propiedades',
-        'AlquilER: encontrá el departamento, casa o local comercial que necesitás. Departamentos, casas y locales en alquiler con búsqueda por provincia, categoría y precio.'
+        'AlquilER: encontrá el departamento, casa o duplex que necesitás. Departamentos, casas, dúplex y monoambientes en alquiler con búsqueda por provincia, categoría y precio.'
     );
     const [propiedades, setPropiedades] = useState([]);
     const [destacadas, setDestacadas] = useState([]);
@@ -18,6 +20,7 @@ function Home() {
     const [servicios, setServicios] = useState([]);
     const [localidades, setLocalidades] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
     const [busqueda, setBusqueda] = useState('');
     const [categoriaBusqueda, setCategoriaBusqueda] = useState('');
@@ -28,6 +31,8 @@ function Home() {
     }, []);
 
     const cargarDatos = async () => {
+        setLoading(true);
+        setError('');
         try {
             const [props, dest, cats, serv, localidadesRes] = await Promise.all([
                 getPropiedades(),
@@ -44,6 +49,7 @@ function Home() {
             setLocalidades(Array.isArray(localidadesRes) ? localidadesRes : []);
         } catch (error) {
             console.error('Error cargando datos:', error);
+            setError(error.message || 'No pudimos cargar el sitio. Probá de nuevo en unos momentos.');
         } finally {
             setLoading(false);
         }
@@ -58,6 +64,16 @@ function Home() {
     };
 
     if (loading) return <Loader />;
+
+    if (error) {
+        return (
+            <div className="estatica-page">
+                <div className="container">
+                    <ErrorState mensaje={error} onReintentar={cargarDatos} />
+                </div>
+            </div>
+        );
+    }
 
     const disponibles = propiedades.filter(p =>
         p.disponible !== false && p.disponible !== 0 && p.disponible !== '0'
@@ -151,9 +167,11 @@ function Home() {
 
                     <div className="propiedades-grid">
                         {propiedadesAMostrar.length === 0 && (
-                            <p className="form-help" style={{ textAlign: 'center' }}>
-                                Todavía no hay propiedades disponibles.
-                            </p>
+                            <EmptyState
+                                icono="fa-home"
+                                titulo="Todavía no hay propiedades disponibles"
+                                descripcion="Pronto vas a encontrar departamentos, casas y más en alquiler."
+                            />
                         )}
                         {propiedadesAMostrar.map(prop => (
                             <div className="propiedad-card" key={prop.id}>
@@ -229,13 +247,15 @@ function Home() {
 
                     <div className="servicios-grid">
                         {servicios.length === 0 && (
-                            <p className="form-help" style={{ textAlign: 'center' }}>
-                                Todavía no hay servicios cargados.
-                            </p>
+                            <EmptyState
+                                icono="fa-concierge-bell"
+                                titulo="Todavía no hay servicios cargados"
+                                descripcion="Pronto vas a poder filtrar las propiedades por servicios."
+                            />
                         )}
                         {servicios.slice(0, 8).map(serv => (
                             <div className="servicio-card" key={serv.id}>
-                                <i className={`fas ${iconoServicio(serv.nombre)} servicio-icon`}></i>
+                                <ServicioIcono nombre={serv.nombre} className="servicio-icon" />
                                 <h4>{serv.nombre}</h4>
                             </div>
                         ))}

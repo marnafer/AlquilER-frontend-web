@@ -10,6 +10,7 @@ import {
 } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
 import Loader from '../components/Loader';
+import EmptyState from '../components/EmptyState';
 
 function MisConsultas() {
     useSEO('Mis consultas', 'Tus consultas enviadas a propietarios de propiedades.', { noindex: true });
@@ -356,19 +357,16 @@ function MisConsultas() {
                         </div>
                     </div>
                 ) : (
-                    <div className="propiedades-empty">
-                        <div className="empty-icon">
-                            <i className="fas fa-comments"></i>
-                        </div>
-                        <h3>Todavía no tenés consultas</h3>
-                        <p>
-                            Consultá sobre una propiedad para iniciar una conversación
-                            sobre un alquiler.
-                        </p>
-                        <Link to="/propiedades" className="btn-ver-todas" style={{ marginTop: '20px', display: 'inline-block' }}>
-                            <i className="fas fa-search"></i> Explorar propiedades
-                        </Link>
-                    </div>
+                    <EmptyState
+                        icono="fa-comments"
+                        titulo="Todavía no tenés consultas"
+                        descripcion="Consultá sobre una propiedad para iniciar una conversación sobre un alquiler."
+                        action={
+                            <Link to="/propiedades" className="btn-ver-todas" style={{ marginTop: '20px', display: 'inline-block' }}>
+                                <i className="fas fa-search"></i> Explorar propiedades
+                            </Link>
+                        }
+                    />
                 )}
             </div>
         </div>

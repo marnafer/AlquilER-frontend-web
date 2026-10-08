@@ -14,6 +14,7 @@ import {
 } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
 import Loader from '../components/Loader';
+import EmptyState from '../components/EmptyState';
 
 const ESTADOS = [
     { valor: 'todos', etiqueta: 'Todas' },
@@ -425,31 +426,27 @@ function MisReservas() {
                             })}
                         </section>
                     ) : (
-                        <div className="propiedades-empty">
-                            <div className="empty-icon">
-                                <i className="fas fa-filter"></i>
-                            </div>
-                            <h3>No hay reservas en este estado</h3>
-                            <p>Probá con otro filtro para ver más resultados.</p>
-                        </div>
+                        <EmptyState
+                            icono="fa-filter"
+                            titulo="No hay reservas en este estado"
+                            descripcion="Probá con otro filtro para ver más resultados."
+                        />
                     )
                 ) : (
-                    <div className="propiedades-empty">
-                        <div className="empty-icon">
-                            <i className="fas fa-calendar-times"></i>
-                        </div>
-                        <h3>Todavía no tenés reservas</h3>
-                        <p>
-                            Las solicitudes en tus propiedades y tus propias reservas van a aparecer acá.
-                        </p>
-                        <Link
-                            to="/propiedades"
-                            className="btn-ver-todas"
-                            style={{ marginTop: '20px', display: 'inline-block' }}
-                        >
-                            <i className="fas fa-search"></i> Explorar propiedades
-                        </Link>
-                    </div>
+                    <EmptyState
+                        icono="fa-calendar-times"
+                        titulo="Todavía no tenés reservas"
+                        descripcion="Las solicitudes en tus propiedades y tus propias reservas van a aparecer acá."
+                        action={
+                            <Link
+                                to="/propiedades"
+                                className="btn-ver-todas"
+                                style={{ marginTop: '20px', display: 'inline-block' }}
+                            >
+                                <i className="fas fa-search"></i> Explorar propiedades
+                            </Link>
+                        }
+                    />
                 )}
 
             </div>

@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { getMisPropiedades, getReservas, getFavoritos, getConsultas, getNotificaciones } from '../services/api';
 import { useSEO } from '../hooks/useSEO';
 import Loader from '../components/Loader';
+import ErrorState from '../components/ErrorState';
 
 const ICONOS_NOTIF = {
     reserva_confirmada: 'fa-check-circle',
@@ -18,6 +19,7 @@ function Dashboard() {
 
     const { token, usuario } = useAuth();
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [stats, setStats] = useState({
         propiedades: 0,
         reservas: 0,
@@ -31,6 +33,8 @@ function Dashboard() {
     const esUsuario = Number(usuario?.rol_id) === 1;
 
     const cargarDatos = useCallback(async () => {
+        setLoading(true);
+        setError('');
         try {
             const [propRes, reservasRes, favoritosRes, consultasRes, notifRes] = await Promise.all([
                 getMisPropiedades(token),
@@ -71,6 +75,7 @@ function Dashboard() {
             }
         } catch (error) {
             console.error('Error cargando datos del dashboard:', error);
+            setError(error.message || 'No pudimos cargar tu panel. Probá de nuevo en unos momentos.');
         } finally {
             setLoading(false);
         }
@@ -81,6 +86,16 @@ function Dashboard() {
     }, [cargarDatos]);
 
     if (loading) return <Loader />;
+
+    if (error) {
+        return (
+            <div className="dashboard-page">
+                <div className="container">
+                    <ErrorState mensaje={error} onReintentar={cargarDatos} />
+                </div>
+            </div>
+        );
+    }
 
     const inicial = (usuario?.nombre?.[0] || 'U').toUpperCase();
 

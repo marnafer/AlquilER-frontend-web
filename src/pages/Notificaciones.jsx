@@ -8,6 +8,7 @@ import {
     marcarTodasNotificacionesLeidas
 } from '../services/api';
 import Loader from '../components/Loader';
+import EmptyState from '../components/EmptyState';
 
 const POR_PAGINA = 8;
 
@@ -235,19 +236,16 @@ function Notificaciones() {
                         ))}
                     </div>
                 ) : (
-                    <div className="propiedades-empty">
-                        <div className="empty-icon">
-                            <i className="fas fa-bell-slash"></i>
-                        </div>
-                        <h3>Todavía no tenés notificaciones</h3>
-                        <p>
-                            Recibirás avisos cuando te confirmen o rechacen una reserva,
-                            cuando te consulten por una propiedad o cuando recibas un mensaje nuevo.
-                        </p>
-                        <Link to="/propiedades" className="btn-ver-todas" style={{ marginTop: '20px', display: 'inline-block' }}>
-                            <i className="fas fa-search"></i> Explorar propiedades
-                        </Link>
-                    </div>
+                    <EmptyState
+                        icono="fa-bell-slash"
+                        titulo="Todavía no tenés notificaciones"
+                        descripcion="Recibirás avisos cuando te confirmen o rechacen una reserva, cuando te consulten por una propiedad o cuando recibas un mensaje nuevo."
+                        action={
+                            <Link to="/propiedades" className="btn-ver-todas" style={{ marginTop: '20px', display: 'inline-block' }}>
+                                <i className="fas fa-search"></i> Explorar propiedades
+                            </Link>
+                        }
+                    />
                 )}
 
                 {items.length > POR_PAGINA && (

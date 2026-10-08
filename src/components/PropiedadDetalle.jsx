@@ -13,11 +13,13 @@ import {
     deleteResena
 } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
-import { iconoServicio } from '../utils/servicios';
+import ServicioIcono from './ServicioIcono';
 import { useAuth } from '../hooks/useAuth';
 import { useUI } from '../context/UIContext';
 import { useSEO } from '../hooks/useSEO';
 import Loader from './Loader';
+import EmptyState from '../components/EmptyState';
+import ErrorState from '../components/ErrorState';
 
 function PropiedadDetalle() {
     const { id } = useParams();
@@ -28,6 +30,7 @@ function PropiedadDetalle() {
     const [servicios, setServicios] = useState([]);
     const [loading, setLoading] = useState(true);
     const [imgError, setImgError] = useState(false);
+    const [error, setError] = useState('');
 
     const [mostrarModal, setMostrarModal] = useState(false);
     const [fechaInicio, setFechaInicio] = useState('');
@@ -89,6 +92,7 @@ function PropiedadDetalle() {
             }
         } catch (error) {
             console.error('Error cargando detalle:', error);
+            setError(error.message || 'No pudimos cargar los detalles de la propiedad.');
         } finally {
             setLoading(false);
         }
@@ -264,18 +268,37 @@ function PropiedadDetalle() {
     useSEO(tituloSEO, descripcionSEO, { imagen: imagenSEO });
 
     if (loading) return <Loader />;
-    if (!propiedad) {
 
-    return (
+    if (error) {
+        return (
             <div className="container propiedades-page">
-                <div className="propiedades-empty">
-                    <div className="empty-icon"><i className="fas fa-home"></i></div>
-                    <h3>Propiedad no encontrada</h3>
-                    <p>La propiedad que buscás no existe o fue eliminada.</p>
-                    <Link to="/propiedades" className="btn-ver-todas" style={{ marginTop: '20px', display: 'inline-block' }}>
-                        Volver al catálogo
-                    </Link>
-                </div>
+                <EmptyState
+                    icono="fa-triangle-exclamation"
+                    titulo="No se pudo cargar la propiedad"
+                    descripcion={error}
+                    action={
+                        <button className="btn-ver-todas" onClick={cargarDatos}>
+                            <i className="fas fa-rotate-right"></i> Reintentar
+                        </button>
+                    }
+                />
+            </div>
+        );
+    }
+
+    if (!propiedad) {
+        return (
+            <div className="container propiedades-page">
+                <EmptyState
+                    icono="fa-home"
+                    titulo="Propiedad no encontrada"
+                    descripcion="La propiedad que buscás no existe o fue eliminada."
+                    action={
+                        <Link to="/propiedades" className="btn-ver-todas" style={{ marginTop: '20px', display: 'inline-block' }}>
+                            Volver al catálogo
+                        </Link>
+                    }
+                />
             </div>
         );
     }
@@ -414,7 +437,7 @@ function PropiedadDetalle() {
                                 <div className="detalle-servicios-lista">
                                     {servicios.map(serv => (
                                         <span className="detalle-servicio-badge" key={serv.id}>
-                                            <i className={`fas ${iconoServicio(serv.servicio?.nombre ?? serv.nombre)}`}></i> {serv.servicio?.nombre ?? serv.nombre}
+                                            <ServicioIcono nombre={serv.servicio?.nombre ?? serv.nombre} /> {serv.servicio?.nombre ?? serv.nombre}
                                         </span>
                                     ))}
                                 </div>

@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { getMisPropiedades, deletePropiedad, updatePropiedad } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
-import { iconoServicio } from '../utils/servicios';
+import ServicioIcono from '../components/ServicioIcono';
 import { useUI } from '../context/UIContext';
 import Loader from '../components/Loader';
+import EmptyState from '../components/EmptyState';
+import ErrorState from '../components/ErrorState';
 
 const MAX_SERVICIOS_VISIBLES = 4;
 
@@ -31,7 +33,7 @@ function ServiciosTarjeta({ servicios, expandido, onToggle }) {
         <div className="misprops-servicios">
             {visibles.map(servicio => (
                 <span className="misprops-servicio" key={servicio.id}>
-                    <i className={`fas ${iconoServicio(servicio.nombre)}`}></i> {servicio.nombre}
+                    <ServicioIcono nombre={servicio.nombre} /> {servicio.nombre}
                 </span>
             ))}
             {ocultos > 0 && (
@@ -59,6 +61,7 @@ function MisPropiedades() {
     const [propiedadAEliminar, setPropiedadAEliminar] = useState(null);
     const [actualizando, setActualizando] = useState(null);
     const [serviciosExpandidos, setServiciosExpandidos] = useState({});
+    const [error, setError] = useState('');
 
     useEffect(() => {
         cargarPropiedades();
@@ -72,6 +75,8 @@ function MisPropiedades() {
     // /propiedades/{id}/servicios por cada una (era un N+1).
     const cargarPropiedades = async () => {
         if (!usuario) return;
+        setError('');
+        setLoading(true);
         try {
             const resultado = await getMisPropiedades(token);
             const lista = (Array.isArray(resultado) ? resultado : []).map(prop => ({
@@ -81,6 +86,7 @@ function MisPropiedades() {
             setPropiedades(lista);
         } catch (error) {
             console.error('Error cargando propiedades:', error);
+            setError(error.message || 'No pudimos cargar tus propiedades. Probá de nuevo en unos momentos.');
         } finally {
             setLoading(false);
         }
@@ -140,6 +146,19 @@ function MisPropiedades() {
     };
 
     if (loading) return <Loader />;
+
+    if (error) {
+        return (
+            <div className="misprops-page">
+                <div className="container">
+                    <ErrorState
+                        mensaje={error}
+                        onReintentar={() => { setError(''); cargarPropiedades(); }}
+                    />
+                </div>
+            </div>
+        );
+    }
 
     const totalDisponibles = propiedades.filter(p => p.disponible).length;
     const totalAlquiladas = propiedades.filter(p => !p.disponible).length;
@@ -291,20 +310,20 @@ function MisPropiedades() {
                         })}
                     </section>
                 ) : (
-                    <div className="propiedades-empty">
-                        <div className="empty-icon">
-                            <i className="fas fa-building"></i>
-                        </div>
-                        <h3>Todavía no publicaste propiedades</h3>
-                        <p>Publicá tu primera propiedad y empezá a recibir consultas.</p>
-                        <Link
-                            to="/propiedades/crear"
-                            className="btn-ver-todas"
-                            style={{ marginTop: '20px', display: 'inline-block' }}
-                        >
-                            <i className="fas fa-plus"></i> Publicar propiedad
-                        </Link>
-                    </div>
+                    <EmptyState
+                        icono="fa-building"
+                        titulo="Todavía no publicaste propiedades"
+                        descripcion="Publicá tu primera propiedad y empezá a recibir consultas."
+                        action={
+                            <Link
+                                to="/propiedades/crear"
+                                className="btn-ver-todas"
+                                style={{ marginTop: '20px', display: 'inline-block' }}
+                            >
+                                <i className="fas fa-plus"></i> Publicar propiedad
+                            </Link>
+                        }
+                    />
                 )}
 
             </div>

@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { useAuth } from '../../hooks/useAuth';
 import { useUI } from '../../context/UIContext';
 import Loader from '../Loader';
+import EmptyState from '../EmptyState';
 
 // Componente CRUD genérico configurable.
 // config espera:
@@ -630,31 +631,27 @@ function PanelCrud({ config }) {
                                 </div>
                             </div>
                         ) : (
-                            <div className="propiedades-empty">
-                                <div className="empty-icon">
-                                    <i className="fas fa-search-minus"></i>
-                                </div>
-                                <h3>Sin resultados</h3>
-                                <p>No hay registros que coincidan con tu búsqueda.</p>
-                            </div>
+                            <EmptyState
+                                icono="fa-search-minus"
+                                titulo="Sin resultados"
+                                descripcion="No hay registros que coincidan con tu búsqueda."
+                            />
                         )}
                     </>
                 ) : (
-                    <div className="propiedades-empty">
-                        <div className="empty-icon">
-                            <i className={`fas ${modoPapelera ? 'fa-trash-can-arrow-up' : config.icono}`}></i>
-                        </div>
-                        <h3>{modoPapelera ? 'La papelera está vacía' : (filtros ? 'Sin resultados' : 'Aún no hay registros')}</h3>
-                        <p>
-                            {modoPapelera
+                    <EmptyState
+                        icono={modoPapelera ? 'fa-trash-can-arrow-up' : config.icono}
+                        titulo={modoPapelera ? 'La papelera está vacía' : (filtros ? 'Sin resultados' : 'Aún no hay registros')}
+                        descripcion={
+                            modoPapelera
                                 ? 'Los elementos eliminados aparecerán acá y podrás restaurarlos.'
                                 : (filtros
                                     ? 'Ningún registro coincide con los filtros aplicados. Probá quitarlos o cambiarlos.'
                                     : (config.crear
                                         ? 'Podés crear el primero haciendo clic en "Nuevo".'
-                                        : 'Aún no se cargaron registros en este panel.'))}
-                        </p>
-                    </div>
+                                        : 'Aún no se cargaron registros en este panel.'))
+                        }
+                    />
                 )}
 
             </div>

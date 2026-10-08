@@ -5,8 +5,7 @@
 const ICONOS_CATEGORIA = {
     'Casa': 'fa-house',
     'Departamento': 'fa-building',
-    'Cabaña': 'fa-campground',
-    'Local Comercial': 'fa-store',
+    'Cabaña': 'fa-house-chimney-window',
     'Duplex': 'fa-layer-group',
     'Monoambiente': 'fa-door-open',
     'Oficina': 'fa-briefcase',

@@ -5,6 +5,8 @@ import { useAuth } from '../hooks/useAuth';
 import { useSEO } from '../hooks/useSEO';
 import PropiedadCard from '../components/PropiedadCard';
 import MultiSelect from '../components/MultiSelect';
+import EmptyState from '../components/EmptyState';
+import ErrorState from '../components/ErrorState';
 
 // Acepta el valor repetido (categoria_id=1&categoria_id=2) y tambien el
 // separado por comas (categoria_id=1,2), que es como vienen los links viejos.
@@ -30,6 +32,7 @@ function Propiedades() {
     const [servicios, setServicios] = useState([]);
     const [favoritoIds, setFavoritoIds] = useState(() => new Set());
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
     // Filtros
     const [search, setSearch] = useState(searchParams.get('q') || '');
@@ -85,6 +88,8 @@ function Propiedades() {
     }, [search, categoriaIds, provinciaId, localidadIds, servicioIds, precioMin, precioMax, ambientes, dormitorios, banos, capacidad, aceptaMascotas, aceptaHijos, orden, pagina]);
 
     const cargarDatos = async () => {
+        setLoading(true);
+        setError('');
         try {
             const [props, cats, provs, locs, servs] = await Promise.all([
                 getPropiedades(),
@@ -100,6 +105,7 @@ function Propiedades() {
             setServicios(servs);
         } catch (error) {
             console.error('Error cargando propiedades:', error);
+            setError(error.message || 'No pudimos cargar las propiedades. Probá de nuevo en unos momentos.');
         } finally {
             setLoading(false);
         }
@@ -481,7 +487,9 @@ function Propiedades() {
                 </div>
 
                 {/* GRID */}
-                {loading ? (
+                {error ? (
+                    <ErrorState mensaje={error} onReintentar={cargarDatos} />
+                ) : loading ? (
                     <div className="skeleton-grid propiedades-grid">
                         {Array.from({ length: 6 }).map((_, i) => (
                             <div className="propiedad-card" key={i}>
@@ -553,16 +561,18 @@ function Propiedades() {
                         )}
                     </>
                 ) : (
-                    <div className="propiedades-empty">
-                        <div className="empty-icon"><i className="fas fa-home"></i></div>
-                        <h3>No encontramos resultados</h3>
-                        <p>Probá con otro término de búsqueda o ajustá los filtros.</p>
-                        {hayFiltros && (
-                            <button className="btn-ver-todas" onClick={limpiarFiltros} style={{ marginTop: '20px' }}>
-                                Limpiar filtros
-                            </button>
-                        )}
-                    </div>
+                    <EmptyState
+                        icono="fa-search"
+                        titulo="No encontramos resultados"
+                        descripcion="Probá con otro término de búsqueda o ajustá los filtros."
+                        action={
+                            hayFiltros ? (
+                                <button className="btn-ver-todas" onClick={limpiarFiltros} style={{ marginTop: '20px' }}>
+                                    <i className="fas fa-times"></i> Limpiar filtros
+                                </button>
+                            ) : null
+                        }
+                    />
                 )}
             </div>
         </div>

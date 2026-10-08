@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getServicios } from '../services/api';
-import { iconoServicio } from '../utils/servicios';
+import ServicioIcono from '../components/ServicioIcono';
 import { useSEO } from '../hooks/useSEO';
 import Loader from '../components/Loader';
+import EmptyState from '../components/EmptyState';
+import ErrorState from '../components/ErrorState';
 
 function Servicios() {
     useSEO(
@@ -13,15 +15,35 @@ function Servicios() {
 
     const [servicios, setServicios] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
-    useEffect(() => {
+    const cargarServicios = useCallback(() => {
+        setLoading(true);
+        setError('');
         getServicios()
             .then(lista => setServicios(Array.isArray(lista) ? lista : []))
-            .catch(error => console.error('Error cargando servicios:', error))
+            .catch(err => {
+                console.error('Error cargando servicios:', err);
+                setError(err.message || 'No pudimos cargar los servicios. Probá de nuevo en unos momentos.');
+            })
             .finally(() => setLoading(false));
     }, []);
 
+    useEffect(() => {
+        cargarServicios();
+    }, [cargarServicios]);
+
     if (loading) return <Loader />;
+
+    if (error) {
+        return (
+            <div className="estatica-page">
+                <div className="container">
+                    <ErrorState mensaje={error} onReintentar={cargarServicios} />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="estatica-page">
@@ -39,14 +61,21 @@ function Servicios() {
                 </section>
 
                 {servicios.length === 0 ? (
-                    <p className="form-help" style={{ textAlign: 'center' }}>
-                        Todavía no hay servicios cargados.
-                    </p>
+                    <EmptyState
+                        icono="fa-concierge-bell"
+                        titulo="Todavía no hay servicios cargados"
+                        descripcion="Los servicios son las comodidades que podés marcar al publicar una propiedad."
+                        action={
+                            <Link to="/propiedades/crear" className="btn-ver-todas">
+                                <i className="fas fa-plus"></i> Publicar primera propiedad
+                            </Link>
+                        }
+                    />
                 ) : (
                     <div className="servicios-grid servicios-grid-catalogo">
                         {servicios.map(serv => (
                             <div className="servicio-card" key={serv.id}>
-                                <i className={`fas ${iconoServicio(serv.nombre)} servicio-icon`}></i>
+                                <ServicioIcono nombre={serv.nombre} className="servicio-icon" />
                                 <h4>{serv.nombre}</h4>
                             </div>
                         ))}
