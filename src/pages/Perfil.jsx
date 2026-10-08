@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useUI } from '../context/UIContext';
-import { updatePerfil } from '../services/api';
+import { updatePerfil, getResenasByUsuario } from '../services/api';
 import { useSEO } from '../hooks/useSEO';
 import Loader from '../components/Loader';
 import EmptyState from '../components/EmptyState';
@@ -21,6 +21,11 @@ function Perfil() {
     const [passErrores, setPassErrores] = useState({});
     const [guardandoPass, setGuardandoPass] = useState(false);
 
+    const [resenasRecibidas, setResenasRecibidas] = useState([]);
+    const [promedioResenas, setPromedioResenas] = useState(0);
+    const [totalResenas, setTotalResenas] = useState(0);
+    const [cargandoResenas, setCargandoResenas] = useState(true);
+
     const [formData, setFormData] = useState({
         nombre: '',
         apellido: '',
@@ -29,18 +34,27 @@ function Perfil() {
         domicilio: ''
     });
 
-    // Cuando carga el usuario, llenamos el form
     useEffect(() => {
-        if (usuario) {
-            setFormData({
-                nombre: usuario.nombre || '',
-                apellido: usuario.apellido || '',
-                email: usuario.email || '',
-                telefono: usuario.telefono || '',
-                domicilio: usuario.domicilio || ''
-            });
-        }
-    }, [usuario]);
+        if (!usuario || !token) return;
+        const cargarResenas = async () => {
+            setCargandoResenas(true);
+            try {
+                const res = await getResenasByUsuario(usuario.id, token);
+                const data = res?.data || res || {};
+                setResenasRecibidas(Array.isArray(data.items) ? data.items : []);
+                setPromedioResenas(data.promedio || 0);
+                setTotalResenas(data.total || 0);
+            } catch (error) {
+                console.error('Error cargando reseñas:', error);
+                setResenasRecibidas([]);
+                setPromedioResenas(0);
+                setTotalResenas(0);
+            } finally {
+                setCargandoResenas(false);
+            }
+        };
+        cargarResenas();
+    }, [usuario, token]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -140,6 +154,17 @@ function Perfil() {
     const inicial = (usuario.nombre?.[0] || 'U').toUpperCase();
     const esAdministrador = usuario.rol === 'administrador';
     const rolLabel = esAdministrador ? 'Administrador' : 'Usuario';
+
+    const renderEstrellas = (n) => {
+        const valor = Math.round(Number(n) || 0);
+        return [...Array(5)].map((_, i) => (
+            <i
+                key={i}
+                className={`fas fa-star ${i < valor ? 'estrella-llena' : ''}`}
+                style={{ color: i < valor ? '#f59e0b' : '#cbd5e1', fontSize: 16, marginRight: 2 }}
+            />
+        ));
+    };
 
     return (
         <div className="perfil-page">
@@ -346,14 +371,89 @@ function Perfil() {
                         )}
                     </div>
 
-                    {/* ACCESOS RÁPIDOS */}
+                    {/* REPUTACIÓN */}
                     <div className="perfil-card">
                         <div className="perfil-card-header">
                             <h3>
-                                <i className="fas fa-bolt"></i> Accesos rápidos
+                                <i className="fas fa-star"></i> Mi reputación
                             </h3>
                         </div>
-                        <div className="dash-actions">
+
+                        {cargandoResenas ? (
+                            <div style={{ padding: '20px 0', textAlign: 'center', color: '#64748b' }}>
+                                <i className="fas fa-spinner fa-spin"></i> Cargando reseñas...
+                            </div>
+                        ) : totalResenas === 0 ? (
+                            <div className="resenas-vacio" style={{ textAlign: 'left', padding: '10px 0' }}>
+                                <i className="fas fa-star-half-alt"></i>
+                                <p style={{ marginTop: 6 }}>
+                                    Todavía no recibiste reseñas.
+                                </p>
+                            </div>
+                        ) : (
+                            <>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                        {renderEstrellas(promedioResenas)}
+                                    </div>
+                                    <span style={{ fontWeight: 700, fontSize: 18 }}>
+                                        {Number(promedioResenas).toFixed(1)}
+                                    </span>
+                                    <span style={{ color: '#64748b' }}>
+                                        ({totalResenas} {totalResenas === 1 ? 'reseña' : 'reseñas'})
+                                    </span>
+                                </div>
+
+                                {resenasRecibidas.length > 0 && (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                        <h4 style={{ margin: 0, fontSize: 14, color: '#475569' }}>
+                                            Últimas reseñas recibidas
+                                        </h4>
+                                        {resenasRecibidas.slice(0, 3).map((r) => (
+                                            <article
+                                                key={r.id}
+                                                style={{
+                                                    border: '1px solid #e2e8f0',
+                                                    borderRadius: 10,
+                                                    padding: '12px 14px',
+                                                    background: '#f8fafc'
+                                                }}
+                                            >
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                        {renderEstrellas(r.calificacion)}
+                                                        <span style={{ fontSize: 13, fontWeight: 600 }}>{r.calificacion}/5</span>
+                                                    </div>
+                                                    {r.fecha_publicacion && (
+                                                        <span style={{ fontSize: 12, color: '#64748b' }}>
+                                                            <i className="far fa-calendar-alt" style={{ marginRight: 4 }}></i>
+                                                            {String(r.fecha_publicacion).slice(0, 10)}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                {r.comentario && (
+                                                    <p style={{ margin: 0, fontSize: 13, color: '#334155', lineHeight: 1.5 }}>
+                                                        {r.comentario}
+                                                    </p>
+                                                )}
+                                            </article>
+                                        ))}
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </div>
+
+                </section>
+
+                {/* ACCESOS RÁPIDOS */}
+                <section className="perfil-card" style={{ marginTop: '24px' }}>
+                    <div className="perfil-card-header">
+                        <h3>
+                            <i className="fas fa-bolt"></i> Accesos rápidos
+                        </h3>
+                    </div>
+                    <div className="dash-actions">
                             <Link to="/dashboard" className="dash-action">
                                 <span className="dash-action-icon">
                                     <i className="fas fa-chart-line"></i>
@@ -395,7 +495,6 @@ function Perfil() {
                                 <i className="fas fa-chevron-right dash-action-arrow"></i>
                             </Link>
                         </div>
-                    </div>
 
                 </section>
 
