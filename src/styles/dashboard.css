@@ -1,0 +1,568 @@
+/* ========== DASHBOARD ========== */
+.dashboard-page {
+    padding: 40px 0 60px;
+    background: var(--primary-bg);
+    min-height: calc(100vh - 72px);
+}
+
+.dash-hero {
+    background:
+        radial-gradient(700px 320px at 15% -20%, rgba(147, 197, 253, 0.35), transparent 60%),
+        radial-gradient(600px 320px at 90% 0%, rgba(96, 165, 250, 0.35), transparent 55%),
+        linear-gradient(135deg, #1D4ED8 0%, var(--primary-dark) 45%, var(--primary-dark) 100%);
+    border-radius: 20px;
+    padding: 36px 40px;
+    margin-bottom: 28px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 45px -25px rgba(59, 130, 246, 0.7);
+}
+
+.dash-hero::after {
+    content: '';
+    position: absolute;
+    right: -60px;
+    bottom: -60px;
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(204, 251, 241, 0.25), transparent 70%);
+    pointer-events: none;
+}
+
+.dash-hero-content {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    position: relative;
+    z-index: 1;
+}
+
+.dash-avatar {
+    width: 76px;
+    height: 76px;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.18);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 800;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.4);
+}
+
+.dash-hero-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.dash-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.dash-hero-text h1 {
+    font-size: clamp(24px, 3vw, 32px);
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 6px;
+    color: #fff;
+}
+
+.dash-hero-text h1 span {
+    color: #93C5FD;
+}
+
+.dash-hero-text h1 .dash-hello-icon {
+    color: #93C5FD;
+    font-size: 0.75em;
+    margin-left: 8px;
+    vertical-align: baseline;
+}
+
+.dash-hero-text p {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 15px;
+    margin: 0;
+    max-width: 640px;
+    line-height: 1.5;
+}
+
+.dash-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 18px;
+    margin-bottom: 28px;
+}
+
+.dash-stat-card {
+    background: var(--white);
+    border: 1px solid #eef2f7;
+    border-radius: 18px;
+    padding: 20px 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04), 0 8px 24px -18px rgba(16, 24, 40, 0.15);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    /* Ahora la tarjeta es un <Link>, asi que hay que quitar el subrayado
+       que React Router no pone pero el navegador si por defecto. */
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Etiqueta "Ver" de la tarjeta: siempre a la derecha, como en las
+   acciones rapidas del dashboard. */
+.dash-stat-ver {
+    margin-left: auto;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+    white-space: nowrap;
+}
+
+.dash-stat-card:hover .dash-stat-ver {
+    color: var(--primary-dark);
+}
+
+.dash-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-dark), var(--primary-light));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.dash-stat-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(59, 130, 246, 0.25);
+    box-shadow: 0 6px 16px -8px rgba(16, 24, 40, 0.12), 0 24px 48px -20px rgba(59, 130, 246, 0.28);
+}
+
+.dash-stat-card:hover::before {
+    opacity: 1;
+}
+
+.dash-stat-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    box-shadow: 0 6px 14px -8px rgba(0, 0, 0, 0.25);
+}
+
+.dash-stat-icon.teal {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    color: #fff;
+}
+
+.dash-stat-icon.emerald {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+    color: #fff;
+}
+
+.dash-stat-icon.rose {
+    background: linear-gradient(135deg, #f43f5e, #fb7185);
+    color: #fff;
+}
+
+.dash-stat-icon.amber {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    color: #fff;
+}
+
+.dash-stat-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.dash-stat-number {
+    font-size: 28px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.1;
+}
+
+.dash-stat-label {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+.dash-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.15fr;
+    gap: 22px;
+}
+
+.dash-card {
+    background: var(--white);
+    border: 1px solid #eef2f7;
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04), 0 8px 24px -18px rgba(16, 24, 40, 0.15);
+    display: flex;
+    flex-direction: column;
+}
+
+.dash-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    gap: 12px;
+}
+
+.dash-card-header h3 {
+    font-size: 16.5px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dash-card-header h3 i {
+    color: var(--primary-dark);
+    font-size: 15px;
+    background: #E0E7FF;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.14);
+}
+
+.dash-card-link {
+    color: var(--primary-dark);
+    font-weight: 700;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none !important;
+    transition: var(--transition);
+}
+
+.dash-card-link:hover,
+.dash-card-link:focus {
+    color: #1D4ED8;
+    text-decoration: none !important;
+}
+
+.dash-card-link i {
+    transition: transform 0.3s ease;
+    font-size: 11px;
+}
+
+.dash-card-link:hover i {
+    transform: translateX(3px);
+}
+
+.dash-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.dash-action {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background: #f8fafc;
+    border: 1px solid #eef2f7;
+    border-radius: 14px;
+    color: #0f172a;
+    text-decoration: none !important;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.dash-action:hover,
+.dash-action:focus {
+    background: #EEF2FF;
+    border-color: #BFDBFE;
+    transform: translateX(4px);
+    text-decoration: none !important;
+    color: #0f172a;
+}
+
+.dash-action.primary {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-dark));
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 10px 24px -12px rgba(59, 130, 246, 0.7);
+}
+
+.dash-action.primary:hover,
+.dash-action.primary:focus {
+    background: linear-gradient(135deg, #1D4ED8, var(--primary-dark));
+    color: #fff;
+}
+
+.dash-action-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    background: #E0E7FF;
+    color: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+    transition: var(--transition);
+}
+
+.dash-action.primary .dash-action-icon {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.dash-action-text {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.dash-action-text strong {
+    font-size: 14.5px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.dash-action-text small {
+    font-size: 12.5px;
+    color: #64748b;
+    margin-top: 2px;
+    font-weight: 500;
+}
+
+.dash-action.primary .dash-action-text small {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.dash-action-arrow {
+    color: #94a3b8;
+    font-size: 12px;
+    transition: transform 0.3s ease;
+}
+
+.dash-action:hover .dash-action-arrow {
+    transform: translateX(3px);
+    color: var(--primary-dark);
+}
+
+.dash-action.primary .dash-action-arrow {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.dash-action.primary:hover .dash-action-arrow {
+    color: #fff;
+}
+
+.dash-reservas {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.dash-reserva-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px;
+    background: #f8fafc;
+    border: 1px solid #eef2f7;
+    border-radius: 14px;
+    transition: var(--transition);
+}
+
+.dash-reserva-item:hover {
+    background: #EEF2FF;
+    border-color: #BFDBFE;
+    transform: translateX(4px);
+}
+
+.dash-reserva-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-dark));
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+    box-shadow: 0 6px 14px -8px rgba(59, 130, 246, 0.6);
+}
+
+.dash-reserva-icon.warning {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    box-shadow: 0 6px 14px -8px rgba(245, 158, 11, 0.6);
+}
+
+.dash-reserva-icon.muted {
+    background: #e2e8f0;
+    color: #64748b;
+    box-shadow: none;
+}
+
+.dash-reserva-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.dash-reserva-info strong {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dash-reserva-info span {
+    font-size: 12.5px;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dash-reserva-info span i {
+    color: var(--primary-dark);
+    font-size: 11px;
+}
+
+.dash-reserva-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 999px;
+    text-transform: capitalize;
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+}
+
+.dash-reserva-badge.pendiente {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.dash-reserva-badge.confirmada {
+    background: #d1fae5;
+    color: var(--primary-dark);
+}
+
+.dash-reserva-badge.cancelada {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.dash-reserva-badge.finalizada {
+    background: #E0E7FF;
+    color: #1D4ED8;
+}
+
+.dash-reserva-badge.no-leida {
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+}
+
+.dash-empty {
+    text-align: center;
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.dash-empty-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+    font-size: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.18);
+    margin-bottom: 6px;
+}
+
+.dash-empty p {
+    color: #64748b;
+    font-size: 14.5px;
+    margin: 0;
+}
+
+.dash-empty-btn {
+    display: inline-block;
+    padding: 9px 22px;
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-dark));
+    color: #fff;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 13.5px;
+    text-decoration: none !important;
+    transition: var(--transition);
+    margin-top: 6px;
+    box-shadow: 0 8px 20px -10px rgba(59, 130, 246, 0.6);
+}
+
+.dash-empty-btn:hover,
+.dash-empty-btn:focus {
+    transform: translateY(-2px);
+    color: #fff;
+    text-decoration: none !important;
+    box-shadow: 0 12px 24px -10px rgba(59, 130, 246, 0.8);
+}
+
