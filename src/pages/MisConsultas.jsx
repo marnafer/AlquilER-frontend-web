@@ -9,6 +9,7 @@ import {
     enviarMensajeConsulta
 } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
+import { useSEO } from '../hooks/useSEO';
 import Loader from '../components/Loader';
 import EmptyState from '../components/EmptyState';
 

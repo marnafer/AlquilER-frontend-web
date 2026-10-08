@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useUI } from '../context/UIContext';
+import { useSEO } from '../hooks/useSEO';
 import { 
     getCategorias, 
     getLocalidades, 
