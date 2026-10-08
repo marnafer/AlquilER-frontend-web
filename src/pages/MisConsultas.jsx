@@ -234,7 +234,7 @@ function MisConsultas() {
                                     >
                                         <div className="misconsultas-item-img">
                                             {img ? (
-                                                <img src={img} alt={`Imagen de ${altTitulo}`} />
+                                                <img src={img} alt={`Imagen de ${altTitulo}`} loading="lazy" decoding="async" />
                                             ) : (
                                                 <i className="fas fa-home"></i>
                                             )}

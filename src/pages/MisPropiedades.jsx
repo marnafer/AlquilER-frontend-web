@@ -232,6 +232,8 @@ function MisPropiedades() {
                                         <img
                                             src={imagen}
                                             alt={prop.titulo}
+                                            loading="lazy"
+                                            decoding="async"
                                             onError={(e) => {
                                                 e.target.style.display = 'none';
                                                 e.target.parentElement.classList.add('sin-imagen');

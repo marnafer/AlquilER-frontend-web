@@ -140,9 +140,10 @@ function Home() {
 
                         <div className="hero-image">
                             <img
-                                src="/assets/img/logo.webp"
+                                src="/assets/img/hero.webp"
                                 alt="AlquilER"
-                                style={{ maxHeight: '720px', width: 'auto' }}
+                                fetchPriority="high"
+                                decoding="async"
                                 onError={ocultarHero}
                             />
                         </div>
@@ -179,6 +180,8 @@ function Home() {
                                     <img
                                         src={rutaImagenPropiedad(prop) || '/assets/img/logo.webp'}
                                         alt={prop.titulo}
+                                        loading="lazy"
+                                        decoding="async"
                                         onError={onImgError}
                                     />
                                 </div>

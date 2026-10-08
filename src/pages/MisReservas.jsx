@@ -299,7 +299,7 @@ function MisReservas() {
                                     <div className="misreservas-item" key={reserva.id}>
                                         <div className="misreservas-item-imagen">
                                             {img ? (
-                                                <img src={img} alt={prop?.titulo || 'Propiedad'} />
+                                                <img src={img} alt={prop?.titulo || 'Propiedad'} loading="lazy" decoding="async" />
                                             ) : (
                                                 <div className="misreservas-item-placeholder">
                                                     <i className="fas fa-home"></i>
