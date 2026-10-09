@@ -460,6 +460,11 @@ function MisReservas() {
                                                  </span>
                                              )}
                                         </div>
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                            <Link to={`/reservas/${reserva.id}`} className="link-underline">
+                                                <i className="fas fa-eye"></i> Ver detalle
+                                            </Link>
+                                        </div>
                                     </div>
                                 );
                             })}

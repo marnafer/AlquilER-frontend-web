@@ -794,6 +794,17 @@ export async function getResenasByPropiedad(propiedadId) {
     }
 }
 
+export async function getResenasByReserva(reservaId, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/resenas/reserva/${reservaId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: errorDeConexion(error) };
+    }
+}
+
 // ============================================
 // ADMIN - USUARIOS
 // ============================================

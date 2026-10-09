@@ -23,6 +23,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Favoritos = lazy(() => import('./pages/Favoritos'));
 const MisPropiedades = lazy(() => import('./pages/MisPropiedades'));
 const MisReservas = lazy(() => import('./pages/MisReservas'));
+const ReservaDetalle = lazy(() => import('./pages/ReservaDetalle'));
 const MisConsultas = lazy(() => import('./pages/MisConsultas'));
 const Notificaciones = lazy(() => import('./pages/Notificaciones'));
 const PropiedadForm = lazy(() => import('./pages/PropiedadForm'));
@@ -222,6 +223,14 @@ function AppRouter() {
                         element={
                             <PrivateRoute>
                                 <MisReservas />
+                            </PrivateRoute>
+                        }
+                    />
+                    <Route
+                        path="/reservas/:id"
+                        element={
+                            <PrivateRoute>
+                                <ReservaDetalle />
                             </PrivateRoute>
                         }
                     />
