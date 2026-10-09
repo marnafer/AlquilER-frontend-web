@@ -496,7 +496,9 @@ export async function removeFavorito(propiedadId, token) {
 
 export async function getReservas(token) {
     try {
-        // GET /api/reservas devuelve las reservas del usuario autenticado
+        // GET /api/reservas devuelve las reservas del usuario autenticado ya
+        // clasificadas por el backend en mis_reservas y
+        // reservas_de_mis_propiedades (los admins además reciben "todas").
         const response = await fetch(`${API_URL}/api/reservas`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -504,6 +506,24 @@ export async function getReservas(token) {
     } catch (error) {
         return { success: false, error: errorDeConexion(error) };
     }
+}
+
+// Normaliza la respuesta clasificada de /api/reservas. Devuelve siempre las
+// tres listas, con "todas" como concatenación de las otras dos cuando el
+// backend no la manda (usuarios comunes). Evita repetir la lógica en cada
+// pantalla y tolera respuestas vacías o con error.
+export function separarReservas(res) {
+    const data = res?.data ?? {};
+    const misReservas = Array.isArray(data.mis_reservas) ? data.mis_reservas : [];
+    const reservasDeMisPropiedades = Array.isArray(data.reservas_de_mis_propiedades)
+        ? data.reservas_de_mis_propiedades
+        : [];
+
+    const todas = Array.isArray(data.todas)
+        ? data.todas
+        : [...misReservas, ...reservasDeMisPropiedades];
+
+    return { misReservas, reservasDeMisPropiedades, todas };
 }
 
 export async function getReservasAdmin(token, soloEliminados = false) {

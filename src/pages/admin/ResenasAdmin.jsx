@@ -8,6 +8,7 @@ import {
     restoreResena,
     crearResenaAdmin,
     getReservas,
+    separarReservas,
     getUsuarios
 } from '../../services/api';
 
@@ -112,7 +113,7 @@ function ResenasAdmin() {
                 clave: 'reservasFinalizadas',
                 cargar: async () => {
                     const res = await getReservas(token);
-                    const items = res?.data?.items ?? res?.data ?? [];
+                    const items = separarReservas(res).todas;
                     return items
                         .filter(r => r.estado === 'finalizada')
                         .map(r => ({

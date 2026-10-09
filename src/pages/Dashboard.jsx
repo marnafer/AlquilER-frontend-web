@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { getMisPropiedades, getReservas, getFavoritos, getConsultas, getNotificaciones } from '../services/api';
+import { getMisPropiedades, getReservas, separarReservas, getFavoritos, getConsultas, getNotificaciones } from '../services/api';
 import { useSEO } from '../hooks/useSEO';
 import Loader from '../components/Loader';
 import ErrorState from '../components/ErrorState';
@@ -45,7 +45,7 @@ function Dashboard() {
             ]);
 
             const props = propRes?.data?.items || propRes?.data || propRes || [];
-            const reservas = reservasRes?.data?.items || reservasRes?.data || reservasRes || [];
+            const reservas = separarReservas(reservasRes).todas;
             const favoritos = favoritosRes?.data?.items || favoritosRes?.data || favoritosRes || [];
             const consultas = consultasRes?.data?.items || consultasRes?.data || consultasRes || [];
 

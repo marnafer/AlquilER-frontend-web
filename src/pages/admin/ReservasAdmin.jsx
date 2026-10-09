@@ -3,6 +3,7 @@ import PanelCrud from '../../components/admin/PanelCrud';
 import { useAuth } from '../../hooks/useAuth';
 import {
     getReservasAdmin,
+    separarReservas,
     getReserva,
     confirmarReserva,
     rechazarReserva,
@@ -62,11 +63,11 @@ function ReservasAdmin() {
         descripcion: 'Gestioná las reservas de alquiler, cambiá su estado o restaurá eliminadas.',
         columnaPrincipal: 'id',
         crear: (payload, token) => crearReservaAdmin(payload, token),
-        obtener: (token) => getReservasAdmin(token),
+        obtener: async (token) => separarReservas(await getReservasAdmin(token)).todas,
         actualizar: (id, data, token) => updateReservaEstado(id, data.estado, token),
         eliminar: (id, token) => deleteReserva(id, token),
         papelera: {
-            obtener: (token) => getReservasAdmin(token, true),
+            obtener: async (token) => separarReservas(await getReservasAdmin(token, true)).todas,
             restaurar: (id, token) => restoreReserva(id, token)
         },
         acciones: [

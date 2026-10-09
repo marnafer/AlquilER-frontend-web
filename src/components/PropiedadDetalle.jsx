@@ -8,6 +8,7 @@ import {
     getResenasByPropiedad,
     getServiciosByPropiedad,
     getReservas,
+    separarReservas,
     createResena,
     updateResena,
     deleteResena
@@ -85,8 +86,7 @@ function PropiedadDetalle() {
             }
             if (token) {
                 const res = await getReservas(token);
-                const items = res?.data?.items || res?.data || res || [];
-                setReservas(Array.isArray(items) ? items : []);
+                setReservas(separarReservas(res).todas);
             } else {
                 setReservas([]);
             }

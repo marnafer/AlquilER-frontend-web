@@ -4,8 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useUI } from '../context/UIContext';
 import {
     getReservas,
-    getMisPropiedades,
-    getPropiedades,
+    separarReservas,
     aprobarReserva,
     rechazarReserva,
     finalizarReserva,
@@ -102,49 +101,26 @@ function MisReservas() {
         if (!usuario) return;
         setMensaje({ tipo: '', texto: '' });
         try {
-            const misProps = await getMisPropiedades(token);
-            if (!Array.isArray(misProps)) throw new Error('Props inválidas');
-            const catalogo = await getPropiedades();
-            if (!Array.isArray(catalogo)) throw new Error('Catálogo inválido');
-
-            const esPropietario = misProps.length > 0;
-            setEsGestion(esPropietario);
-
             const resHechas = await getResenasByUsuario(usuario.id, token);
             const itemsHechas = resHechas?.data?.items || resHechas?.items || [];
             setMisResenasHechas(Array.isArray(itemsHechas) ? itemsHechas : []);
 
-            const mapPropiedad = {};
-            [...misProps, ...catalogo].forEach(p => { if (p) mapPropiedad[p.id] = p; });
+            // El backend ya clasifica: mis solicitudes vs. las recibidas en mis
+            // propiedades. Acá solo etiquetamos el origen para los filtros y
+            // unimos ambas listas para la vista.
+            const { misReservas, reservasDeMisPropiedades } = separarReservas(
+                await getReservas(token)
+            );
 
-            // Una sola llamada a /api/reservas trae las propias y las recibidas sobre
-            // mis propiedades, pero sin indicar cual es cual. Decidimos el origen
-            // mirando usuario_id contra el propietario de la propiedad.
-            const propias = [];
-            const recibidas = [];
+            setEsGestion(reservasDeMisPropiedades.length > 0);
 
-            const todasRes = await getReservas(token);
-            const itemsTodas = todasRes?.data?.items || todasRes?.data || todasRes || [];
-
-            (Array.isArray(itemsTodas) ? itemsTodas : []).forEach(r => {
-                const esMia = String(r.usuario_id) === String(usuario.id);
-                const propiedad = mapPropiedad[r.propiedad_id] || null;
-
-                // Una reserva de otra persona solo cuenta como recibida si la propiedad
-                // es mia. Cualquier otro caso se descarta.
-                const esRecibida = !esMia && Boolean(propiedad)
-                    && String(propiedad.usuario_id) === String(usuario.id);
-
-                if (esMia) {
-                    propias.push({ ...r, origen: 'propia', propiedad });
-                } else if (esRecibida) {
-                    recibidas.push({ ...r, origen: 'recibida', propiedad });
-                }
-            });
-
-            const todas = [...propias, ...recibidas].sort((a, b) =>
+            const todas = [
+                ...misReservas.map(r => ({ ...r, origen: 'propia' })),
+                ...reservasDeMisPropiedades.map(r => ({ ...r, origen: 'recibida' }))
+            ].sort((a, b) =>
                 String(b.id || 0).localeCompare(String(a.id || 0), undefined, { numeric: true })
             );
+
             setReservas(todas);
         } catch (error) {
             console.error('Error cargando reservas:', error);
@@ -152,9 +128,6 @@ function MisReservas() {
         } finally {
             setLoading(false);
         }
-    // esGestion NO va como dependencia: se calcula adentro a partir de misProps.
-    // Si fuera dependencia, el setEsGestion del primer render recrearia el
-    // callback y dispararia el useEffect otra vez, con el doble de requests.
     }, [token, usuario]);
 
     useEffect(() => {
