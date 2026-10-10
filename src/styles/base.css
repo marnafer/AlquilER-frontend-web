@@ -17,6 +17,11 @@
     --gray-600: #475569;
     --gray-700: #334155;
     --gray-800: #1E293B;
+    --border-subtle: #e7ecf2;
+    --surface-radius: 14px;
+    --control-radius: 10px;
+    --shadow-soft: 0 2px 10px rgba(15, 23, 42, 0.06);
+    --shadow-raised: 0 12px 28px rgba(15, 23, 42, 0.09);
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.15);
     --radius: 12px;
@@ -118,4 +123,3 @@ button:not(:disabled):active {
         scroll-behavior: auto !important;
     }
 }
-
