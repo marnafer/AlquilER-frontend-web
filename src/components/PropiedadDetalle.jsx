@@ -22,6 +22,12 @@ import Loader from './Loader';
 import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
 
+const obtenerFechaLocal = () => {
+    const hoy = new Date();
+    hoy.setMinutes(hoy.getMinutes() - hoy.getTimezoneOffset());
+    return hoy.toISOString().slice(0, 10);
+};
+
 function PropiedadDetalle() {
     const { id } = useParams();
     const { usuario, token, isAuthenticated } = useAuth();
@@ -43,6 +49,13 @@ function PropiedadDetalle() {
 
     const [mostrarModalConsulta, setMostrarModalConsulta] = useState(false);
     const [mensajeConsulta, setMensajeConsulta] = useState('');
+    const [perfilInteresado, setPerfilInteresado] = useState({
+        fecha_mudanza: '',
+        cantidad_ocupantes: '',
+        tiene_mascotas: '',
+        cantidad_mascotas: '0',
+        garantias: []
+    });
     const [enviandoConsulta, setEnviandoConsulta] = useState(false);
     const [errorConsulta, setErrorConsulta] = useState('');
     const [exitoConsulta, setExitoConsulta] = useState('');
@@ -210,6 +223,13 @@ function PropiedadDetalle() {
         setValidacionConsulta({});
         setExitoConsulta('');
         setMensajeConsulta('');
+        setPerfilInteresado({
+            fecha_mudanza: '',
+            cantidad_ocupantes: '',
+            tiene_mascotas: '',
+            cantidad_mascotas: '0',
+            garantias: []
+        });
         setMostrarModalConsulta(true);
     };
 
@@ -223,6 +243,20 @@ function PropiedadDetalle() {
         const texto = mensajeConsulta.trim();
         if (!texto) errores.mensaje = 'El mensaje es requerido';
         else if (texto.length < 5) errores.mensaje = 'El mensaje debe tener al menos 5 caracteres';
+        if (!perfilInteresado.fecha_mudanza) errores.fecha_mudanza = 'Indicá cuándo querés mudarte';
+        if (
+            !perfilInteresado.cantidad_ocupantes
+            || Number(perfilInteresado.cantidad_ocupantes) < 1
+            || Number(perfilInteresado.cantidad_ocupantes) > 50
+        ) errores.cantidad_ocupantes = 'Indicá entre 1 y 50 ocupantes';
+        if (perfilInteresado.tiene_mascotas === '') errores.tiene_mascotas = 'Indicá si tenés mascotas';
+        if (
+            perfilInteresado.tiene_mascotas === 'si'
+            && (
+                Number(perfilInteresado.cantidad_mascotas) < 1
+                || Number(perfilInteresado.cantidad_mascotas) > 20
+            )
+        ) errores.cantidad_mascotas = 'Indicá entre 1 y 20 mascotas';
         if (Object.keys(errores).length) {
             setValidacionConsulta(errores);
             return;
@@ -232,11 +266,27 @@ function PropiedadDetalle() {
         try {
             const result = await createConsulta({
                 propiedad_id: Number(propiedad.id),
-                mensaje: texto
+                mensaje: texto,
+                perfil_interesado: {
+                    fecha_mudanza: perfilInteresado.fecha_mudanza,
+                    cantidad_ocupantes: Number(perfilInteresado.cantidad_ocupantes),
+                    tiene_mascotas: perfilInteresado.tiene_mascotas === 'si',
+                    cantidad_mascotas: perfilInteresado.tiene_mascotas === 'si'
+                        ? Number(perfilInteresado.cantidad_mascotas)
+                        : 0,
+                    garantias: perfilInteresado.garantias
+                }
             }, token);
             if (result.success) {
                 setMostrarModalConsulta(false);
                 setMensajeConsulta('');
+                setPerfilInteresado({
+                    fecha_mudanza: '',
+                    cantidad_ocupantes: '',
+                    tiene_mascotas: '',
+                    cantidad_mascotas: '0',
+                    garantias: []
+                });
                 setExitoConsulta('Consulta enviada correctamente. El propietario la podrá ver en su panel de consultas.');
             } else {
                 if (result.validation_errors) setValidacionConsulta(result.validation_errors);
@@ -452,6 +502,54 @@ function PropiedadDetalle() {
                                 <i className="fas fa-children"></i> {propiedad.acepta_hijos ? 'Se aceptan niños' : 'No se aceptan niños'}
                             </span>
                         </div>
+
+                        {(() => {
+                            const requisitos = propiedad.requisitos_interesados || {};
+                            const garantias = {
+                                recibo_sueldo: 'Recibo de sueldo',
+                                garantia_propietaria: 'Garantía propietaria',
+                                seguro_caucion: 'Seguro de caución',
+                                garante: 'Garante'
+                            };
+                            const garantiasAceptadas = Array.isArray(requisitos.garantias_aceptadas)
+                                ? requisitos.garantias_aceptadas
+                                : [];
+                            const hayRequisitos = requisitos.fecha_disponible_desde
+                                || requisitos.max_ocupantes
+                                || garantiasAceptadas.length;
+
+                            return hayRequisitos ? (
+                                <section
+                                    aria-label="Requisitos informados por el propietario"
+                                    style={{
+                                        marginTop: 18,
+                                        padding: 16,
+                                        borderRadius: 12,
+                                        background: '#f8fafc',
+                                        border: '1px solid #e2e8f0'
+                                    }}
+                                >
+                                    <h3 style={{ margin: '0 0 8px', fontSize: 16 }}>
+                                        Requisitos informados por el propietario
+                                    </h3>
+                                    {requisitos.fecha_disponible_desde && (
+                                        <p style={{ margin: '4px 0' }}>
+                                            Disponible desde: {requisitos.fecha_disponible_desde}
+                                        </p>
+                                    )}
+                                    {requisitos.max_ocupantes && (
+                                        <p style={{ margin: '4px 0' }}>
+                                            Máximo de {requisitos.max_ocupantes} ocupantes
+                                        </p>
+                                    )}
+                                    {garantiasAceptadas.length > 0 && (
+                                        <p style={{ margin: '4px 0' }}>
+                                            Garantías aceptadas: {garantiasAceptadas.map(g => garantias[g] || g).join(', ')}
+                                        </p>
+                                    )}
+                                </section>
+                            ) : null;
+                        })()}
 
                         <p
                             className={`propiedad-detalle-descripcion${propiedad.descripcion ? '' : ' vacia'}`}
@@ -725,7 +823,12 @@ function PropiedadDetalle() {
                     <div
                         className="modal-custom"
                         onClick={(e) => e.stopPropagation()}
-                        style={{ textAlign: 'left', maxWidth: 460 }}
+                        style={{
+                            textAlign: 'left',
+                            maxWidth: 460,
+                            maxHeight: 'calc(100vh - 40px)',
+                            overflowY: 'auto'
+                        }}
                     >
                         <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                             <i className="fas fa-calendar-check" style={{ color: '#1E40AF' }}></i>
@@ -837,10 +940,100 @@ function PropiedadDetalle() {
                             Consultar {propiedad.titulo || 'propiedad'}
                         </h3>
                         <p style={{ marginBottom: 16 }}>
-                            Escribile una consulta al propietario. Te responderá en tu panel de consultas.
+                            Completá estos datos para que el propietario pueda revisar tu consulta con la información necesaria.
+                        </p>
+                        <p style={{ marginBottom: 16, fontSize: 13, color: '#475569' }}>
+                            Tus respuestas se compartirán con el propietario de esta propiedad para gestionar tu consulta y priorizar la revisión. No generan un rechazo automático.{' '}
+                            <Link to="/privacidad">Ver política de privacidad</Link>.
                         </p>
 
                         <form onSubmit={enviarConsulta} noValidate>
+                            <div className="form-group" style={{ marginBottom: 14 }}>
+                                <label htmlFor="fecha-mudanza">¿Cuándo querés mudarte? *</label>
+                                <input
+                                    id="fecha-mudanza"
+                                    type="date"
+                                    min={obtenerFechaLocal()}
+                                    value={perfilInteresado.fecha_mudanza}
+                                    onChange={(e) => setPerfilInteresado(prev => ({ ...prev, fecha_mudanza: e.target.value }))}
+                                    className={validacionConsulta.fecha_mudanza ? 'input-error' : ''}
+                                    required
+                                />
+                                {validacionConsulta.fecha_mudanza && <span className="form-error">{validacionConsulta.fecha_mudanza}</span>}
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 14 }}>
+                                <label htmlFor="cantidad-ocupantes">Cantidad de ocupantes *</label>
+                                <input
+                                    id="cantidad-ocupantes"
+                                    type="number"
+                                    min="1"
+                                    max="50"
+                                    value={perfilInteresado.cantidad_ocupantes}
+                                    onChange={(e) => setPerfilInteresado(prev => ({ ...prev, cantidad_ocupantes: e.target.value }))}
+                                    className={validacionConsulta.cantidad_ocupantes ? 'input-error' : ''}
+                                    required
+                                />
+                                {validacionConsulta.cantidad_ocupantes && <span className="form-error">{validacionConsulta.cantidad_ocupantes}</span>}
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 14 }}>
+                                <label htmlFor="tiene-mascotas">¿Tenés mascotas? *</label>
+                                <select
+                                    id="tiene-mascotas"
+                                    value={perfilInteresado.tiene_mascotas}
+                                    onChange={(e) => setPerfilInteresado(prev => ({
+                                        ...prev,
+                                        tiene_mascotas: e.target.value,
+                                        cantidad_mascotas: e.target.value === 'si' ? prev.cantidad_mascotas : '0'
+                                    }))}
+                                    className={validacionConsulta.tiene_mascotas ? 'input-error' : ''}
+                                    required
+                                >
+                                    <option value="">Seleccionar...</option>
+                                    <option value="no">No</option>
+                                    <option value="si">Sí</option>
+                                </select>
+                                {perfilInteresado.tiene_mascotas === 'si' && (
+                                    <div style={{ marginTop: 10 }}>
+                                        <label htmlFor="cantidad-mascotas" style={{ display: 'block', marginBottom: 6 }}>
+                                            ¿Cuántas?
+                                        </label>
+                                        <input
+                                            id="cantidad-mascotas"
+                                            type="number"
+                                            min="1"
+                                            max="20"
+                                            value={perfilInteresado.cantidad_mascotas}
+                                            onChange={(e) => setPerfilInteresado(prev => ({ ...prev, cantidad_mascotas: e.target.value }))}
+                                            style={{ display: 'block', width: '100%', boxSizing: 'border-box' }}
+                                        />
+                                        {validacionConsulta.cantidad_mascotas && <span className="form-error">{validacionConsulta.cantidad_mascotas}</span>}
+                                    </div>
+                                )}
+                                {validacionConsulta.tiene_mascotas && <span className="form-error">{validacionConsulta.tiene_mascotas}</span>}
+                            </div>
+                            <fieldset className="form-group" style={{ border: 0, padding: 0, margin: '0 0 14px' }}>
+                                <legend>¿Qué garantías podrías presentar?</legend>
+                                {[
+                                    ['recibo_sueldo', 'Recibo de sueldo'],
+                                    ['garantia_propietaria', 'Garantía propietaria'],
+                                    ['seguro_caucion', 'Seguro de caución'],
+                                    ['garante', 'Garante']
+                                ].map(([valor, etiqueta]) => (
+                                    <label key={valor} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={perfilInteresado.garantias.includes(valor)}
+                                            onChange={(e) => setPerfilInteresado(prev => ({
+                                                ...prev,
+                                                garantias: e.target.checked
+                                                    ? [...prev.garantias, valor]
+                                                    : prev.garantias.filter(garantia => garantia !== valor)
+                                            }))}
+                                        />
+                                        {etiqueta}
+                                    </label>
+                                ))}
+                            </fieldset>
                             <div className="form-group" style={{ marginBottom: 14 }}>
                                 <label htmlFor="mensaje-consulta">
                                     Mensaje <span style={{ color: '#dc2626' }}>*</span>

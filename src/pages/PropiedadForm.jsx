@@ -36,6 +36,11 @@ const FORM_INICIAL = {
     capacidad: '',
     acepta_mascotas: 0,
     acepta_hijos: 0,
+    requisitos_interesados: {
+        fecha_disponible_desde: '',
+        max_ocupantes: '',
+        garantias_aceptadas: []
+    },
     disponible: 1,
     categoria_id: '',
     localidad_id: '',
@@ -164,6 +169,13 @@ const [loading, setLoading] = useState(true);
                 capacidad: prop.capacidad ?? '',
                 acepta_mascotas: prop.acepta_mascotas ? 1 : 0,
                 acepta_hijos: prop.acepta_hijos ? 1 : 0,
+                requisitos_interesados: {
+                    fecha_disponible_desde: prop.requisitos_interesados?.fecha_disponible_desde || '',
+                    max_ocupantes: prop.requisitos_interesados?.max_ocupantes ?? '',
+                    garantias_aceptadas: Array.isArray(prop.requisitos_interesados?.garantias_aceptadas)
+                        ? prop.requisitos_interesados.garantias_aceptadas
+                        : []
+                },
                 disponible: prop.disponible ? 1 : 0,
                 categoria_id: prop.categoria_id ?? '',
                 localidad_id: prop.localidad_id ?? '',
@@ -406,6 +418,13 @@ const [loading, setLoading] = useState(true);
                 capacidad: formData.capacidad ? Number(formData.capacidad) : null,
                 acepta_mascotas: Number(formData.acepta_mascotas),
                 acepta_hijos: Number(formData.acepta_hijos),
+                requisitos_interesados: {
+                    fecha_disponible_desde: formData.requisitos_interesados.fecha_disponible_desde || null,
+                    max_ocupantes: formData.requisitos_interesados.max_ocupantes
+                        ? Number(formData.requisitos_interesados.max_ocupantes)
+                        : null,
+                    garantias_aceptadas: formData.requisitos_interesados.garantias_aceptadas
+                },
                 disponible: Number(formData.disponible),
                 categoria_id: Number(formData.categoria_id),
                 localidad_id: Number(formData.localidad_id)
@@ -865,6 +884,89 @@ if (result.success) {
                                     Las propiedades no disponibles se siguen viendo en tu panel, pero no en el catálogo público.
                                 </span>
                             </div>
+                        </div>
+                    </section>
+
+                    <section className="propform-card">
+                        <div className="propform-card-header">
+                            <h3>
+                                <i className="fas fa-filter"></i> Requisitos para interesados
+                            </h3>
+                        </div>
+                        <p className="form-help" style={{ marginBottom: 18 }}>
+                            Son criterios para ordenar las consultas, no rechazan a nadie automáticamente.
+                            Dejá en blanco lo que no quieras usar como filtro.
+                        </p>
+                        <div className="propform-grid">
+                            <div className="form-group">
+                                <label htmlFor="requisito-fecha-disponible">
+                                    Disponible desde
+                                </label>
+                                <input
+                                    id="requisito-fecha-disponible"
+                                    type="date"
+                                    value={formData.requisitos_interesados.fecha_disponible_desde}
+                                    onChange={(e) => setFormData(prev => ({
+                                        ...prev,
+                                        requisitos_interesados: {
+                                            ...prev.requisitos_interesados,
+                                            fecha_disponible_desde: e.target.value
+                                        }
+                                    }))}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="requisito-ocupantes">Máximo de ocupantes</label>
+                                <input
+                                    id="requisito-ocupantes"
+                                    type="number"
+                                    min="1"
+                                    max="50"
+                                    value={formData.requisitos_interesados.max_ocupantes}
+                                    onChange={(e) => setFormData(prev => ({
+                                        ...prev,
+                                        requisitos_interesados: {
+                                            ...prev.requisitos_interesados,
+                                            max_ocupantes: e.target.value
+                                        }
+                                    }))}
+                                />
+                            </div>
+                            <fieldset className="form-group propform-col-full" style={{ border: 0, padding: 0, margin: 0 }}>
+                                <legend style={{ fontWeight: 600, marginBottom: 8 }}>Garantías que aceptás</legend>
+                                <div style={{ display: 'grid', gap: 8 }}>
+                                    {[
+                                        ['recibo_sueldo', 'Recibo de sueldo'],
+                                        ['garantia_propietaria', 'Garantía propietaria'],
+                                        ['seguro_caucion', 'Seguro de caución'],
+                                        ['garante', 'Garante']
+                                    ].map(([valor, etiqueta]) => (
+                                        <label key={valor} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.requisitos_interesados.garantias_aceptadas.includes(valor)}
+                                                onChange={(e) => setFormData(prev => {
+                                                    const actuales = prev.requisitos_interesados.garantias_aceptadas;
+                                                    return {
+                                                        ...prev,
+                                                        requisitos_interesados: {
+                                                            ...prev.requisitos_interesados,
+                                                            garantias_aceptadas: e.target.checked
+                                                                ? [...actuales, valor]
+                                                                : actuales.filter(garantia => garantia !== valor)
+                                                        }
+                                                    };
+                                                })}
+                                            />
+                                            {etiqueta}
+                                        </label>
+                                    ))}
+                                </div>
+                                <span className="form-help">
+                                    Si no seleccionás ninguna, no se usará la garantía para priorizar.
+                                    La política de mascotas se configura en la sección anterior.
+                                </span>
+                            </fieldset>
                         </div>
                     </section>
 

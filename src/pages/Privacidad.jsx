@@ -23,6 +23,7 @@ function Privacidad() {
                     <ul>
                         <li>Datos de registro: nombre, apellido, correo electrónico, teléfono y domicilio.</li>
                         <li>Datos generados por tu actividad: propiedades publicadas, reservas, consultas, favoritos y reseñas.</li>
+                        <li>Si consultás por una propiedad, fecha estimada de mudanza, cantidad de ocupantes, mascotas y garantías disponibles.</li>
                         <li>Datos técnicos: dirección IP y navegador, con fines de seguridad y diagnóstico.</li>
                     </ul>
 
@@ -37,7 +38,9 @@ function Privacidad() {
                     <h2><i className="fas fa-circle-check"></i> 3. Compartir información</h2>
                     <p>
                         Tu nombre y correo pueden verlos las personas con las que interactuás (por
-                        ejemplo, un propietario ve el nombre de quien reserva su propiedad). No
+                        ejemplo, el propietario de una propiedad consultada puede ver tus respuestas
+                        de precalificación para gestionar la consulta y ordenar su revisión. Estas
+                        respuestas son orientativas y no producen una decisión automática. No
                         vendemos tus datos personales a terceros.
                     </p>
 

@@ -13,6 +13,72 @@ import { useSEO } from '../hooks/useSEO';
 import Loader from '../components/Loader';
 import EmptyState from '../components/EmptyState';
 
+const ETIQUETAS_GARANTIAS = {
+    recibo_sueldo: 'Recibo de sueldo',
+    garantia_propietaria: 'Garantía propietaria',
+    seguro_caucion: 'Seguro de caución',
+    garante: 'Garante'
+};
+
+function evaluarPrecalificacion(consulta, propiedad) {
+    const perfil = consulta?.perfil_interesado;
+    if (!perfil) return { estado: 'sin_datos', motivos: [] };
+
+    const requisitos = propiedad?.requisitos_interesados || {};
+    const maxOcupantes = Number(requisitos.max_ocupantes) || null;
+    const fechaDisponible = requisitos.fecha_disponible_desde || '';
+    const garantiasAceptadas = Array.isArray(requisitos.garantias_aceptadas)
+        ? requisitos.garantias_aceptadas
+        : [];
+    const noAceptaMascotas = propiedad?.acepta_mascotas === false
+        || Number(propiedad?.acepta_mascotas) === 0;
+    const criteriosConfigurados = Boolean(
+        maxOcupantes || fechaDisponible || garantiasAceptadas.length || noAceptaMascotas
+    );
+
+    if (!criteriosConfigurados) return { estado: 'sin_criterios', motivos: [] };
+
+    const motivos = [];
+    if (maxOcupantes && Number(perfil.cantidad_ocupantes) > maxOcupantes) {
+        motivos.push(`Supera el máximo de ${maxOcupantes} ocupantes`);
+    }
+    if (fechaDisponible && perfil.fecha_mudanza < fechaDisponible) {
+        motivos.push(`La mudanza es anterior al ${fechaDisponible}`);
+    }
+    if (
+        garantiasAceptadas.length
+        && !garantiasAceptadas.some(garantia => (perfil.garantias || []).includes(garantia))
+    ) {
+        motivos.push('No indicó una de las garantías aceptadas');
+    }
+    if (noAceptaMascotas && perfil.tiene_mascotas) {
+        motivos.push('La propiedad no acepta mascotas');
+    }
+
+    return {
+        estado: motivos.length ? 'revisar' : 'coincide',
+        motivos
+    };
+}
+
+const ETIQUETAS_PRECALIFICACION = {
+    coincide: 'Coincide',
+    revisar: 'Revisar requisitos',
+    sin_criterios: 'Sin criterios',
+    sin_datos: 'Sin datos'
+};
+
+function prioridadConsultaRecibida(item) {
+    if (item.origen !== 'recibida') return 4;
+
+    return {
+        coincide: 0,
+        revisar: 1,
+        sin_criterios: 2,
+        sin_datos: 3
+    }[evaluarPrecalificacion(item.consulta, item.propiedad).estado];
+}
+
 function MisConsultas() {
     useSEO('Mis consultas', 'Tus consultas enviadas a propietarios de propiedades.', { noindex: true });
 
@@ -85,7 +151,8 @@ function MisConsultas() {
 
         setItems(
             [...recibidas, ...enviadas].sort((a, b) =>
-                String(b.consulta?.fecha_consulta || '')
+                prioridadConsultaRecibida(a) - prioridadConsultaRecibida(b)
+                || String(b.consulta?.fecha_consulta || '')
                     .localeCompare(String(a.consulta?.fecha_consulta || ''))
             )
         );
@@ -226,6 +293,9 @@ function MisConsultas() {
                                 const c = item.consulta;
                                 const img = item.propiedad ? rutaImagenPropiedad(item.propiedad) : '';
                                 const altTitulo = item.propiedad?.titulo || c.propiedad?.titulo || 'Propiedad';
+                                const precalificacion = item.origen === 'recibida'
+                                    ? evaluarPrecalificacion(c, item.propiedad)
+                                    : null;
                                 return (
                                     <button
                                         key={c.id}
@@ -256,6 +326,24 @@ function MisConsultas() {
                                                     ? `De ${nombreDe(c.usuario)}`
                                                     : 'Consulta enviada'}
                                             </p>
+                                            {precalificacion && (
+                                                <span
+                                                    style={{
+                                                        display: 'inline-block',
+                                                        marginTop: 5,
+                                                        padding: '3px 8px',
+                                                        borderRadius: 999,
+                                                        fontSize: 11,
+                                                        fontWeight: 700,
+                                                        color: precalificacion.estado === 'coincide' ? '#166534'
+                                                            : precalificacion.estado === 'revisar' ? '#92400e' : '#475569',
+                                                        background: precalificacion.estado === 'coincide' ? '#dcfce7'
+                                                            : precalificacion.estado === 'revisar' ? '#fef3c7' : '#e2e8f0'
+                                                    }}
+                                                >
+                                                    {ETIQUETAS_PRECALIFICACION[precalificacion.estado]}
+                                                </span>
+                                            )}
                                         </div>
                                         <i className="fas fa-chevron-right misconsultas-item-arrow"></i>
                                     </button>
@@ -280,6 +368,57 @@ function MisConsultas() {
                                     </div>
 
                                     <div className="misconsultas-mensajes">
+                                        {activa.origen === 'recibida' && activa.consulta.perfil_interesado && (() => {
+                                            const perfil = activa.consulta.perfil_interesado;
+                                            const evaluacion = evaluarPrecalificacion(
+                                                activa.consulta,
+                                                activa.propiedad
+                                            );
+                                            return (
+                                                <section
+                                                    aria-label="Datos de precalificación del interesado"
+                                                    style={{
+                                                        padding: 16,
+                                                        marginBottom: 16,
+                                                        borderRadius: 12,
+                                                        background: '#f8fafc',
+                                                        border: '1px solid #e2e8f0'
+                                                    }}
+                                                >
+                                                    <strong>Datos del interesado</strong>
+                                                    <p style={{ margin: '8px 0 4px' }}>
+                                                        Mudanza: {perfil.fecha_mudanza || 'Sin indicar'} ·
+                                                        {' '}{perfil.cantidad_ocupantes} ocupante(s)
+                                                    </p>
+                                                    <p style={{ margin: '4px 0' }}>
+                                                        Mascotas: {perfil.tiene_mascotas
+                                                            ? `Sí, ${perfil.cantidad_mascotas || 0}`
+                                                            : 'No'}
+                                                    </p>
+                                                    <p style={{ margin: '4px 0' }}>
+                                                        Garantías: {Array.isArray(perfil.garantias) && perfil.garantias.length
+                                                            ? perfil.garantias.map(g => ETIQUETAS_GARANTIAS[g] || g).join(', ')
+                                                            : 'No indicó'}
+                                                    </p>
+                                                    <strong style={{
+                                                        display: 'block',
+                                                        marginTop: 8,
+                                                        color: evaluacion.estado === 'coincide' ? '#166534'
+                                                            : evaluacion.estado === 'revisar' ? '#92400e' : '#475569'
+                                                    }}>
+                                                        {ETIQUETAS_PRECALIFICACION[evaluacion.estado]}
+                                                    </strong>
+                                                    {evaluacion.motivos.length > 0 && (
+                                                        <ul style={{ margin: '6px 0 0', paddingLeft: 20 }}>
+                                                            {evaluacion.motivos.map(motivo => <li key={motivo}>{motivo}</li>)}
+                                                        </ul>
+                                                    )}
+                                                    <small style={{ display: 'block', marginTop: 8, color: '#64748b' }}>
+                                                        Es una referencia para ordenar consultas, no una decisión automática de alquiler.
+                                                    </small>
+                                                </section>
+                                            );
+                                        })()}
                                         {cargandoMensajes ? (
                                             <div className="misconsultas-cargando">
                                                 <i className="fas fa-spinner fa-spin"></i> Cargando conversación...
