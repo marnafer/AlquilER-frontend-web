@@ -143,8 +143,8 @@ function Home() {
 
                         <div className="hero-image">
                             <img
-                                src="/assets/img/hero.webp"
-                                alt="AlquilER"
+                                src="/assets/img/hero-interior.jpg"
+                                alt="Interior luminoso de una propiedad en alquiler"
                                 fetchPriority="high"
                                 decoding="async"
                                 onError={ocultarHero}
