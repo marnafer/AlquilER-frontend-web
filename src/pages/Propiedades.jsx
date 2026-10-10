@@ -22,6 +22,9 @@ const leerMultiples = (params, clave) => {
         .filter(valor => Number.isInteger(valor) && valor > 0);
 };
 
+const nombreProvinciaVisible = (provincia) =>
+    String(provincia?.nombre || '').replace(/\s+New$/, '');
+
 function Propiedades() {
     const { token } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -343,7 +346,7 @@ function Propiedades() {
                         >
                             <option value="">Todas</option>
                             {provincias.map(prov => (
-                                <option key={prov.id} value={prov.id}>{prov.nombre}</option>
+                                <option key={prov.id} value={prov.id}>{nombreProvinciaVisible(prov)}</option>
                             ))}
                         </select>
                     </div>
