@@ -220,6 +220,8 @@
     background: var(--white);
     border-radius: 18px;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
     border: 1px solid #eef2f7;
     box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04), 0 8px 24px -12px rgba(16, 24, 40, 0.12);
     transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
@@ -233,7 +235,7 @@
 
 .propiedad-image {
     position: relative;
-    height: 220px;
+    aspect-ratio: 3 / 2;
     overflow: hidden;
 }
 
@@ -246,6 +248,7 @@
 }
 
 .propiedad-image img {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -260,18 +263,25 @@
     width: 100%;
     height: 100%;
     background:
-        radial-gradient(120% 120% at 20% 0%, rgba(204, 251, 241, 0.9), transparent 60%),
-        linear-gradient(135deg, var(--primary-dark), var(--primary) 55%, var(--primary-light));
+        radial-gradient(ellipse at 50% 35%, #fff 0, transparent 55%),
+        linear-gradient(145deg, #f1f3f2, #e5e9e7);
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: #fff;
-    font-size: 56px;
+    gap: 10px;
+    color: #87938f;
 }
 
 .propiedad-placeholder i {
-    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-    opacity: 0.95;
+    font-size: 38px;
+    opacity: 0.7;
+}
+
+.propiedad-placeholder span {
+    color: #77827e;
+    font-size: 12px;
+    font-weight: 600;
 }
 
 .propiedad-categoria {
@@ -432,11 +442,14 @@
 }
 
 .propiedad-info {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
     padding: 22px;
 }
 
 .propiedad-info h3 {
-    font-size: 18px;
+    font-size: 19px;
     font-weight: 800;
     color: #0f172a;
     margin-bottom: 6px;
@@ -450,7 +463,7 @@
 .propiedad-direccion {
     color: #64748b;
     font-size: 14px;
-    margin-bottom: 8px;
+    margin-bottom: 0;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -468,17 +481,25 @@
     display: flex;
     align-items: baseline;
     gap: 4px;
-    margin: 12px 0 16px;
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--primary-dark);
+    margin: 16px 0 14px;
+    font-size: 27px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: #0f172a;
+}
+
+.propiedad-precio span {
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0;
 }
 
 .propiedad-features {
     display: flex;
-    gap: 6px;
+    gap: 8px;
     flex-wrap: wrap;
-    margin-bottom: 18px;
+    margin: 0 0 18px;
     font-size: 12.5px;
     color: #475569;
 }
@@ -487,9 +508,10 @@
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    background: #f1f5f9;
-    padding: 5px 11px;
-    border-radius: 999px;
+    background: #f8fafc;
+    border: 1px solid #e8edf2;
+    padding: 6px 10px;
+    border-radius: 8px;
     font-weight: 600;
     margin: 0;
 }
@@ -652,6 +674,7 @@
     transition: var(--transition);
     cursor: pointer;
     text-decoration: none !important;
+    margin-top: auto;
 }
 
 .btn-ver i {

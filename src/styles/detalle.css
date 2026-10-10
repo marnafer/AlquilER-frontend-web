@@ -152,7 +152,8 @@
     line-height: 1.6;
     margin-bottom: 14px;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -265,4 +266,3 @@
     color: var(--primary-dark);
     text-decoration: none !important;
 }
-

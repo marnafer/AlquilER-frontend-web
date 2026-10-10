@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { addFavorito, removeFavorito } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
+import PropiedadCardImage from './PropiedadCardImage';
 
 function PropiedadCard({ propiedad, categoriaNombre, esFavoritoInicial = false, onFavorito }) {
-    const [imgError, setImgError] = useState(false);
     const [esFavorito, setEsFavorito] = useState(() => Boolean(esFavoritoInicial));
     const [favLoading, setFavLoading] = useState(false);
     const { isAuthenticated, token } = useAuth();
@@ -59,19 +59,11 @@ function PropiedadCard({ propiedad, categoriaNombre, esFavoritoInicial = false, 
 
     return (
         <div className="propiedad-card">
-            <div className="propiedad-image">
-                {!imagen || imgError ? (
-                    <div className="propiedad-placeholder">
-                        <i className="fas fa-home"></i>
-                    </div>
-                ) : (
-                    <img
-                        src={imagen}
-                        alt={propiedad.titulo || 'Propiedad'}
-                        onError={() => setImgError(true)}
-                        loading="lazy"
-                    />
-                )}
+        <div className="propiedad-image">
+            <PropiedadCardImage
+                src={imagen}
+                alt={propiedad.titulo || 'Propiedad'}
+            />
 
                 {categoriaNombre && (
                     <span className="propiedad-categoria">
@@ -91,10 +83,6 @@ function PropiedadCard({ propiedad, categoriaNombre, esFavoritoInicial = false, 
                     </button>
                 )}
 
-                <div className="propiedad-precio-pill">
-                    ${Number(propiedad.precio || 0).toLocaleString()}<span>/mes</span>
-                </div>
-
                 <span className={`propiedad-badge ${disponible ? 'disponible' : 'alquilada'}`}>
                     {disponible ? 'Disponible' : 'Alquilada'}
                 </span>
@@ -106,14 +94,17 @@ function PropiedadCard({ propiedad, categoriaNombre, esFavoritoInicial = false, 
                     <i className="fas fa-map-marker-alt"></i>{' '}
                     {propiedad.direccion || 'Dirección no especificada'}
                 </p>
+                <p className="propiedad-precio">
+                    ${Number(propiedad.precio || 0).toLocaleString()}<span>/mes</span>
+                </p>
+                <div className="propiedad-features">
+                    <span><i className="fas fa-bed"></i> {propiedad.cantidad_dormitorios || 0} dorm.</span>
+                    <span><i className="fas fa-bath"></i> {propiedad.cantidad_banos || 0} {Number(propiedad.cantidad_banos) === 1 ? 'baño' : 'baños'}</span>
+                    <span><i className="fas fa-arrows-alt"></i> {propiedad.cantidad_ambientes || 0} amb.</span>
+                </div>
                 {descripcion && (
                     <p className="propiedad-card-descripcion">{descripcion}</p>
                 )}
-                <div className="propiedad-features">
-                    <span><i className="fas fa-bed"></i> {propiedad.cantidad_dormitorios || 0}</span>
-                    <span><i className="fas fa-bath"></i> {propiedad.cantidad_banos || 0}</span>
-                    <span><i className="fas fa-arrows-alt"></i> {propiedad.cantidad_ambientes || 0}</span>
-                </div>
                 <div className="propiedad-politicas">
                     <span className={`politica-badge ${propiedad.acepta_mascotas ? 'si' : 'no'}`}>
                         <i className="fas fa-paw"></i> Mascotas

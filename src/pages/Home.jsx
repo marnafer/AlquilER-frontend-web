@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getPropiedades, getPropiedadesDestacadas, getCategorias, getServicios, getLocalidades } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
+import PropiedadCardImage from '../components/PropiedadCardImage';
 import ServicioIcono from '../components/ServicioIcono';
 import { iconoCategoria } from '../utils/categorias';
 import { useSEO } from '../hooks/useSEO';
@@ -92,16 +93,6 @@ function Home() {
         ? destacadasDisponibles.slice(0, 6)
         : disponibles.slice(0, 6);
 
-    const onImgError = (e) => {
-        const img = e.currentTarget;
-        if (img.dataset.fallback !== '1') {
-            img.dataset.fallback = '1';
-            img.src = '/assets/img/logo.webp';
-        } else {
-            img.style.display = 'none';
-        }
-    };
-
     const ocultarHero = (e) => {
         const hero = e.currentTarget.closest('.hero-image');
         if (hero) hero.style.display = 'none';
@@ -184,12 +175,9 @@ function Home() {
                                 style={{ transitionDelay: `${i * 80}ms` }}
                             >
                                 <div className="propiedad-image">
-                                    <img
-                                        src={rutaImagenPropiedad(prop) || '/assets/img/logo.webp'}
-                                        alt={prop.titulo}
-                                        loading="lazy"
-                                        decoding="async"
-                                        onError={onImgError}
+                                    <PropiedadCardImage
+                                        src={rutaImagenPropiedad(prop)}
+                                        alt={prop.titulo || 'Propiedad'}
                                     />
                                 </div>
                                 <div className="propiedad-info">
@@ -197,11 +185,13 @@ function Home() {
                                     <p className="propiedad-direccion">
                                         <i className="fas fa-map-marker-alt"></i> {prop.direccion}
                                     </p>
-                                    <p className="propiedad-precio">${Number(prop.precio).toLocaleString()}</p>
+                                    <p className="propiedad-precio">
+                                        ${Number(prop.precio || 0).toLocaleString()}<span>/mes</span>
+                                    </p>
                                     <div className="propiedad-features">
-                                        <span><i className="fas fa-bed"></i> {prop.cantidad_dormitorios || '0'}</span>
-                                        <span><i className="fas fa-bath"></i> {prop.cantidad_banos || '0'}</span>
-                                        <span><i className="fas fa-arrows-alt"></i> {prop.cantidad_ambientes || '0'}</span>
+                                        <span><i className="fas fa-bed"></i> {prop.cantidad_dormitorios || 0} dorm.</span>
+                                        <span><i className="fas fa-bath"></i> {prop.cantidad_banos || 0} {Number(prop.cantidad_banos) === 1 ? 'baño' : 'baños'}</span>
+                                        <span><i className="fas fa-arrows-alt"></i> {prop.cantidad_ambientes || 0} amb.</span>
                                     </div>
                                     <Link to={`/propiedades/${prop.id}`} className="btn-ver">
                                         <i className="fas fa-eye"></i> Ver más

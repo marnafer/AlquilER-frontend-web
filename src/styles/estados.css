@@ -7,7 +7,7 @@
 }
 
 .skeleton-img {
-    height: 220px;
+    aspect-ratio: 3 / 2;
     border-radius: 0;
 }
 
@@ -123,4 +123,3 @@
 .estado-vacio .btn-ver-todas {
     padding: 12px 32px;
 }
-
