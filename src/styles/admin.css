@@ -319,7 +319,7 @@
     padding: 40px 20px;
 }
 
-.misconsultas-empty-hilo i {
+.misconsultas-empty-hilo .ph-icon {
     font-size: 34px;
     opacity: 0.5;
     margin-bottom: 10px;
@@ -837,7 +837,7 @@
     font-size: 14px;
 }
 
-.resena-autor i {
+.resena-autor .ph-icon {
     color: var(--primary);
 }
 
@@ -1036,7 +1036,7 @@
     max-width: 360px;
 }
 
-.admin-buscador-wrapper > i {
+.admin-buscador-wrapper > .ph-icon {
     position: absolute;
     left: 12px;
     top: 50%;
@@ -1172,7 +1172,7 @@
     white-space: nowrap;
 }
 
-.admin-th-orden i {
+.admin-th-orden .ph-icon {
     opacity: 0.55;
     font-size: 11px;
     margin-left: 3px;

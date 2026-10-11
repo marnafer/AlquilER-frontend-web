@@ -136,7 +136,7 @@
     line-height: 1.5;
 }
 
-.contact-lista li i {
+.contact-lista li .ph-icon {
     color: var(--primary);
     font-size: 18px;
     margin-top: 2px;
@@ -309,7 +309,7 @@
     border-top: none;
 }
 
-.estatica-contenido h2 i {
+.estatica-contenido h2 .ph-icon {
     color: #1D4ED8;
     font-size: 16px;
 }
@@ -491,7 +491,7 @@
     gap: 8px;
 }
 
-.detalle-servicios-titulo i {
+.detalle-servicios-titulo .ph-icon {
     color: #1D4ED8;
 }
 
@@ -514,7 +514,7 @@
     border-radius: 999px;
 }
 
-.detalle-servicio-badge i {
+.detalle-servicio-badge .ph-icon {
     color: #1D4ED8;
 }
 

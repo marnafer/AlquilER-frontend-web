@@ -252,7 +252,7 @@
     gap: 10px;
 }
 
-.dash-card-header h3 i {
+.dash-card-header h3 .ph-icon {
     color: var(--primary-dark);
     font-size: 15px;
     background: #E0E7FF;
@@ -282,12 +282,12 @@
     text-decoration: none !important;
 }
 
-.dash-card-link i {
+.dash-card-link .ph-icon {
     transition: transform 0.3s ease;
     font-size: 11px;
 }
 
-.dash-card-link:hover i {
+.dash-card-link:hover .ph-icon {
     transform: translateX(3px);
 }
 
@@ -475,7 +475,7 @@
     text-overflow: ellipsis;
 }
 
-.dash-reserva-info span i {
+.dash-reserva-info span .ph-icon {
     color: var(--primary-dark);
     font-size: 11px;
 }

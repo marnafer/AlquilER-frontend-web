@@ -22,7 +22,7 @@
     margin-right: 10px;
 }
 
-.navbar-brand i {
+.navbar-brand .ph-icon {
     color: var(--primary);
     margin-right: 8px;
 }
@@ -85,7 +85,7 @@
     text-decoration: none !important;
 }
 
-.dropdown-menu .dropdown-item i {
+.dropdown-menu .dropdown-item .ph-icon {
     margin-right: 10px;
     width: 18px;
 }

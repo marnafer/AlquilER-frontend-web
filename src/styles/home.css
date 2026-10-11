@@ -276,7 +276,7 @@
     color: #87938f;
 }
 
-.propiedad-placeholder i {
+.propiedad-placeholder .ph-icon {
     font-size: 38px;
     opacity: 0.7;
 }
@@ -475,7 +475,7 @@
     text-overflow: ellipsis;
 }
 
-.propiedad-direccion i {
+.propiedad-direccion .ph-icon {
     color: var(--primary-dark);
     flex-shrink: 0;
 }
@@ -519,7 +519,7 @@
     margin: 0;
 }
 
-.propiedad-features i {
+.propiedad-features .ph-icon {
     color: var(--primary-dark);
 }
 
@@ -603,7 +603,7 @@
     gap: 12px;
 }
 
-.politica-info > i {
+.politica-info > .ph-icon {
     font-size: 20px;
     color: var(--primary-dark);
     width: 34px;
@@ -680,7 +680,7 @@
     margin-top: auto;
 }
 
-.btn-ver i {
+.btn-ver .ph-icon {
     transition: transform 0.3s ease;
 }
 
@@ -693,7 +693,7 @@
     text-decoration: none !important;
 }
 
-.btn-ver:hover i {
+.btn-ver:hover .ph-icon {
     transform: translateX(4px);
 }
 
