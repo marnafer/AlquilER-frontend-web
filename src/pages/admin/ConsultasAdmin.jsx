@@ -1,3 +1,4 @@
+import Icon from '../../components/Icon';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
@@ -189,7 +190,7 @@ function ConsultasAdmin() {
                 <section className="admin-hero">
                     <div className="admin-hero-content">
                         <span className="admin-hero-badge">
-                            <i className="fas fa-comments"></i> Administración
+                            <Icon name="fas fa-comments" /> Administración
                         </span>
                         <h1>Consultas</h1>
                         <p>Leé las consultas de los interesados y respondé a cada conversación.</p>
@@ -218,7 +219,7 @@ function ConsultasAdmin() {
                             onClick={() => setModoPapelera(v => !v)}
                             disabled={Boolean(usuarioFiltro)}
                         >
-                            <i className={modoPapelera ? 'fas fa-list' : 'fas fa-trash-can-arrow-up'}></i>
+                            <Icon name={modoPapelera ? 'fas fa-list' : 'fas fa-trash-can-arrow-up'} />
                             {modoPapelera ? 'Ver activas' : 'Papelera'}
                         </button>
                     </div>
@@ -226,7 +227,7 @@ function ConsultasAdmin() {
 
                 {modoPapelera && (
                     <div className="alert alert-info d-flex align-items-center gap-2">
-                        <i className="fas fa-trash-can-arrow-up"></i>
+                        <Icon name="fas fa-trash-can-arrow-up" />
                         <span>Estás viendo la papelera. Las consultas eliminadas aparecen acá y podés restaurarlas.</span>
                     </div>
                 )}
@@ -241,7 +242,7 @@ function ConsultasAdmin() {
                                     onClick={() => abrirConsulta(c)}
                                 >
                                     <div className="misconsultas-item-img">
-                                        <i className="fas fa-comments"></i>
+                                        <Icon name="fas fa-comments" />
                                     </div>
                                     <div className="misconsultas-item-body">
                                         <div className="misconsultas-item-cabecera">
@@ -268,7 +269,7 @@ function ConsultasAdmin() {
                                                 aria-label="Restaurar consulta"
                                                 disabled={procesandoId === String(c.id)}
                                             >
-                                                <i className={procesandoId === String(c.id) ? 'fas fa-spinner fa-spin' : 'fas fa-rotate-left'}></i>
+                                                <Icon name={procesandoId === String(c.id) ? 'fas fa-spinner fa-spin' : 'fas fa-rotate-left'} />
                                             </button>
                                         ) : (
                                             <button
@@ -278,7 +279,7 @@ function ConsultasAdmin() {
                                                 aria-label="Eliminar consulta"
                                                 disabled={procesandoId === String(c.id)}
                                             >
-                                                <i className={procesandoId === String(c.id) ? 'fas fa-spinner fa-spin' : 'fas fa-trash'}></i>
+                                                <Icon name={procesandoId === String(c.id) ? 'fas fa-spinner fa-spin' : 'fas fa-trash'} />
                                             </button>
                                         )}
                                     </div>
@@ -297,14 +298,14 @@ function ConsultasAdmin() {
                                             to={`/propiedades/${activa.propiedad_id}`}
                                             className="misconsultas-ver-propiedad"
                                         >
-                                            Ver propiedad <i className="fas fa-external-link-alt"></i>
+                                            Ver propiedad <Icon name="fas fa-external-link-alt" />
                                         </Link>
                                     </div>
 
                                     <div className="misconsultas-mensajes">
                                         {cargandoMensajes ? (
                                             <div className="misconsultas-cargando">
-                                                <i className="fas fa-spinner fa-spin"></i> Cargando conversación...
+                                                <Icon name="fas fa-spinner fa-spin" /> Cargando conversación...
                                             </div>
                                         ) : mensajes.length > 0 ? (
                                             mensajes.map(m => {
@@ -355,7 +356,7 @@ function ConsultasAdmin() {
                                             )}
                                             {exitoRespuesta && (
                                                 <span style={{ color: '#065f46', fontSize: 13 }}>
-                                                    <i className="fas fa-check-circle"></i> {exitoRespuesta}
+                                                    <Icon name="fas fa-check-circle" /> {exitoRespuesta}
                                                 </span>
                                             )}
                                             <button
@@ -366,11 +367,11 @@ function ConsultasAdmin() {
                                             >
                                                 {enviandoRespuesta ? (
                                                     <>
-                                                        <i className="fas fa-spinner fa-spin"></i> Enviando...
+                                                        <Icon name="fas fa-spinner fa-spin" /> Enviando...
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <i className="fas fa-paper-plane"></i> Enviar
+                                                        <Icon name="fas fa-paper-plane" /> Enviar
                                                     </>
                                                 )}
                                             </button>
@@ -379,7 +380,7 @@ function ConsultasAdmin() {
                                 </>
                             ) : (
                                 <div className="misconsultas-empty-hilo">
-                                    <i className="fas fa-comments"></i>
+                                    <Icon name="fas fa-comments" />
                                     <p>Seleccioná una consulta para ver la conversación.</p>
                                 </div>
                             )}

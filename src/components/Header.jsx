@@ -1,3 +1,4 @@
+import Icon from './Icon';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -172,7 +173,7 @@ function Header() {
                                         : 'Notificaciones'}
                                     aria-expanded={verDropdown}
                                 >
-                                    <i className="fas fa-bell"></i>
+                                    <Icon name="fas fa-bell" />
                                     {noLeidas > 0 && (
                                         <span className="notif-badge">{noLeidas}</span>
                                     )}
@@ -195,11 +196,11 @@ function Header() {
                                         <div className="notif-body">
                                             {cargandoNotif && notificaciones.length === 0 ? (
                                                 <div className="notif-vacio">
-                                                    <i className="fas fa-spinner fa-spin"></i> Cargando...
+                                                    <Icon name="fas fa-spinner fa-spin" /> Cargando...
                                                 </div>
                                             ) : notificaciones.length === 0 ? (
                                                 <div className="notif-vacio">
-                                                    <i className="fas fa-bell-slash"></i>
+                                                    <Icon name="fas fa-bell-slash" />
                                                     <span>No tienes notificaciones</span>
                                                 </div>
                                             ) : (
@@ -252,28 +253,28 @@ function Header() {
 
                         {isAuthenticated ? (
                             <NavDropdown
-                                title={<><i className="fas fa-user"></i> {usuario?.nombre || 'Usuario'}</>}
+                                title={<><Icon name="fas fa-user" /> {usuario?.nombre || 'Usuario'}</>}
                                 id="basic-nav-dropdown"
                                 align="end"
                             >
                                 <NavDropdown.Item as={Link} to="/perfil" onClick={() => setExpanded(false)}>
-                                    <i className="fas fa-user-edit"></i> Perfil
+                                    <Icon name="fas fa-user-edit" /> Perfil
                                 </NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/mis-propiedades" onClick={() => setExpanded(false)}>
-                                    <i className="fas fa-building"></i> Mis Propiedades
+                                    <Icon name="fas fa-building" /> Mis Propiedades
                                 </NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/favoritos" onClick={() => setExpanded(false)}>
-                                    <i className="fas fa-heart"></i> Favoritos
+                                    <Icon name="fas fa-heart" /> Favoritos
                                 </NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/reservas" onClick={() => setExpanded(false)}>
-                                    <i className="fas fa-calendar-check"></i> Mis Reservas
+                                    <Icon name="fas fa-calendar-check" /> Mis Reservas
                                 </NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/consultas" onClick={() => setExpanded(false)}>
-                                    <i className="fas fa-comments"></i> Consultas
+                                    <Icon name="fas fa-comments" /> Consultas
                                 </NavDropdown.Item>
                                 <NavDropdown.Divider />
                                 <NavDropdown.Item onClick={handleLogout} className="text-danger">
-                                    <i className="fas fa-sign-out-alt"></i> Cerrar Sesión
+                                    <Icon name="fas fa-sign-out-alt" /> Cerrar Sesión
                                 </NavDropdown.Item>
                             </NavDropdown>
                         ) : (
@@ -297,45 +298,45 @@ function Header() {
 
                         {Number(usuario?.rol_id) === 2 && (
                             <NavDropdown
-                                title={<><i className="fas fa-cog"></i> Administración</>}
+                                title={<><Icon name="fas fa-cog" /> Administración</>}
                                 id="admin-nav-dropdown"
                                 align="end"
                             >
                                 <NavDropdown.Item as={Link} to="/admin" onClick={() => setExpanded(false)}>
-                                    <i className="fas fa-tachometer-alt"></i> Panel
+                                    <Icon name="fas fa-tachometer-alt" /> Panel
                                 </NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/admin/usuarios" onClick={() => setExpanded(false)}>
-                                    <i className="fas fa-users"></i> Usuarios
+                                    <Icon name="fas fa-users" /> Usuarios
                                 </NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/admin/categorias" onClick={() => setExpanded(false)}>
-                                    <i className="fas fa-tags"></i> Categorías
+                                    <Icon name="fas fa-tags" /> Categorías
                                 </NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/admin/provincias" onClick={() => setExpanded(false)}>
-                                    <i className="fas fa-map-marked-alt"></i> Provincias
+                                    <Icon name="fas fa-map-marked-alt" /> Provincias
                                 </NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/admin/localidades" onClick={() => setExpanded(false)}>
-                                    <i className="fas fa-map-pin"></i> Localidades
+                                    <Icon name="fas fa-map-pin" /> Localidades
                                 </NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/admin/roles" onClick={() => setExpanded(false)}>
-                                    <i className="fas fa-user-shield"></i> Roles
+                                    <Icon name="fas fa-user-shield" /> Roles
                                 </NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/admin/servicios" onClick={() => setExpanded(false)}>
-                                    <i className="fas fa-wrench"></i> Servicios
+                                    <Icon name="fas fa-wrench" /> Servicios
                                 </NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/admin/resenas" onClick={() => setExpanded(false)}>
-                                    <i className="fas fa-star"></i> Reseñas
+                                    <Icon name="fas fa-star" /> Reseñas
                                 </NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/admin/reservas" onClick={() => setExpanded(false)}>
-                                    <i className="fas fa-calendar-check"></i> Reservas
+                                    <Icon name="fas fa-calendar-check" /> Reservas
                                 </NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/admin/consultas" onClick={() => setExpanded(false)}>
-                                    <i className="fas fa-comments"></i> Consultas
+                                    <Icon name="fas fa-comments" /> Consultas
                                 </NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/admin/logs" onClick={() => setExpanded(false)}>
-                                    <i className="fas fa-clock-rotate-left"></i> Registros
+                                    <Icon name="fas fa-clock-rotate-left" /> Registros
                                 </NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/admin/propiedades" onClick={() => setExpanded(false)}>
-                                    <i className="fas fa-building"></i> Propiedades
+                                    <Icon name="fas fa-building" /> Propiedades
                                 </NavDropdown.Item>
                             </NavDropdown>
                         )}

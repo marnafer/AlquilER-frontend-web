@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getPropiedades, getPropiedadesDestacadas, getCategorias, getServicios, getLocalidades } from '../services/api';
@@ -14,7 +15,7 @@ import Loader from '../components/Loader';
 function Home() {
     useSEO(
         'Alquiler de propiedades',
-        'AlquilER: encontrá el departamento, casa o duplex que necesitás. Departamentos, casas, dúplex y monoambientes en alquiler con búsqueda por provincia, categoría y precio.'
+        'AlquilER: encontrá el departamento, casa o dúplex que necesitás. Departamentos, casas, dúplex y monoambientes en alquiler con búsqueda por provincia, categoría y precio.'
     );
     useScrollReveal();
 
@@ -127,7 +128,7 @@ function Home() {
                                     ))}
                                 </select>
                                 <button type="submit" className="btn-search">
-                                    <i className="fas fa-search"></i> Buscar
+                                    <Icon name="fas fa-search" /> Buscar
                                 </button>
                             </form>
                         </div>
@@ -183,18 +184,18 @@ function Home() {
                                 <div className="propiedad-info">
                                     <h3>{prop.titulo}</h3>
                                     <p className="propiedad-direccion">
-                                        <i className="fas fa-map-marker-alt"></i> {prop.direccion}
+                                        <Icon name="fas fa-map-marker-alt" /> {prop.direccion}
                                     </p>
                                     <p className="propiedad-precio">
                                         ${Number(prop.precio || 0).toLocaleString()}<span>/mes</span>
                                     </p>
                                     <div className="propiedad-features">
-                                        <span><i className="fas fa-bed"></i> {prop.cantidad_dormitorios || 0} dorm.</span>
-                                        <span><i className="fas fa-bath"></i> {prop.cantidad_banos || 0} {Number(prop.cantidad_banos) === 1 ? 'baño' : 'baños'}</span>
-                                        <span><i className="fas fa-arrows-alt"></i> {prop.cantidad_ambientes || 0} amb.</span>
+                                        <span><Icon name="fas fa-bed" /> {prop.cantidad_dormitorios || 0} dorm.</span>
+                                        <span><Icon name="fas fa-bath" /> {prop.cantidad_banos || 0} {Number(prop.cantidad_banos) === 1 ? 'baño' : 'baños'}</span>
+                                        <span><Icon name="fas fa-arrows-alt" /> {prop.cantidad_ambientes || 0} amb.</span>
                                     </div>
                                     <Link to={`/propiedades/${prop.id}`} className="btn-ver">
-                                        <i className="fas fa-eye"></i> Ver más
+                                        <Icon name="fas fa-eye" /> Ver más
                                     </Link>
                                 </div>
                             </div>
@@ -225,7 +226,7 @@ function Home() {
                                 style={{ transitionDelay: `${i * 80}ms` }}
                             >
                                 <div className="categoria-icon">
-                                    <i className={`fas ${iconoCategoria(cat.nombre)}`}></i>
+                                    <Icon name={`fas ${iconoCategoria(cat.nombre)}`} />
                                 </div>
                                 <h3>{cat.nombre}</h3>
                                 <span>Ver propiedades</span>
@@ -245,7 +246,7 @@ function Home() {
                         {servicios.length > 8 && (
                             <Link to="/servicios" className="servicios-ver-todos">
                                 Ver todos los servicios
-                                <i className="fas fa-arrow-right"></i>
+                                <Icon name="fas fa-arrow-right" />
                             </Link>
                         )}
                     </div>

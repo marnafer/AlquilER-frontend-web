@@ -6,6 +6,7 @@
    las reglas se respeten igual que antes.
    ============================================ */
 @import './base.css';
+@import './iconos.css';
 @import './header.css';
 @import './home.css';
 @import './footer.css';

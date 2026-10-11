@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { getPropiedades, getCategorias, getProvincias, getLocalidades, getFavoritos, getServicios } from '../services/api';
@@ -320,7 +321,7 @@ function Propiedades() {
                 {/* BUSCADOR + FILTROS */}
                 <div className="props-filtros">
                     <div className="filtro-group filtro-search">
-                        <label htmlFor="filtro-buscar"><i className="fas fa-search"></i> Buscar</label>
+                        <label htmlFor="filtro-buscar"><Icon name="fas fa-search" /> Buscar</label>
                         <input
                             id="filtro-buscar"
                             type="text"
@@ -339,7 +340,7 @@ function Propiedades() {
                     />
 
                     <div className="filtro-group">
-                        <label><i className="fas fa-map-marker-alt"></i> Provincia</label>
+                        <label><Icon name="fas fa-map-marker-alt" /> Provincia</label>
                         <select
                             value={provinciaId}
                             onChange={(e) => { setProvinciaId(e.target.value); setLocalidadIds([]); setPagina(1); }}
@@ -369,7 +370,7 @@ function Propiedades() {
                     />
 
                     <div className="filtro-group">
-                        <label><i className="fas fa-paw"></i> Mascotas</label>
+                        <label><Icon name="fas fa-paw" /> Mascotas</label>
                         <select
                             value={aceptaMascotas}
                             onChange={(e) => { setAceptaMascotas(e.target.value); setPagina(1); }}
@@ -380,7 +381,7 @@ function Propiedades() {
                     </div>
 
                     <div className="filtro-group">
-                        <label><i className="fas fa-children"></i> Hijos</label>
+                        <label><Icon name="fas fa-children" /> Hijos</label>
                         <select
                             value={aceptaHijos}
                             onChange={(e) => { setAceptaHijos(e.target.value); setPagina(1); }}
@@ -391,7 +392,7 @@ function Propiedades() {
                     </div>
 
                     <div className="filtro-group">
-                        <label><i className="fas fa-dollar-sign"></i> Precio mín.</label>
+                        <label><Icon name="fas fa-dollar-sign" /> Precio mín.</label>
                         <input
                             type="number"
                             placeholder="Ej: 100000"
@@ -402,7 +403,7 @@ function Propiedades() {
                     </div>
 
                     <div className="filtro-group">
-                        <label><i className="fas fa-dollar-sign"></i> Precio máx.</label>
+                        <label><Icon name="fas fa-dollar-sign" /> Precio máx.</label>
                         <input
                             type="number"
                             placeholder="Ej: 250000"
@@ -413,7 +414,7 @@ function Propiedades() {
                     </div>
 
                     <div className="filtro-group">
-                        <label><i className="fas fa-couch"></i> Ambientes</label>
+                        <label><Icon name="fas fa-couch" /> Ambientes</label>
                         <input
                             type="number"
                             placeholder="Mín."
@@ -424,7 +425,7 @@ function Propiedades() {
                     </div>
 
                     <div className="filtro-group">
-                        <label><i className="fas fa-bed"></i> Dormitorios</label>
+                        <label><Icon name="fas fa-bed" /> Dormitorios</label>
                         <input
                             type="number"
                             placeholder="Mín."
@@ -435,7 +436,7 @@ function Propiedades() {
                     </div>
 
                     <div className="filtro-group">
-                        <label><i className="fas fa-bath"></i> Baños</label>
+                        <label><Icon name="fas fa-bath" /> Baños</label>
                         <input
                             type="number"
                             placeholder="Mín."
@@ -446,7 +447,7 @@ function Propiedades() {
                     </div>
 
                     <div className="filtro-group">
-                        <label><i className="fas fa-users"></i> Capacidad</label>
+                        <label><Icon name="fas fa-users" /> Capacidad</label>
                         <input
                             type="number"
                             placeholder="Mín. personas"
@@ -457,7 +458,7 @@ function Propiedades() {
                     </div>
 
                     <div className="filtro-group">
-                        <label><i className="fas fa-sort"></i> Ordenar por</label>
+                        <label><Icon name="fas fa-sort" /> Ordenar por</label>
                         <select
                             value={orden}
                             onChange={(e) => { setOrden(e.target.value); setPagina(1); }}
@@ -471,7 +472,7 @@ function Propiedades() {
 
                     {hayFiltros && (
                         <button className="btn-limpiar" onClick={limpiarFiltros}>
-                            <i className="fas fa-times"></i> Limpiar
+                            <Icon name="fas fa-times" /> Limpiar
                         </button>
                     )}
                 </div>
@@ -527,7 +528,7 @@ function Propiedades() {
                                     disabled={paginaActual === 1}
                                     onClick={() => setPagina(paginaActual - 1)}
                                 >
-                                    <i className="fas fa-chevron-left"></i>
+                                    <Icon name="fas fa-chevron-left" />
                                 </button>
 
                                 {Array.from({ length: totalPaginas }).map((_, i) => {
@@ -558,7 +559,7 @@ function Propiedades() {
                                     disabled={paginaActual === totalPaginas}
                                     onClick={() => setPagina(paginaActual + 1)}
                                 >
-                                    <i className="fas fa-chevron-right"></i>
+                                    <Icon name="fas fa-chevron-right" />
                                 </button>
                             </div>
                         )}
@@ -571,7 +572,7 @@ function Propiedades() {
                         action={
                             hayFiltros ? (
                                 <button className="btn-ver-todas" onClick={limpiarFiltros} style={{ marginTop: '20px' }}>
-                                    <i className="fas fa-times"></i> Limpiar filtros
+                                    <Icon name="fas fa-times" /> Limpiar filtros
                                 </button>
                             ) : null
                         }

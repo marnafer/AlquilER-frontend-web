@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -233,7 +234,7 @@ function MisReservas() {
                 <section className="misprops-hero">
                     <div className="misprops-hero-content">
                         <span className="misprops-hero-badge">
-                            <i className="fas fa-calendar-check"></i> Panel de reservas
+                            <Icon name="fas fa-calendar-check" /> Panel de reservas
                         </span>
                         <h1>
                             Mis <span>Reservas</span>
@@ -250,7 +251,7 @@ function MisReservas() {
                         role="alert"
                         style={{ marginBottom: 20 }}
                     >
-                        <i className={`fas ${mensaje.tipo === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}`} style={{ marginRight: 8 }}></i>
+                        <Icon name={`fas ${mensaje.tipo === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}`} style={{ marginRight: 8 }} />
                         {mensaje.texto}
                     </div>
                 )}
@@ -277,7 +278,7 @@ function MisReservas() {
                                     className={`misreservas-filtro misreservas-filtro-origen ${filtroOrigen === o.valor ? 'activo' : ''}`}
                                     onClick={() => setFiltroOrigen(o.valor)}
                                 >
-                                    <i className={`fas ${o.valor === 'recibida' ? 'fa-inbox' : o.valor === 'propia' ? 'fa-paper-plane' : 'fa-layer-group'}`}></i>
+                                    <Icon name={`fas ${o.valor === 'recibida' ? 'fa-inbox' : o.valor === 'propia' ? 'fa-paper-plane' : 'fa-layer-group'}`} />
                                     {o.etiqueta}
                                     <span className="misreservas-filtro-count">{conteoOrigen(o.valor)}</span>
                                 </button>
@@ -300,7 +301,7 @@ function MisReservas() {
                                                 <img src={img} alt={prop?.titulo || 'Propiedad'} loading="lazy" decoding="async" />
                                             ) : (
                                                 <div className="misreservas-item-placeholder">
-                                                    <i className="fas fa-home"></i>
+                                                    <Icon name="fas fa-home" />
                                                 </div>
                                             )}
                                             {reserva.origen === 'recibida' && (
@@ -330,22 +331,22 @@ function MisReservas() {
                                             {reserva.origen === 'recibida' && reserva.usuario && (
                                                 <div className="misreservas-item-contacto">
                                                     <span>
-                                                        <i className="fas fa-envelope"></i>
+                                                        <Icon name="fas fa-envelope" />
                                                         {reserva.usuario.email || '—'}
                                                     </span>
                                                     <span>
-                                                        <i className="fas fa-phone-alt"></i>
+                                                        <Icon name="fas fa-phone-alt" />
                                                         {reserva.usuario.telefono || '—'}
                                                     </span>
                                                 </div>
                                             )}
                                             <div className="misreservas-item-fechas">
                                                 <span>
-                                                    <i className="far fa-calendar-alt"></i>
+                                                    <Icon name="far fa-calendar-alt" />
                                                     Desde {soloDia(reserva.fecha_inicio_alquiler)}
                                                 </span>
                                                 <span>
-                                                    <i className="far fa-calendar-check"></i>
+                                                    <Icon name="far fa-calendar-check" />
                                                     Hasta {soloDia(reserva.fecha_fin_alquiler)}
                                                 </span>
                                             </div>
@@ -354,12 +355,12 @@ function MisReservas() {
                                         <div className="misreservas-item-acciones">
                                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'flex-end', alignItems: 'center' }}>
                                                 <span className={`dash-reserva-badge ${reserva.estado}`}>
-                                                    <i className={`fas ${ESTADO_INFO[reserva.estado]?.icono || 'fa-circle'}`}></i>
+                                                    <Icon name={`fas ${ESTADO_INFO[reserva.estado]?.icono || 'fa-circle'}`} />
                                                     {ESTADO_INFO[reserva.estado]?.etiqueta || reserva.estado}
                                                 </span>
                                                 {estaVencidaNoFinalizada(reserva) && (
                                                     <span className="dash-reserva-badge" style={{ background: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d' }}>
-                                                        <i className="fas fa-exclamation-triangle"></i> Vencida
+                                                        <Icon name="fas fa-exclamation-triangle" /> Vencida
                                                     </span>
                                                 )}
                                             </div>
@@ -370,7 +371,7 @@ function MisReservas() {
                                                     onClick={() => ejecutarAccion('aprobar', reserva)}
                                                     disabled={accionando === reserva.id}
                                                 >
-                                                    <i className="fas fa-check"></i> Aprobar
+                                                    <Icon name="fas fa-check" /> Aprobar
                                                 </button>
                                             )}
                                             {puedeFinalizar(reserva) && (
@@ -379,7 +380,7 @@ function MisReservas() {
                                                     onClick={() => ejecutarAccion('finalizar', reserva)}
                                                     disabled={accionando === reserva.id}
                                                 >
-                                                    <i className="fas fa-flag-checkered"></i>{' '}
+                                                    <Icon name="fas fa-flag-checkered" />{' '}
                                                     {estaVencidaNoFinalizada(reserva) ? 'Finalizar (vencida)' : 'Finalizar'}
                                                 </button>
                                             )}
@@ -398,7 +399,7 @@ function MisReservas() {
                                                     }}
                                                     disabled={accionando === reserva.id}
                                                 >
-                                                    <i className="fas fa-times"></i> Rechazar
+                                                    <Icon name="fas fa-times" /> Rechazar
                                                 </button>
                                             )}
                                             {puedeCancelar(reserva) && (
@@ -416,7 +417,7 @@ function MisReservas() {
                                                     }}
                                                     disabled={accionando === reserva.id}
                                                 >
-                                                    <i className="fas fa-ban"></i> Cancelar
+                                                    <Icon name="fas fa-ban" /> Cancelar
                                                 </button>
                                             )}
                                              {puedeCalificar(reserva) && (
@@ -424,18 +425,18 @@ function MisReservas() {
                                                      className="btn-detalle btn-detalle-secundario"
                                                      onClick={() => abrirCalificacion(reserva)}
                                                  >
-                                                     <i className="fas fa-star"></i> Calificar
+                                                     <Icon name="fas fa-star" /> Calificar
                                                  </button>
                                              )}
                                              {reserva.estado === 'finalizada' && yaCalificoReserva(reserva) && (
                                                  <span className="dash-reserva-badge" style={{ background: '#f1f5f9', color: '#475569' }}>
-                                                     <i className="fas fa-star"></i> Ya calificaste
+                                                     <Icon name="fas fa-star" /> Ya calificaste
                                                  </span>
                                              )}
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                                             <Link to={`/reservas/${reserva.id}`} className="link-underline">
-                                                <i className="fas fa-eye"></i> Ver detalle
+                                                <Icon name="fas fa-eye" /> Ver detalle
                                             </Link>
                                         </div>
                                     </div>
@@ -460,7 +461,7 @@ function MisReservas() {
                                 className="btn-ver-todas"
                                 style={{ marginTop: '20px', display: 'inline-block' }}
                             >
-                                <i className="fas fa-search"></i> Explorar propiedades
+                                <Icon name="fas fa-search" /> Explorar propiedades
                             </Link>
                         }
                     />
@@ -479,7 +480,7 @@ function MisReservas() {
                         style={{ textAlign: 'left', maxWidth: 480 }}
                     >
                         <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <i className="fas fa-star" style={{ color: '#f59e0b' }}></i>
+                            <Icon name="fas fa-star" style={{ color: '#f59e0b' }} />
                             {calcularTipoResena(resenaActiva) === 'propiedad'
                                 ? 'Calificar la propiedad'
                                 : 'Calificar al inquilino'}
@@ -504,7 +505,7 @@ function MisReservas() {
                                             onClick={() => setCalificacion(n)}
                                             aria-label={`${n} estrella${n > 1 ? 's' : ''}`}
                                         >
-                                            <i className="fas fa-star"></i>
+                                            <Icon name="fas fa-star" />
                                         </button>
                                     ))}
                                 </div>
@@ -539,7 +540,7 @@ function MisReservas() {
 
                             {errorCalificacion && (
                                 <div className="alert alert-error" role="alert" style={{ marginBottom: 16 }}>
-                                    <i className="fas fa-exclamation-circle" style={{ marginRight: 8 }}></i>
+                                    <Icon name="fas fa-exclamation-circle" style={{ marginRight: 8 }} />
                                     {errorCalificacion}
                                 </div>
                             )}
@@ -560,11 +561,11 @@ function MisReservas() {
                                 >
                                     {enviandoCalificacion ? (
                                         <>
-                                            <i className="fas fa-spinner fa-spin"></i> Publicando...
+                                            <Icon name="fas fa-spinner fa-spin" /> Publicando...
                                         </>
                                     ) : (
                                         <>
-                                            <i className="fas fa-star"></i> Publicar reseña
+                                            <Icon name="fas fa-star" /> Publicar reseña
                                         </>
                                     )}
                                 </button>

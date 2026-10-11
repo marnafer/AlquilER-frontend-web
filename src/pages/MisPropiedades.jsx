@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -172,7 +173,7 @@ function MisPropiedades() {
                 <section className="misprops-hero">
                     <div className="misprops-hero-content">
                         <span className="misprops-hero-badge">
-                            <i className="fas fa-building"></i> Panel de mis propiedades
+                            <Icon name="fas fa-building" /> Panel de mis propiedades
                         </span>
                         <h1>
                             Mis <span>Propiedades</span>
@@ -184,7 +185,7 @@ function MisPropiedades() {
                     </div>
                     <div className="misprops-hero-actions">
                         <Link to="/propiedades/crear" className="btn-detalle btn-detalle-primario">
-                            <i className="fas fa-plus"></i> Publicar nueva
+                            <Icon name="fas fa-plus" /> Publicar nueva
                         </Link>
                     </div>
                 </section>
@@ -193,7 +194,7 @@ function MisPropiedades() {
                 <section className="misprops-stats">
                     <div className="misprops-stat">
                         <div className="misprops-stat-icon teal">
-                            <i className="fas fa-building"></i>
+                            <Icon name="fas fa-building" />
                         </div>
                         <div>
                             <span className="misprops-stat-num">{propiedades.length}</span>
@@ -202,7 +203,7 @@ function MisPropiedades() {
                     </div>
                     <div className="misprops-stat">
                         <div className="misprops-stat-icon emerald">
-                            <i className="fas fa-check-circle"></i>
+                            <Icon name="fas fa-check-circle" />
                         </div>
                         <div>
                             <span className="misprops-stat-num">{totalDisponibles}</span>
@@ -211,7 +212,7 @@ function MisPropiedades() {
                     </div>
                     <div className="misprops-stat">
                         <div className="misprops-stat-icon slate">
-                            <i className="fas fa-key"></i>
+                            <Icon name="fas fa-key" />
                         </div>
                         <div>
                             <span className="misprops-stat-num">{totalAlquiladas}</span>
@@ -250,7 +251,7 @@ function MisPropiedades() {
                                 <div className="misprops-card-body">
                                     <h3>{prop.titulo || 'Sin título'}</h3>
                                     <p className="misprops-direccion">
-                                        <i className="fas fa-map-marker-alt"></i>{' '}
+                                        <Icon name="fas fa-map-marker-alt" />{' '}
                                         {prop.direccion || 'Sin dirección'}
                                     </p>
 
@@ -260,8 +261,8 @@ function MisPropiedades() {
                                             <span>/mes</span>
                                         </div>
                                         <div className="misprops-features">
-                                            <span><i className="fas fa-bed"></i> {prop.cantidad_dormitorios || 0}</span>
-                                            <span><i className="fas fa-bath"></i> {prop.cantidad_banos || 0}</span>
+                                            <span><Icon name="fas fa-bed" /> {prop.cantidad_dormitorios || 0}</span>
+                                            <span><Icon name="fas fa-bath" /> {prop.cantidad_banos || 0}</span>
                                         </div>
                                     </div>
 
@@ -280,9 +281,9 @@ function MisPropiedades() {
                                             aria-label={prop.disponible ? 'Marcar como no disponible' : 'Marcar como disponible'}
                                         >
                                             {actualizando === prop.id ? (
-                                                <i className="fas fa-spinner fa-spin"></i>
+                                                <Icon name="fas fa-spinner fa-spin" />
                                             ) : (
-                                                <i className={`fas fa-toggle-${prop.disponible ? 'on' : 'off'}`}></i>
+                                                <Icon name={`fas fa-toggle-${prop.disponible ? 'on' : 'off'}`} />
                                             )}
                                             {prop.disponible ? 'Poner alquilada' : 'Poner disponible'}
                                         </button>
@@ -290,13 +291,13 @@ function MisPropiedades() {
                                             to={`/propiedades/${prop.id}`}
                                             className="misprops-btn ver"
                                         >
-                                            <i className="fas fa-eye"></i> Ver
+                                            <Icon name="fas fa-eye" /> Ver
                                         </Link>
                                         <Link
                                             to={`/propiedades/${prop.id}/editar`}
                                             className="misprops-btn editar"
                                         >
-                                            <i className="fas fa-pen"></i> Editar
+                                            <Icon name="fas fa-pen" /> Editar
                                         </Link>
                                         <button
                                             className="misprops-btn eliminar"
@@ -304,7 +305,7 @@ function MisPropiedades() {
                                             title="Eliminar"
                                             aria-label="Eliminar propiedad"
                                         >
-                                            <i className="fas fa-trash"></i>
+                                            <Icon name="fas fa-trash" />
                                         </button>
                                     </div>
                                 </div>
@@ -323,7 +324,7 @@ function MisPropiedades() {
                                 className="btn-ver-todas"
                                 style={{ marginTop: '20px', display: 'inline-block' }}
                             >
-                                <i className="fas fa-plus"></i> Publicar propiedad
+                                <Icon name="fas fa-plus" /> Publicar propiedad
                             </Link>
                         }
                     />
@@ -336,7 +337,7 @@ function MisPropiedades() {
                 <div className="modal-backdrop-custom" onClick={cancelarEliminar}>
                     <div className="modal-custom" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-icon-danger">
-                            <i className="fas fa-trash-alt"></i>
+                            <Icon name="fas fa-trash-alt" />
                         </div>
                         <h3>¿Eliminar propiedad?</h3>
                         <p>
@@ -358,11 +359,11 @@ function MisPropiedades() {
                             >
                                 {eliminando ? (
                                     <>
-                                        <i className="fas fa-spinner fa-spin"></i> Eliminando...
+                                        <Icon name="fas fa-spinner fa-spin" /> Eliminando...
                                     </>
                                 ) : (
                                     <>
-                                        <i className="fas fa-trash"></i> Sí, eliminar
+                                        <Icon name="fas fa-trash" /> Sí, eliminar
                                     </>
                                 )}
                             </button>

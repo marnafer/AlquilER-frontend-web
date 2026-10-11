@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -158,9 +159,9 @@ function Perfil() {
     const renderEstrellas = (n) => {
         const valor = Math.round(Number(n) || 0);
         return [...Array(5)].map((_, i) => (
-            <i
+            <Icon
                 key={i}
-                className={`fas fa-star ${i < valor ? 'estrella-llena' : ''}`}
+                name={`fas fa-star ${i < valor ? 'estrella-llena' : ''}`}
                 style={{ color: i < valor ? '#f59e0b' : '#cbd5e1', fontSize: 16, marginRight: 2 }}
             />
         ));
@@ -178,16 +179,16 @@ function Perfil() {
                         </div>
                         <div className="perfil-hero-text">
                             <span className="perfil-rol-badge">
-                                <i className={`fas ${esAdministrador ? 'fa-shield-halved' : 'fa-user'}`}></i>
+                                <Icon name={`fas ${esAdministrador ? 'fa-shield-halved' : 'fa-user'}`} />
                                 {rolLabel}
                             </span>
                             <h1>{usuario.nombre} {usuario.apellido}</h1>
                             <p>
-                                <i className="fas fa-envelope"></i> {usuario.email}
+                                <Icon name="fas fa-envelope" /> {usuario.email}
                             </p>
                             {usuario.created_at && (
                                 <p className="perfil-miembro">
-                                    <i className="fas fa-calendar-alt"></i>
+                                    <Icon name="fas fa-calendar-alt" />
                                     Miembro desde {new Date(usuario.created_at).toLocaleDateString('es-AR', {
                                         year: 'numeric',
                                         month: 'long'
@@ -201,7 +202,7 @@ function Perfil() {
                                     className="btn-detalle btn-detalle-primario"
                                     onClick={() => setEditando(true)}
                                 >
-                                    <i className="fas fa-pen"></i> Editar perfil
+                                    <Icon name="fas fa-pen" /> Editar perfil
                                 </button>
                             )}
                         </div>
@@ -215,7 +216,7 @@ function Perfil() {
                     <div className="perfil-card">
                         <div className="perfil-card-header">
                             <h3>
-                                <i className="fas fa-id-card"></i> Datos personales
+                                <Icon name="fas fa-id-card" /> Datos personales
                             </h3>
                         </div>
 
@@ -298,11 +299,11 @@ function Perfil() {
                                     >
                                         {guardando ? (
                                             <>
-                                                <i className="fas fa-spinner fa-spin"></i> Guardando...
+                                                <Icon name="fas fa-spinner fa-spin" /> Guardando...
                                             </>
                                         ) : (
                                             <>
-                                                <i className="fas fa-check"></i> Guardar cambios
+                                                <Icon name="fas fa-check" /> Guardar cambios
                                             </>
                                         )}
                                     </button>
@@ -312,7 +313,7 @@ function Perfil() {
                             <div className="perfil-datos">
                                 <div className="perfil-dato">
                                     <div className="perfil-dato-icon">
-                                        <i className="fas fa-user"></i>
+                                        <Icon name="fas fa-user" />
                                     </div>
                                     <div className="perfil-dato-info">
                                         <span className="perfil-dato-label">Nombre completo</span>
@@ -324,7 +325,7 @@ function Perfil() {
 
                                 <div className="perfil-dato">
                                     <div className="perfil-dato-icon">
-                                        <i className="fas fa-envelope"></i>
+                                        <Icon name="fas fa-envelope" />
                                     </div>
                                     <div className="perfil-dato-info">
                                         <span className="perfil-dato-label">Correo electrónico</span>
@@ -334,7 +335,7 @@ function Perfil() {
 
                                 <div className="perfil-dato">
                                     <div className="perfil-dato-icon">
-                                        <i className="fas fa-phone"></i>
+                                        <Icon name="fas fa-phone" />
                                     </div>
                                     <div className="perfil-dato-info">
                                         <span className="perfil-dato-label">Teléfono</span>
@@ -346,7 +347,7 @@ function Perfil() {
 
                                 <div className="perfil-dato">
                                     <div className="perfil-dato-icon">
-                                        <i className="fas fa-home"></i>
+                                        <Icon name="fas fa-home" />
                                     </div>
                                     <div className="perfil-dato-info">
                                         <span className="perfil-dato-label">Domicilio</span>
@@ -358,7 +359,7 @@ function Perfil() {
 
                                 <div className="perfil-dato">
                                     <div className="perfil-dato-icon">
-                                        <i className="fas fa-user-tag"></i>
+                                        <Icon name="fas fa-user-tag" />
                                     </div>
                                     <div className="perfil-dato-info">
                                         <span className="perfil-dato-label">Tipo de usuario</span>
@@ -375,17 +376,17 @@ function Perfil() {
                     <div className="perfil-card">
                         <div className="perfil-card-header">
                             <h3>
-                                <i className="fas fa-star"></i> Mi reputación
+                                <Icon name="fas fa-star" /> Mi reputación
                             </h3>
                         </div>
 
                         {cargandoResenas ? (
                             <div style={{ padding: '20px 0', textAlign: 'center', color: '#64748b' }}>
-                                <i className="fas fa-spinner fa-spin"></i> Cargando reseñas...
+                                <Icon name="fas fa-spinner fa-spin" /> Cargando reseñas...
                             </div>
                         ) : totalResenas === 0 ? (
                             <div className="resenas-vacio" style={{ textAlign: 'left', padding: '10px 0' }}>
-                                <i className="fas fa-star-half-alt"></i>
+                                <Icon name="fas fa-star-half-alt" />
                                 <p style={{ marginTop: 6 }}>
                                     Todavía no recibiste reseñas.
                                 </p>
@@ -426,7 +427,7 @@ function Perfil() {
                                                     </div>
                                                     {r.fecha_publicacion && (
                                                         <span style={{ fontSize: 12, color: '#64748b' }}>
-                                                            <i className="far fa-calendar-alt" style={{ marginRight: 4 }}></i>
+                                                            <Icon name="far fa-calendar-alt" style={{ marginRight: 4 }} />
                                                             {String(r.fecha_publicacion).slice(0, 10)}
                                                         </span>
                                                     )}
@@ -450,49 +451,49 @@ function Perfil() {
                 <section className="perfil-card" style={{ marginTop: '24px' }}>
                     <div className="perfil-card-header">
                         <h3>
-                            <i className="fas fa-bolt"></i> Accesos rápidos
+                            <Icon name="fas fa-bolt" /> Accesos rápidos
                         </h3>
                     </div>
                     <div className="dash-actions">
                             <Link to="/dashboard" className="dash-action">
                                 <span className="dash-action-icon">
-                                    <i className="fas fa-chart-line"></i>
+                                    <Icon name="fas fa-chart-line" />
                                 </span>
                                 <div className="dash-action-text">
                                     <strong>Dashboard</strong>
                                     <small>Ver tu resumen de actividad</small>
                                 </div>
-                                <i className="fas fa-chevron-right dash-action-arrow"></i>
+                                <Icon name="fas fa-chevron-right dash-action-arrow" />
                             </Link>
                             <Link to="/favoritos" className="dash-action">
                                 <span className="dash-action-icon">
-                                    <i className="fas fa-heart"></i>
+                                    <Icon name="fas fa-heart" />
                                 </span>
                                 <div className="dash-action-text">
                                     <strong>Mis favoritos</strong>
                                     <small>Propiedades guardadas</small>
                                 </div>
-                                <i className="fas fa-chevron-right dash-action-arrow"></i>
+                                <Icon name="fas fa-chevron-right dash-action-arrow" />
                             </Link>
                             <Link to="/propiedades" className="dash-action">
                                 <span className="dash-action-icon">
-                                    <i className="fas fa-search"></i>
+                                    <Icon name="fas fa-search" />
                                 </span>
                                 <div className="dash-action-text">
                                     <strong>Explorar propiedades</strong>
                                     <small>Encontrá tu próximo hogar</small>
                                 </div>
-                                <i className="fas fa-chevron-right dash-action-arrow"></i>
+                                <Icon name="fas fa-chevron-right dash-action-arrow" />
                             </Link>
                             <Link to="/propiedades/crear" className="dash-action primary">
                                 <span className="dash-action-icon">
-                                    <i className="fas fa-plus"></i>
+                                    <Icon name="fas fa-plus" />
                                 </span>
                                 <div className="dash-action-text">
                                     <strong>Publicar propiedad</strong>
                                     <small>Sumá un nuevo alquiler</small>
                                 </div>
-                                <i className="fas fa-chevron-right dash-action-arrow"></i>
+                                <Icon name="fas fa-chevron-right dash-action-arrow" />
                             </Link>
                         </div>
 
@@ -502,7 +503,7 @@ function Perfil() {
                 <section className="perfil-card" style={{ marginTop: '24px' }}>
                     <div className="perfil-card-header">
                         <h3>
-                            <i className="fas fa-key"></i> Cambiar contraseña
+                            <Icon name="fas fa-key" /> Cambiar contraseña
                         </h3>
                     </div>
                     <p className="perfil-form-help">
@@ -548,11 +549,11 @@ function Perfil() {
                             >
                                 {guardandoPass ? (
                                     <>
-                                        <i className="fas fa-spinner fa-spin"></i> Guardando...
+                                        <Icon name="fas fa-spinner fa-spin" /> Guardando...
                                     </>
                                 ) : (
                                     <>
-                                        <i className="fas fa-key"></i> Actualizar contraseña
+                                        <Icon name="fas fa-key" /> Actualizar contraseña
                                     </>
                                 )}
                             </button>

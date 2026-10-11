@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
@@ -94,7 +95,7 @@ function ReservaDetalle() {
                     descripcion={error || "La reserva solicitada no existe o no tenés permisos para verla."}
                     action={
                         <button className="btn-ver-todas" onClick={() => navigate("/reservas")}>
-                            <i className="fas fa-arrow-left"></i> Volver a mis reservas
+                            <Icon name="fas fa-arrow-left" /> Volver a mis reservas
                         </button>
                     }
                 />
@@ -149,7 +150,7 @@ function ReservaDetalle() {
                 <section className="misprops-hero">
                     <div className="misprops-hero-content">
                         <span className="misprops-hero-badge">
-                            <i className="fas fa-calendar-check"></i> Reserva #{reserva.id}
+                            <Icon name="fas fa-calendar-check" /> Reserva #{reserva.id}
                         </span>
                         <h1>
                             Detalle de <span>Reserva</span>
@@ -159,7 +160,7 @@ function ReservaDetalle() {
                         </p>
                         <div style={{ marginTop: 16 }}>
                             <Link to="/reservas" className="btn-detalle btn-detalle-secundario">
-                                <i className="fas fa-arrow-left"></i> Volver a mis reservas
+                                <Icon name="fas fa-arrow-left" /> Volver a mis reservas
                             </Link>
                         </div>
                     </div>
@@ -170,17 +171,17 @@ function ReservaDetalle() {
                         <section className="perfil-card">
                             <div className="perfil-card-header">
                                 <h3>
-                                    <i className="fas fa-info-circle"></i> Información general
+                                    <Icon name="fas fa-info-circle" /> Información general
                                 </h3>
                             </div>
                             <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 16 }}>
                                 <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
                                     <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 999, background: eInfo.bg, color: eInfo.color, fontWeight: 600 }}>
-                                        <i className={`fas ${eInfo.icono}`}></i> {eInfo.etiqueta}
+                                        <Icon name={`fas ${eInfo.icono}`} /> {eInfo.etiqueta}
                                     </span>
                                     {vencida && (
                                         <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 999, background: "#fef3c7", color: "#92400e", border: "1px solid #fcd34d", fontWeight: 600 }}>
-                                            <i className="fas fa-exclamation-triangle"></i> Vencida (sin finalizar)
+                                            <Icon name="fas fa-exclamation-triangle" /> Vencida (sin finalizar)
                                         </span>
                                     )}
                                 </div>
@@ -189,10 +190,10 @@ function ReservaDetalle() {
                                     <div>
                                         <div style={{ fontSize: 13, color: "#64748b", marginBottom: 4 }}>Fechas</div>
                                         <div style={{ fontSize: 14 }}>
-                                            <i className="far fa-calendar-alt"></i> Desde {soloDia(reserva.fecha_inicio_alquiler)}
+                                            <Icon name="far fa-calendar-alt" /> Desde {soloDia(reserva.fecha_inicio_alquiler)}
                                         </div>
                                         <div style={{ fontSize: 14 }}>
-                                            <i className="far fa-calendar-check"></i> Hasta {soloDia(reserva.fecha_fin_alquiler)}
+                                            <Icon name="far fa-calendar-check" /> Hasta {soloDia(reserva.fecha_fin_alquiler)}
                                         </div>
                                     </div>
                                     <div>
@@ -209,12 +210,12 @@ function ReservaDetalle() {
                                     <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
                                         {puedeAprobar && (
                                             <button className="btn-detalle btn-detalle-primario" disabled={accionando} onClick={() => ejecutarAccion("aprobar")}>
-                                                <i className="fas fa-check"></i> Aprobar
+                                                <Icon name="fas fa-check" /> Aprobar
                                             </button>
                                         )}
                                         {puedeFinalizar && (
                                             <button className="btn-detalle btn-detalle-primario" disabled={accionando} onClick={() => ejecutarAccion("finalizar")}>
-                                                <i className="fas fa-flag-checkered"></i> {vencida ? "Finalizar (vencida)" : "Finalizar"}
+                                                <Icon name="fas fa-flag-checkered" /> {vencida ? "Finalizar (vencida)" : "Finalizar"}
                                             </button>
                                         )}
                                         {puedeRechazar && (
@@ -222,7 +223,7 @@ function ReservaDetalle() {
                                                 const ok = await confirm({ titulo: "Rechazar solicitud?", mensaje: "El inquilino recibirá el rechazo.", textoAceptar: "Rechazar", textoCancelar: "Cancelar", peligro: true });
                                                 if (ok) ejecutarAccion("rechazar");
                                             }}>
-                                                <i className="fas fa-times"></i> Rechazar
+                                                <Icon name="fas fa-times" /> Rechazar
                                             </button>
                                         )}
                                         {puedeCancelar && (
@@ -230,7 +231,7 @@ function ReservaDetalle() {
                                                 const ok = await confirm({ titulo: "Cancelar reserva?", mensaje: "Esta acción puede cambiar el estado de la reserva.", textoAceptar: "Cancelar reserva", textoCancelar: "Volver", peligro: true });
                                                 if (ok) ejecutarAccion("cancelar");
                                             }}>
-                                                <i className="fas fa-ban"></i> Cancelar
+                                                <Icon name="fas fa-ban" /> Cancelar
                                             </button>
                                         )}
                                     </div>
@@ -241,7 +242,7 @@ function ReservaDetalle() {
                         <section className="perfil-card" style={{ marginTop: 24 }}>
                             <div className="perfil-card-header">
                                 <h3>
-                                    <i className="fas fa-home"></i> Propiedad
+                                    <Icon name="fas fa-home" /> Propiedad
                                 </h3>
                             </div>
                             <div style={{ padding: "20px", display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" }}>
@@ -253,7 +254,7 @@ function ReservaDetalle() {
                                     {propiedad?.direccion && <div style={{ fontSize: 14, color: "#64748b" }}>{propiedad.direccion}</div>}
                                     {propiedad?.id && (
                                         <Link to={`/propiedades/${propiedad.id}`} className="link-underline" style={{ fontSize: 14 }}>
-                                            Ver propiedad <i className="fas fa-external-link-alt"></i>
+                                            Ver propiedad <Icon name="fas fa-external-link-alt" />
                                         </Link>
                                     )}
                                 </div>
@@ -264,7 +265,7 @@ function ReservaDetalle() {
                             <section className="perfil-card" style={{ marginTop: 24 }}>
                                 <div className="perfil-card-header">
                                     <h3>
-                                        <i className="fas fa-star"></i> Reseñas asociadas
+                                        <Icon name="fas fa-star" /> Reseñas asociadas
                                     </h3>
                                 </div>
                                 <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 12 }}>
@@ -273,7 +274,7 @@ function ReservaDetalle() {
                                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                                                     {[1,2,3,4,5].map(n => (
-                                                        <i key={n} className="fas fa-star" style={{ fontSize: 12, color: n <= Number(r.calificacion) ? "#f59e0b" : "#cbd5e1" }}></i>
+                                                        <Icon key={n} name="fas fa-star" style={{ fontSize: 12, color: n <= Number(r.calificacion) ? "#f59e0b" : "#cbd5e1" }} />
                                                     ))}
                                                     <span style={{ fontSize: 13, fontWeight: 600 }}>{r.calificacion}/5</span>
                                                 </div>
@@ -292,7 +293,7 @@ function ReservaDetalle() {
                         <section className="perfil-card">
                             <div className="perfil-card-header">
                                 <h3>
-                                    <i className="fas fa-users"></i> Participantes
+                                    <Icon name="fas fa-users" /> Participantes
                                 </h3>
                             </div>
                             <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 14 }}>
@@ -300,16 +301,16 @@ function ReservaDetalle() {
                                     <div>
                                         <div style={{ fontSize: 13, color: "#64748b" }}>Inquilino</div>
                                         <div style={{ fontWeight: 600 }}>{[inquilino.nombre, inquilino.apellido].filter(Boolean).join(" ") || `#${inquilino.id}`}</div>
-                                        {inquilino.email && <div style={{ fontSize: 13 }}><i className="fas fa-envelope"></i> {inquilino.email}</div>}
-                                        {inquilino.telefono && <div style={{ fontSize: 13 }}><i className="fas fa-phone-alt"></i> {inquilino.telefono}</div>}
+                                        {inquilino.email && <div style={{ fontSize: 13 }}><Icon name="fas fa-envelope" /> {inquilino.email}</div>}
+                                        {inquilino.telefono && <div style={{ fontSize: 13 }}><Icon name="fas fa-phone-alt" /> {inquilino.telefono}</div>}
                                     </div>
                                 )}
                                 {propietario && (
                                     <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: 14 }}>
                                         <div style={{ fontSize: 13, color: "#64748b" }}>Propietario</div>
                                         <div style={{ fontWeight: 600 }}>{[propietario.nombre, propietario.apellido].filter(Boolean).join(" ") || `#${propietario.id}`}</div>
-                                        {propietario.email && <div style={{ fontSize: 13 }}><i className="fas fa-envelope"></i> {propietario.email}</div>}
-                                        {propietario.telefono && <div style={{ fontSize: 13 }}><i className="fas fa-phone-alt"></i> {propietario.telefono}</div>}
+                                        {propietario.email && <div style={{ fontSize: 13 }}><Icon name="fas fa-envelope" /> {propietario.email}</div>}
+                                        {propietario.telefono && <div style={{ fontSize: 13 }}><Icon name="fas fa-phone-alt" /> {propietario.telefono}</div>}
                                     </div>
                                 )}
                             </div>

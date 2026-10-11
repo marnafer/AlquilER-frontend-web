@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -237,7 +238,7 @@ function MisConsultas() {
                 <section className="misconsultas-hero">
                     <div className="misconsultas-hero-content">
                         <span className="misconsultas-hero-badge">
-                            <i className="fas fa-comments"></i> Consultas
+                            <Icon name="fas fa-comments" /> Consultas
                         </span>
                         <h1>Mensajes de <span>consultas</span></h1>
                         <p>
@@ -249,14 +250,14 @@ function MisConsultas() {
                 {error && (
                     <div className="alert alert-error" role="alert" style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span>
-                            <i className="fas fa-exclamation-circle"></i> {error}
+                            <Icon name="fas fa-exclamation-circle" /> {error}
                         </span>
                         <button
                             onClick={cargar}
                             className="btn-detalle btn-detalle-secundario"
                             style={{ padding: '4px 12px', fontSize: 13 }}
                         >
-                            <i className="fas fa-redo-alt"></i> Reintentar
+                            <Icon name="fas fa-redo-alt" /> Reintentar
                         </button>
                     </div>
                 )}
@@ -306,7 +307,7 @@ function MisConsultas() {
                                             {img ? (
                                                 <img src={img} alt={`Imagen de ${altTitulo}`} loading="lazy" decoding="async" />
                                             ) : (
-                                                <i className="fas fa-home"></i>
+                                                <Icon name="fas fa-home" />
                                             )}
                                         </div>
                                         <div className="misconsultas-item-body">
@@ -345,7 +346,7 @@ function MisConsultas() {
                                                 </span>
                                             )}
                                         </div>
-                                        <i className="fas fa-chevron-right misconsultas-item-arrow"></i>
+                                        <Icon name="fas fa-chevron-right misconsultas-item-arrow" />
                                     </button>
                                 );
                             })}
@@ -363,7 +364,7 @@ function MisConsultas() {
                                             to={`/propiedades/${activa.consulta.propiedad_id}`}
                                             className="misconsultas-ver-propiedad"
                                         >
-                                            Ver propiedad <i className="fas fa-external-link-alt"></i>
+                                            Ver propiedad <Icon name="fas fa-external-link-alt" />
                                         </Link>
                                     </div>
 
@@ -421,7 +422,7 @@ function MisConsultas() {
                                         })()}
                                         {cargandoMensajes ? (
                                             <div className="misconsultas-cargando">
-                                                <i className="fas fa-spinner fa-spin"></i> Cargando conversación...
+                                                <Icon name="fas fa-spinner fa-spin" /> Cargando conversación...
                                             </div>
                                         ) : mensajes.length > 0 ? (
                                             mensajes.map(m => {
@@ -467,7 +468,7 @@ function MisConsultas() {
                                         )}
                                         {exitoRespuesta && (
                                             <span style={{ color: '#065f46', fontSize: 13 }}>
-                                                <i className="fas fa-check-circle"></i> {exitoRespuesta}
+                                                <Icon name="fas fa-check-circle" /> {exitoRespuesta}
                                             </span>
                                         )}
                                         <button
@@ -478,11 +479,11 @@ function MisConsultas() {
                                         >
                                             {enviandoRespuesta ? (
                                                 <>
-                                                    <i className="fas fa-spinner fa-spin"></i> Enviando...
+                                                    <Icon name="fas fa-spinner fa-spin" /> Enviando...
                                                 </>
                                             ) : (
                                                 <>
-                                                    <i className="fas fa-paper-plane"></i> Enviar
+                                                    <Icon name="fas fa-paper-plane" /> Enviar
                                                 </>
                                             )}
                                         </button>
@@ -490,7 +491,7 @@ function MisConsultas() {
                                 </>
                             ) : (
                                 <div className="misconsultas-empty-hilo">
-                                    <i className="fas fa-comments"></i>
+                                    <Icon name="fas fa-comments" />
                                     <p>Seleccioná una consulta para ver la conversación.</p>
                                 </div>
                             )}
@@ -503,7 +504,7 @@ function MisConsultas() {
                         descripcion="Consultá sobre una propiedad para iniciar una conversación sobre un alquiler."
                         action={
                             <Link to="/propiedades" className="btn-ver-todas" style={{ marginTop: '20px', display: 'inline-block' }}>
-                                <i className="fas fa-search"></i> Explorar propiedades
+                                <Icon name="fas fa-search" /> Explorar propiedades
                             </Link>
                         }
                     />

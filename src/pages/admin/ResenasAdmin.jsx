@@ -1,3 +1,4 @@
+import Icon from '../../components/Icon';
 import React, { useMemo } from 'react';
 import PanelCrud from '../../components/admin/PanelCrud';
 import { useAuth } from '../../hooks/useAuth';
@@ -15,10 +16,9 @@ import {
 const estrellas = (valor) => (
     <span className="resenas-estrellas">
         {[1, 2, 3, 4, 5].map(i => (
-            <i
+            <Icon
                 key={i}
-                className={`fas fa-star ${i <= Number(valor || 0) ? 'estrella-llena' : ''}`}
-            ></i>
+                name={`fas fa-star ${i <= Number(valor || 0) ? 'estrella-llena' : ''}`} />
         ))}
     </span>
 );

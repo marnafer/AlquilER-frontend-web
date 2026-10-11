@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -143,7 +144,7 @@ function Notificaciones() {
                 <section className="notificaciones-hero">
                     <div className="notificaciones-hero-content">
                         <span className="notificaciones-hero-badge">
-                            <i className="fas fa-bell"></i> Notificaciones
+                            <Icon name="fas fa-bell" /> Notificaciones
                         </span>
                         <h1>Centro de <span>notificaciones</span></h1>
                         <p>
@@ -155,14 +156,14 @@ function Notificaciones() {
                 {error && (
                     <div className="alert alert-error" role="alert" style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span>
-                            <i className="fas fa-exclamation-circle"></i> {error}
+                            <Icon name="fas fa-exclamation-circle" /> {error}
                         </span>
                         <button
                             onClick={cargar}
                             className="btn-detalle btn-detalle-secundario"
                             style={{ padding: '4px 12px', fontSize: 13 }}
                         >
-                            <i className="fas fa-redo-alt"></i> Reintentar
+                            <Icon name="fas fa-redo-alt" /> Reintentar
                         </button>
                     </div>
                 )}
@@ -184,11 +185,11 @@ function Notificaciones() {
                             >
                                 {marcandoTodas ? (
                                     <>
-                                        <i className="fas fa-spinner fa-spin"></i> Marcando...
+                                        <Icon name="fas fa-spinner fa-spin" /> Marcando...
                                     </>
                                 ) : (
                                     <>
-                                        <i className="fas fa-check-double"></i> Marcar todas leídas
+                                        <Icon name="fas fa-check-double" /> Marcar todas leídas
                                     </>
                                 )}
                             </button>
@@ -204,7 +205,7 @@ function Notificaciones() {
                                 className={`notificaciones-item ${!n.leida ? 'no-leida' : ''}`}
                             >
                                 <div className="notificaciones-item-icon">
-                                    <i className={`fas ${iconoDe(n.tipo)}`}></i>
+                                    <Icon name={`fas ${iconoDe(n.tipo)}`} />
                                 </div>
                                 <div className="notificaciones-item-body">
                                     <div className="notificaciones-item-titulo">
@@ -227,9 +228,9 @@ function Notificaciones() {
                                         aria-label="Marcar como leída"
                                     >
                                         {marcandoId === n.id ? (
-                                            <i className="fas fa-spinner fa-spin"></i>
+                                            <Icon name="fas fa-spinner fa-spin" />
                                         ) : (
-                                            <i className="fas fa-check"></i>
+                                            <Icon name="fas fa-check" />
                                         )}
                                     </button>
                                 )}
@@ -243,7 +244,7 @@ function Notificaciones() {
                         descripcion="Recibirás avisos cuando te confirmen o rechacen una reserva, cuando te consulten por una propiedad o cuando recibas un mensaje nuevo."
                         action={
                             <Link to="/propiedades" className="btn-ver-todas" style={{ marginTop: '20px', display: 'inline-block' }}>
-                                <i className="fas fa-search"></i> Explorar propiedades
+                                <Icon name="fas fa-search" /> Explorar propiedades
                             </Link>
                         }
                     />
@@ -258,7 +259,7 @@ function Notificaciones() {
                             disabled={paginaSegura <= 1}
                             aria-label="Página anterior"
                         >
-                            <i className="fas fa-chevron-left"></i>
+                            <Icon name="fas fa-chevron-left" />
                         </button>
 
                         {totalPaginas > 7 && paginaSegura > 4 && (
@@ -306,7 +307,7 @@ function Notificaciones() {
                             disabled={paginaSegura >= totalPaginas}
                             aria-label="Página siguiente"
                         >
-                            <i className="fas fa-chevron-right"></i>
+                            <Icon name="fas fa-chevron-right" />
                         </button>
                     </div>
                 )}

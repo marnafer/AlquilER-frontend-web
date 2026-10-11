@@ -1,3 +1,4 @@
+﻿import Icon from './Icon';
 import { useEffect, useState } from 'react';
 
 function PropiedadCardImage({ src, alt }) {
@@ -10,7 +11,7 @@ function PropiedadCardImage({ src, alt }) {
     if (!src || imgError) {
         return (
             <div className="propiedad-placeholder" role="img" aria-label={alt || 'Imagen no disponible'}>
-                <i className="fas fa-house" aria-hidden="true"></i>
+                <Icon name="fas fa-house" aria-hidden="true" />
                 <span>Imagen no disponible</span>
             </div>
         );

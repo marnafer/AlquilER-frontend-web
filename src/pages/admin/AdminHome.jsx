@@ -1,3 +1,4 @@
+import Icon from '../../components/Icon';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -22,7 +23,7 @@ function AdminHome() {
                 <section className="admin-hero">
                     <div className="admin-hero-content">
                         <span className="admin-hero-badge">
-                            <i className="fas fa-tachometer-alt"></i> Administración
+                            <Icon name="fas fa-tachometer-alt" /> Administración
                         </span>
                         <h1>Panel de control</h1>
                         <p>Gestioná los datos maestros y los usuarios de AlquilER.</p>
@@ -33,7 +34,7 @@ function AdminHome() {
                     {modulos.map(m => (
                         <Link to={m.to} key={m.to} className="admin-card">
                             <span className="admin-card-icono">
-                                <i className={`fas ${m.icono}`}></i>
+                                <Icon name={`fas ${m.icono}`} />
                             </span>
                             <strong>{m.titulo}</strong>
                             <small>{m.desc}</small>

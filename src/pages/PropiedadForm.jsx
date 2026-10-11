@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -513,7 +514,7 @@ if (result.success) {
                 {/* HEADER DE LA PÁGINA */}
                 <div className="propform-header">
                     <Link to="/mis-propiedades" className="detalle-volver">
-                        <i className="fas fa-arrow-left"></i> Volver
+                        <Icon name="fas fa-arrow-left" /> Volver
                     </Link>
                     <span className="section-badge">
                         {esEdicion ? 'Edición' : 'Publicación'}
@@ -531,7 +532,7 @@ if (result.success) {
                 {/* ALERTA GENERAL */}
                 {errorGeneral && (
                     <div className="alert alert-error" role="alert">
-                        <i className="fas fa-exclamation-circle" style={{ marginRight: 8 }}></i>
+                        <Icon name="fas fa-exclamation-circle" style={{ marginRight: 8 }} />
                         {errorGeneral}
                     </div>
                 )}
@@ -544,7 +545,7 @@ if (result.success) {
                     <section className="propform-card">
                         <div className="propform-card-header">
                             <h3>
-                                <i className="fas fa-info-circle"></i> Información básica
+                                <Icon name="fas fa-info-circle" /> Información básica
                             </h3>
                         </div>
 
@@ -681,7 +682,7 @@ if (result.success) {
                     <section className="propform-card">
                         <div className="propform-card-header">
                             <h3>
-                                <i className="fas fa-home"></i> Detalles de la propiedad
+                                <Icon name="fas fa-home" /> Detalles de la propiedad
                             </h3>
                         </div>
 
@@ -761,14 +762,14 @@ if (result.success) {
                     <section className="propform-card">
                         <div className="propform-card-header">
                             <h3>
-                                <i className="fas fa-house-circle-check"></i> Políticas de la propiedad
+                                <Icon name="fas fa-house-circle-check" /> Políticas de la propiedad
                             </h3>
                         </div>
 
                         <div className="policias-grid">
                             <div className="politica-item">
                                 <span className="politica-info">
-                                    <i className="fas fa-paw"></i>
+                                    <Icon name="fas fa-paw" />
                                     <span>
                                         <strong>Mascotas</strong>
                                         <small>¿Podés llevar mascotas?</small>
@@ -781,7 +782,7 @@ if (result.success) {
                                         onClick={() => setFormData(prev => ({ ...prev, acepta_mascotas: prev.acepta_mascotas ? 0 : 1 }))}
                                         aria-pressed={formData.acepta_mascotas === 1}
                                     >
-                                        <i className={`fas ${formData.acepta_mascotas ? 'fa-check' : 'fa-xmark'}`}></i>
+                                        <Icon name={`fas ${formData.acepta_mascotas ? 'fa-check' : 'fa-xmark'}`} />
                                         {formData.acepta_mascotas ? 'Sí' : 'No'}
                                     </button>
                                 </div>
@@ -789,7 +790,7 @@ if (result.success) {
 
                             <div className="politica-item">
                                 <span className="politica-info">
-                                    <i className="fas fa-children"></i>
+                                    <Icon name="fas fa-children" />
                                     <span>
                                         <strong>Hijos</strong>
                                         <small>¿Se aceptan niños?</small>
@@ -802,7 +803,7 @@ if (result.success) {
                                         onClick={() => setFormData(prev => ({ ...prev, acepta_hijos: prev.acepta_hijos ? 0 : 1 }))}
                                         aria-pressed={formData.acepta_hijos === 1}
                                     >
-                                        <i className={`fas ${formData.acepta_hijos ? 'fa-check' : 'fa-xmark'}`}></i>
+                                        <Icon name={`fas ${formData.acepta_hijos ? 'fa-check' : 'fa-xmark'}`} />
                                         {formData.acepta_hijos ? 'Sí' : 'No'}
                                     </button>
                                 </div>
@@ -820,7 +821,7 @@ if (result.success) {
                     <section className="propform-card">
                         <div className="propform-card-header">
                             <h3>
-                                <i className="fas fa-dollar-sign"></i> Precio y disponibilidad
+                                <Icon name="fas fa-dollar-sign" /> Precio y disponibilidad
                             </h3>
                         </div>
 
@@ -890,7 +891,7 @@ if (result.success) {
                     <section className="propform-card">
                         <div className="propform-card-header">
                             <h3>
-                                <i className="fas fa-filter"></i> Requisitos para interesados
+                                <Icon name="fas fa-filter" /> Requisitos para interesados
                             </h3>
                         </div>
                         <p className="form-help" style={{ marginBottom: 18 }}>
@@ -976,7 +977,7 @@ if (result.success) {
                     <section className="propform-card" ref={imagenesSectionRef}>
                         <div className="propform-card-header">
                             <h3>
-                                <i className="fas fa-images"></i> Imágenes de la propiedad
+                                <Icon name="fas fa-images" /> Imágenes de la propiedad
                             </h3>
                         </div>
 
@@ -991,7 +992,7 @@ if (result.success) {
                                         fontSize: 14,
                                         marginBottom: 18
                                     }}>
-                                        <i className="fas fa-check-circle"></i>{' '}
+                                        <Icon name="fas fa-check-circle" />{' '}
                                         Propiedad creada correctamente. ¡Sumale fotos ahora para que se vea en el catálogo!
                                     </div>
                                 )}
@@ -1039,7 +1040,7 @@ if (result.success) {
                                                             marginBottom: 4
                                                         }}
                                                     >
-                                                        <i className="fas fa-star" style={{ color: '#f59e0b' }}></i> Principal
+                                                        <Icon name="fas fa-star" style={{ color: '#f59e0b' }} /> Principal
                                                     </span>
                                                 ) : (
                                                     <button
@@ -1048,7 +1049,7 @@ if (result.success) {
                                                         style={{ marginBottom: 4 }}
                                                         onClick={() => handleSetPrincipal(img.id)}
                                                     >
-                                                        <i className="fas fa-star"></i> Principal
+                                                        <Icon name="fas fa-star" /> Principal
                                                     </button>
                                                 )}
                                                 <button
@@ -1056,7 +1057,7 @@ if (result.success) {
                                                     className="btn-detalle btn-detalle-danger"
                                                     onClick={() => handleEliminarImagen(img.id)}
                                                 >
-                                                    <i className="fas fa-trash-alt"></i> Eliminar
+                                                    <Icon name="fas fa-trash-alt" /> Eliminar
                                                 </button>
                                             </div>
                                         </div>
@@ -1093,11 +1094,11 @@ if (result.success) {
                                         >
                                             {subiendoImagen ? (
                                                 <>
-                                                    <i className="fas fa-spinner fa-spin"></i> Subiendo...
+                                                    <Icon name="fas fa-spinner fa-spin" /> Subiendo...
                                                 </>
                                             ) : (
                                                 <>
-                                                    <i className="fas fa-upload"></i> Subir imagen
+                                                    <Icon name="fas fa-upload" /> Subir imagen
                                                 </>
                                             )}
                                         </button>
@@ -1167,7 +1168,7 @@ if (result.success) {
                                                     onClick={() => quitarArchivoCrear(index)}
                                                     aria-label={`Quitar foto ${index + 1}`}
                                                 >
-                                                    <i className="fas fa-times"></i> Quitar
+                                                    <Icon name="fas fa-times" /> Quitar
                                                 </button>
                                             </div>
                                         ))}
@@ -1183,7 +1184,7 @@ if (result.success) {
                     <section className="propform-card">
                         <div className="propform-card-header">
                             <h3>
-                                <i className="fas fa-concierge-bell"></i> Servicios de la propiedad
+                                <Icon name="fas fa-concierge-bell" /> Servicios de la propiedad
                             </h3>
                         </div>
 
@@ -1206,7 +1207,7 @@ if (result.success) {
                                                 onChange={() => toggleServicio(serv.id)}
                                             />
                                             <span className="servicio-checkbox-radio">
-                                                {activo && <i className="fas fa-check"></i>}
+                                                {activo && <Icon name="fas fa-check" />}
                                             </span>
                                             <span className="servicio-checkbox-nombre">{serv.nombre}</span>
                                         </label>
@@ -1239,11 +1240,11 @@ if (result.success) {
                         >
                             {guardando ? (
                                 <>
-                                    <i className="fas fa-spinner fa-spin"></i> Guardando...
+                                    <Icon name="fas fa-spinner fa-spin" /> Guardando...
                                 </>
                             ) : (
                                 <>
-                                    <i className={`fas ${esEdicion ? 'fa-save' : 'fa-plus'}`}></i>
+                                    <Icon name={`fas ${esEdicion ? 'fa-save' : 'fa-plus'}`} />
                                     {esEdicion ? 'Guardar cambios' : 'Publicar propiedad'}
                                 </>
                             )}

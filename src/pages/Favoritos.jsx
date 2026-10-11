@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -78,7 +79,7 @@ function Favoritos() {
                 <section className="fav-hero">
                     <div className="fav-hero-content">
                         <span className="fav-hero-badge">
-                            <i className="fas fa-heart"></i> Tus favoritos
+                            <Icon name="fas fa-heart" /> Tus favoritos
                         </span>
                         <h1>
                             Propiedades que <span>te gustaron</span>
@@ -88,7 +89,7 @@ function Favoritos() {
                         </p>
                     </div>
                     <div className="fav-hero-icon">
-                        <i className="fas fa-heart"></i>
+                        <Icon name="fas fa-heart" />
                     </div>
                 </section>
 
@@ -122,7 +123,7 @@ function Favoritos() {
                                             onClick={() => handleEliminar(propiedadId)}
                                             title="Quitar de favoritos"
                                         >
-                                            <i className="fas fa-trash-alt"></i>
+                                            <Icon name="fas fa-trash-alt" />
                                             <span>Quitar</span>
                                         </button>
                                     </div>
@@ -137,7 +138,7 @@ function Favoritos() {
                         descripcion="Cuando encuentres una propiedad que te guste, tocá el corazón para guardarla acá."
                         action={
                             <Link to="/propiedades" className="btn-ver-todas" style={{ marginTop: '20px', display: 'inline-block' }}>
-                                <i className="fas fa-search"></i> Explorar propiedades
+                                <Icon name="fas fa-search" /> Explorar propiedades
                             </Link>
                         }
                     />

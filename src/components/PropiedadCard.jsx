@@ -1,3 +1,4 @@
+import Icon from './Icon';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -67,7 +68,7 @@ function PropiedadCard({ propiedad, categoriaNombre, esFavoritoInicial = false, 
 
                 {categoriaNombre && (
                     <span className="propiedad-categoria">
-                        <i className="fas fa-tag"></i> {categoriaNombre}
+                        <Icon name="fas fa-tag" /> {categoriaNombre}
                     </span>
                 )}
 
@@ -79,7 +80,7 @@ function PropiedadCard({ propiedad, categoriaNombre, esFavoritoInicial = false, 
                         disabled={favLoading}
                         onClick={handleFavorito}
                     >
-                        <i className={esFavorito ? 'fas fa-heart' : 'far fa-heart'}></i>
+                        <Icon name={esFavorito ? 'fas fa-heart' : 'far fa-heart'} />
                     </button>
                 )}
 
@@ -91,30 +92,30 @@ function PropiedadCard({ propiedad, categoriaNombre, esFavoritoInicial = false, 
             <div className="propiedad-info">
                 <h3>{propiedad.titulo || 'Propiedad sin título'}</h3>
                 <p className="propiedad-direccion">
-                    <i className="fas fa-map-marker-alt"></i>{' '}
+                    <Icon name="fas fa-map-marker-alt" />{' '}
                     {propiedad.direccion || 'Dirección no especificada'}
                 </p>
                 <p className="propiedad-precio">
                     ${Number(propiedad.precio || 0).toLocaleString()}<span>/mes</span>
                 </p>
                 <div className="propiedad-features">
-                    <span><i className="fas fa-bed"></i> {propiedad.cantidad_dormitorios || 0} dorm.</span>
-                    <span><i className="fas fa-bath"></i> {propiedad.cantidad_banos || 0} {Number(propiedad.cantidad_banos) === 1 ? 'baño' : 'baños'}</span>
-                    <span><i className="fas fa-arrows-alt"></i> {propiedad.cantidad_ambientes || 0} amb.</span>
+                    <span><Icon name="fas fa-bed" /> {propiedad.cantidad_dormitorios || 0} dorm.</span>
+                    <span><Icon name="fas fa-bath" /> {propiedad.cantidad_banos || 0} {Number(propiedad.cantidad_banos) === 1 ? 'baño' : 'baños'}</span>
+                    <span><Icon name="fas fa-arrows-alt" /> {propiedad.cantidad_ambientes || 0} amb.</span>
                 </div>
                 {descripcion && (
                     <p className="propiedad-card-descripcion">{descripcion}</p>
                 )}
                 <div className="propiedad-politicas">
                     <span className={`politica-badge ${propiedad.acepta_mascotas ? 'si' : 'no'}`}>
-                        <i className="fas fa-paw"></i> Mascotas
+                        <Icon name="fas fa-paw" /> Mascotas
                     </span>
                     <span className={`politica-badge ${propiedad.acepta_hijos ? 'si' : 'no'}`}>
-                        <i className="fas fa-children"></i> Hijos
+                        <Icon name="fas fa-children" /> Hijos
                     </span>
                 </div>
                 <Link to={`/propiedades/${propiedad.id}`} className="btn-ver">
-                    Ver detalle <i className="fas fa-arrow-right"></i>
+                    Ver detalle <Icon name="fas fa-arrow-right" />
                 </Link>
             </div>
         </div>

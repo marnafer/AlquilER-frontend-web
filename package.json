@@ -3,12 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^7.3.1",
+    "@phosphor-icons/react": "^2.1.10",
     "bootstrap": "^5.3.8",
     "react": "^19.3.0",
     "react-bootstrap": "^2.10.10",
     "react-dom": "^19.3.0",
-    "react-icons": "^5.7.0",
     "react-router-dom": "^7.18.3"
   },
   "devDependencies": {

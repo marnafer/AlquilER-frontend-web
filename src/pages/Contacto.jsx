@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { enviarMensajeContacto } from '../services/api';
@@ -84,7 +85,7 @@ function Contacto() {
             <div className="container">
                 <section className="contact-hero">
                     <span className="contact-hero-badge">
-                        <i className="fas fa-headset"></i> Contacto
+                        <Icon name="fas fa-headset" /> Contacto
                     </span>
                     <h1>¿En qué podemos ayudarte?</h1>
                     <p>
@@ -98,7 +99,7 @@ function Contacto() {
                         dato.enlace ? (
                             <a key={dato.titulo} href={dato.enlace} className="contact-card">
                                 <div className="contact-card-icono">
-                                    <i className={`fas ${dato.icono}`}></i>
+                                    <Icon name={`fas ${dato.icono}`} />
                                 </div>
                                 <h3>{dato.titulo}</h3>
                                 <p>{dato.detalle}</p>
@@ -106,7 +107,7 @@ function Contacto() {
                         ) : (
                             <div key={dato.titulo} className="contact-card">
                                 <div className="contact-card-icono">
-                                    <i className={`fas ${dato.icono}`}></i>
+                                    <Icon name={`fas ${dato.icono}`} />
                                 </div>
                                 <h3>{dato.titulo}</h3>
                                 <p>{dato.detalle}</p>
@@ -126,15 +127,15 @@ function Contacto() {
 
                         <ul className="contact-lista">
                             <li>
-                                <i className="fas fa-check-circle"></i>
+                                <Icon name="fas fa-check-circle" />
                                 <span><strong>Consultas de alquiler:</strong> disponibilidad de propiedades y condiciones.</span>
                             </li>
                             <li>
-                                <i className="fas fa-check-circle"></i>
+                                <Icon name="fas fa-check-circle" />
                                 <span><strong>Propietarios:</strong> publicá tu propiedad y gestioná tus reservas.</span>
                             </li>
                             <li>
-                                <i className="fas fa-check-circle"></i>
+                                <Icon name="fas fa-check-circle" />
                                 <span><strong>Problemas técnicos:</strong> con tu cuenta o con el sitio.</span>
                             </li>
                         </ul>
@@ -207,12 +208,12 @@ function Contacto() {
                         </div>
 
                         <button type="submit" className="contact-form-btn" disabled={loading}>
-                            <i className="fas fa-paper-plane"></i> {loading ? 'Enviando...' : 'Enviar mensaje'}
+                            <Icon name="fas fa-paper-plane" /> {loading ? 'Enviando...' : 'Enviar mensaje'}
                         </button>
 
                         {loading && (
                             <div className="alert alert-info">
-                                <i className="fas fa-spinner fa-spin"></i> Enviando mensaje...
+                                <Icon name="fas fa-spinner fa-spin" /> Enviando mensaje...
                             </div>
                         )}
 
@@ -224,7 +225,7 @@ function Contacto() {
 
                         {enviado && (
                             <div className="alert alert-success" role="alert">
-                                <i className="fas fa-envelope-open-text"></i> Tu mensaje fue enviado.
+                                <Icon name="fas fa-envelope-open-text" /> Tu mensaje fue enviado.
                                 ¡Gracias por escribirnos! Te responderemos a la brevedad.
                             </div>
                         )}

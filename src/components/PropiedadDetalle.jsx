@@ -1,3 +1,4 @@
+import Icon from './Icon';
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
@@ -113,10 +114,9 @@ function PropiedadDetalle() {
 
     const renderEstrellas = (valor) =>
         Array.from({ length: 5 }).map((_, i) => (
-            <i
+            <Icon
                 key={i}
-                className={`fas fa-star ${i < Math.round(Number(valor) || 0) ? 'estrella-llena' : ''}`}
-            ></i>
+                name={`fas fa-star ${i < Math.round(Number(valor) || 0) ? 'estrella-llena' : ''}`} />
         ));
 
     const esDuenio = usuario && propiedad && String(usuario.id) === String(propiedad.usuario_id);
@@ -328,7 +328,7 @@ function PropiedadDetalle() {
                     descripcion={error}
                     action={
                         <button className="btn-ver-todas" onClick={cargarDatos}>
-                            <i className="fas fa-rotate-right"></i> Reintentar
+                            <Icon name="fas fa-rotate-right" /> Reintentar
                         </button>
                     }
                 />
@@ -418,14 +418,14 @@ function PropiedadDetalle() {
         <div className="props-page">
             <div className="container propiedades-page">
                 <Link to="/propiedades" className="detalle-volver">
-                    <i className="fas fa-arrow-left"></i> Volver a propiedades
+                    <Icon name="fas fa-arrow-left" /> Volver a propiedades
                 </Link>
 
                 <div className="propiedad-detalle">
                     <div className="propiedad-detalle-imagen">
                         {!imagen || imgError ? (
                             <div className="propiedad-placeholder">
-                                <i className="fas fa-home"></i>
+                                <Icon name="fas fa-home" />
                             </div>
                         ) : (
                             <img
@@ -451,29 +451,29 @@ function PropiedadDetalle() {
                         <div className="propiedad-detalle-header">
                             <h1>{propiedad.titulo || 'Propiedad'}</h1>
                             <p className="propiedad-direccion">
-                                <i className="fas fa-map-marker-alt"></i>{' '}
+                                <Icon name="fas fa-map-marker-alt" />{' '}
                                 {propiedad.direccion || 'Dirección no especificada'}
                             </p>
                         </div>
 
                         <div className="propiedad-detalle-features">
                             <div className="detalle-feature">
-                                <i className="fas fa-bed"></i>
+                                <Icon name="fas fa-bed" />
                                 <span className="feature-num">{propiedad.cantidad_dormitorios || 0}</span>
                                 <span className="feature-label">Dormitorios</span>
                             </div>
                             <div className="detalle-feature">
-                                <i className="fas fa-bath"></i>
+                                <Icon name="fas fa-bath" />
                                 <span className="feature-num">{propiedad.cantidad_banos || 0}</span>
                                 <span className="feature-label">Baños</span>
                             </div>
                             <div className="detalle-feature">
-                                <i className="fas fa-arrows-alt"></i>
+                                <Icon name="fas fa-arrows-alt" />
                                 <span className="feature-num">{propiedad.cantidad_ambientes || 0}</span>
                                 <span className="feature-label">Ambientes</span>
                             </div>
                             <div className="detalle-feature">
-                                <i className="fas fa-users"></i>
+                                <Icon name="fas fa-users" />
                                 <span className="feature-num">{propiedad.capacidad || 0}</span>
                                 <span className="feature-label">Capacidad</span>
                             </div>
@@ -482,7 +482,7 @@ function PropiedadDetalle() {
                         {servicios.length > 0 && (
                             <div className="detalle-servicios">
                                 <h3 className="detalle-servicios-titulo">
-                                    <i className="fas fa-concierge-bell"></i> Servicios
+                                    <Icon name="fas fa-concierge-bell" /> Servicios
                                 </h3>
                                 <div className="detalle-servicios-lista">
                                     {servicios.map(serv => (
@@ -496,10 +496,10 @@ function PropiedadDetalle() {
 
                         <div className="detalle-politicas">
                             <span className={`detalle-politica-badge ${propiedad.acepta_mascotas ? 'si' : 'no'}`}>
-                                <i className="fas fa-paw"></i> {propiedad.acepta_mascotas ? 'Se aceptan mascotas' : 'No se aceptan mascotas'}
+                                <Icon name="fas fa-paw" /> {propiedad.acepta_mascotas ? 'Se aceptan mascotas' : 'No se aceptan mascotas'}
                             </span>
                             <span className={`detalle-politica-badge ${propiedad.acepta_hijos ? 'si' : 'no'}`}>
-                                <i className="fas fa-children"></i> {propiedad.acepta_hijos ? 'Se aceptan niños' : 'No se aceptan niños'}
+                                <Icon name="fas fa-children" /> {propiedad.acepta_hijos ? 'Se aceptan niños' : 'No se aceptan niños'}
                             </span>
                         </div>
 
@@ -566,7 +566,7 @@ function PropiedadDetalle() {
                                 fontSize: 14,
                                 marginBottom: 16
                             }}>
-                                <i className="fas fa-check-circle"></i> {exitoReserva}
+                                <Icon name="fas fa-check-circle" /> {exitoReserva}
                             </div>
                         )}
 
@@ -579,7 +579,7 @@ function PropiedadDetalle() {
                                 fontSize: 14,
                                 marginBottom: 16
                             }}>
-                                <i className="fas fa-check-circle"></i> {exitoConsulta}
+                                <Icon name="fas fa-check-circle" /> {exitoConsulta}
                             </div>
                         )}
 
@@ -589,7 +589,7 @@ function PropiedadDetalle() {
                                     to="/login"
                                     className="btn-detalle btn-detalle-primario"
                                 >
-                                    <i className="fas fa-calendar-check"></i> Reservar ahora
+                                    <Icon name="fas fa-calendar-check" /> Reservar ahora
                                 </Link>
                             ) : (
                                 <button
@@ -598,7 +598,7 @@ function PropiedadDetalle() {
                                     onClick={abrirModal}
                                     title={esDuenio ? 'No podés reservar tu propia propiedad' : ''}
                                 >
-                                    <i className="fas fa-calendar-check"></i>{' '}
+                                    <Icon name="fas fa-calendar-check" />{' '}
                                     {esDuenio
                                         ? 'Es tu propiedad'
                                         : (disponible ? 'Reservar ahora' : 'No disponible')}
@@ -609,7 +609,7 @@ function PropiedadDetalle() {
                                     to="/login"
                                     className="btn-detalle btn-detalle-secundario"
                                 >
-                                    <i className="fas fa-question-circle"></i> Consultar
+                                    <Icon name="fas fa-question-circle" /> Consultar
                                 </Link>
                             ) : (
                                 <button
@@ -618,7 +618,7 @@ function PropiedadDetalle() {
                                     onClick={abrirModalConsulta}
                                     title={esDuenio ? 'No podés consultar tu propia propiedad' : ''}
                                 >
-                                    <i className="fas fa-question-circle"></i>{' '}
+                                    <Icon name="fas fa-question-circle" />{' '}
                                     {esDuenio ? 'Es tu propiedad' : 'Consultar'}
                                 </button>
                             )}
@@ -630,7 +630,7 @@ function PropiedadDetalle() {
                 <section className="resenas-section">
                     <div className="resenas-header">
                         <h2>
-                            <i className="fas fa-star" style={{ color: '#f59e0b' }}></i> Reseñas
+                            <Icon name="fas fa-star" style={{ color: '#f59e0b' }} /> Reseñas
                         </h2>
                         {resenas.length > 0 && (
                             <div className="resenas-promedio">
@@ -654,13 +654,13 @@ function PropiedadDetalle() {
                             fontSize: 14,
                             marginBottom: 16
                         }}>
-                            <i className="fas fa-check-circle"></i> {exitoResena}
+                            <Icon name="fas fa-check-circle" /> {exitoResena}
                         </div>
                     )}
 
                     {errorResena && (
                         <div className="alert alert-error" role="alert" style={{ marginBottom: 16 }}>
-                            <i className="fas fa-exclamation-circle" style={{ marginRight: 8 }}></i>
+                            <Icon name="fas fa-exclamation-circle" style={{ marginRight: 8 }} />
                             {errorResena}
                         </div>
                     )}
@@ -671,7 +671,7 @@ function PropiedadDetalle() {
                                 <article className="resena-item" key={r.id}>
                                     <div className="resena-item-top">
                                         <span className="resena-autor">
-                                            <i className="fas fa-user"></i>{' '}
+                                            <Icon name="fas fa-user" />{' '}
                                             {r.calificador
                                                 ? `${r.calificador.nombre} ${r.calificador.apellido || ''}`.trim()
                                                 : `Usuario #${r.calificador_id}`}
@@ -680,12 +680,12 @@ function PropiedadDetalle() {
                                     </div>
                                     {miResena && String(r.id) === String(miResena.id) && (
                                         <span className="resena-mia-badge">
-                                            <i className="fas fa-star"></i> Tu reseña
+                                            <Icon name="fas fa-star" /> Tu reseña
                                         </span>
                                     )}
                                     {r.fecha_publicacion && (
                                         <p className="resena-fecha">
-                                            <i className="far fa-calendar-alt"></i>{' '}
+                                            <Icon name="far fa-calendar-alt" />{' '}
                                             {String(r.fecha_publicacion).slice(0, 10)}
                                         </p>
                                     )}
@@ -700,7 +700,7 @@ function PropiedadDetalle() {
                                                 onClick={abrirFormularioResena}
                                                 disabled={guardandoResena}
                                             >
-                                                <i className="fas fa-pen"></i> Editar
+                                                <Icon name="fas fa-pen" /> Editar
                                             </button>
                                             <button
                                                 type="button"
@@ -708,7 +708,7 @@ function PropiedadDetalle() {
                                                 onClick={eliminarResena}
                                                 disabled={guardandoResena}
                                             >
-                                                <i className="fas fa-trash"></i> Eliminar
+                                                <Icon name="fas fa-trash" /> Eliminar
                                             </button>
                                         </div>
                                     )}
@@ -724,7 +724,7 @@ function PropiedadDetalle() {
                     {editandoResena ? (
                         <form className="resena-form" onSubmit={enviarResena} noValidate>
                             <h3 className="resena-form-titulo">
-                                <i className="fas fa-star" style={{ color: '#f59e0b' }}></i>{' '}
+                                <Icon name="fas fa-star" style={{ color: '#f59e0b' }} />{' '}
                                 {miResena ? 'Editar tu reseña' : 'Calificar esta propiedad'}
                             </h3>
 
@@ -743,7 +743,7 @@ function PropiedadDetalle() {
                                                 aria-label={`Calificar con ${valor} ${valor === 1 ? 'estrella' : 'estrellas'}`}
                                                 aria-pressed={valor <= Number(calificacion)}
                                             >
-                                                <i className="fas fa-star"></i>
+                                                <Icon name="fas fa-star" />
                                             </button>
                                         );
                                     })}
@@ -787,11 +787,11 @@ function PropiedadDetalle() {
                                 >
                                     {guardandoResena ? (
                                         <>
-                                            <i className="fas fa-spinner fa-spin"></i> Guardando...
+                                            <Icon name="fas fa-spinner fa-spin" /> Guardando...
                                         </>
                                     ) : (
                                         <>
-                                            <i className="fas fa-paper-plane"></i>{' '}
+                                            <Icon name="fas fa-paper-plane" />{' '}
                                             {miResena ? 'Guardar cambios' : 'Publicar reseña'}
                                         </>
                                     )}
@@ -805,7 +805,7 @@ function PropiedadDetalle() {
                                 className="btn-detalle btn-detalle-primario"
                                 onClick={abrirFormularioResena}
                             >
-                                <i className="fas fa-star"></i>{' '}
+                                <Icon name="fas fa-star" />{' '}
                                 {miResena ? 'Editar mi reseña' : 'Calificar esta propiedad'}
                             </button>
                         </div>
@@ -831,7 +831,7 @@ function PropiedadDetalle() {
                         }}
                     >
                         <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <i className="fas fa-calendar-check" style={{ color: '#1E40AF' }}></i>
+                            <Icon name="fas fa-calendar-check" style={{ color: '#1E40AF' }} />
                             Reservar {propiedad.titulo || 'propiedad'}
                         </h3>
                         <p style={{ marginBottom: 16 }}>
@@ -893,7 +893,7 @@ function PropiedadDetalle() {
 
                             {errorReserva && (
                                 <div className="alert alert-error" role="alert" style={{ marginBottom: 16 }}>
-                                    <i className="fas fa-exclamation-circle" style={{ marginRight: 8 }}></i>
+                                    <Icon name="fas fa-exclamation-circle" style={{ marginRight: 8 }} />
                                     {errorReserva}
                                 </div>
                             )}
@@ -914,11 +914,11 @@ function PropiedadDetalle() {
                                 >
                                     {enviando ? (
                                         <>
-                                            <i className="fas fa-spinner fa-spin"></i> Enviando...
+                                            <Icon name="fas fa-spinner fa-spin" /> Enviando...
                                         </>
                                     ) : (
                                         <>
-                                            <i className="fas fa-paper-plane"></i> Solicitar reserva
+                                            <Icon name="fas fa-paper-plane" /> Solicitar reserva
                                         </>
                                     )}
                                 </button>
@@ -936,7 +936,7 @@ function PropiedadDetalle() {
                         style={{ textAlign: 'left', maxWidth: 460 }}
                     >
                         <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <i className="fas fa-question-circle" style={{ color: '#1E40AF' }}></i>
+                            <Icon name="fas fa-question-circle" style={{ color: '#1E40AF' }} />
                             Consultar {propiedad.titulo || 'propiedad'}
                         </h3>
                         <p style={{ marginBottom: 16 }}>
@@ -1064,7 +1064,7 @@ function PropiedadDetalle() {
 
                             {errorConsulta && (
                                 <div className="alert alert-error" role="alert" style={{ marginBottom: 16 }}>
-                                    <i className="fas fa-exclamation-circle" style={{ marginRight: 8 }}></i>
+                                    <Icon name="fas fa-exclamation-circle" style={{ marginRight: 8 }} />
                                     {errorConsulta}
                                 </div>
                             )}
@@ -1085,11 +1085,11 @@ function PropiedadDetalle() {
                                 >
                                     {enviandoConsulta ? (
                                         <>
-                                            <i className="fas fa-spinner fa-spin"></i> Enviando...
+                                            <Icon name="fas fa-spinner fa-spin" /> Enviando...
                                         </>
                                     ) : (
                                         <>
-                                            <i className="fas fa-paper-plane"></i> Enviar consulta
+                                            <Icon name="fas fa-paper-plane" /> Enviar consulta
                                         </>
                                     )}
                                 </button>

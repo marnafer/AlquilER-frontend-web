@@ -1,3 +1,4 @@
+import Icon from '../Icon';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -402,7 +403,7 @@ function PanelCrud({ config }) {
                 <section className="admin-hero">
                     <div className="admin-hero-content">
                         <span className="admin-hero-badge">
-                            <i className={`fas ${config.icono}`}></i> Administración
+                            <Icon name={`fas ${config.icono}`} /> Administración
                         </span>
                         <h1>{config.titulo}</h1>
                         <p>{config.descripcion}</p>
@@ -414,7 +415,7 @@ function PanelCrud({ config }) {
                                 onClick={() => setModoPapelera(v => !v)}
                                 disabled={loading}
                             >
-                                <i className={modoPapelera ? 'fas fa-list' : 'fas fa-trash-can-arrow-up'}></i>
+                                <Icon name={modoPapelera ? 'fas fa-list' : 'fas fa-trash-can-arrow-up'} />
                                 {modoPapelera ? 'Ver activos' : 'Papelera'}
                             </button>
                         )}
@@ -424,11 +425,11 @@ function PanelCrud({ config }) {
                                     to={config.crear}
                                     className="btn-detalle btn-detalle-primario"
                                 >
-                                    <i className="fas fa-plus"></i> {config.crearEtiqueta || 'Nuevo'}
+                                    <Icon name="fas fa-plus" /> {config.crearEtiqueta || 'Nuevo'}
                                 </Link>
                             ) : (
                                 <button className="btn-detalle btn-detalle-primario" onClick={abrirCrear}>
-                                    <i className="fas fa-plus"></i> {config.crearEtiqueta || 'Nuevo'}
+                                    <Icon name="fas fa-plus" /> {config.crearEtiqueta || 'Nuevo'}
                                 </button>
                             )
                         )}
@@ -437,7 +438,7 @@ function PanelCrud({ config }) {
 
                 {modoPapelera && (
                     <div className="alert alert-info d-flex align-items-center gap-2">
-                        <i className="fas fa-trash-can-arrow-up"></i>
+                        <Icon name="fas fa-trash-can-arrow-up" />
                         <span>Estás viendo la papelera. Los elementos eliminados se muestran acá y podés restaurarlos.</span>
                     </div>
                 )}
@@ -474,7 +475,7 @@ function PanelCrud({ config }) {
                                         onClick={aplicarFiltros}
                                         title="Aplicar filtros"
                                     >
-                                        <i className="fas fa-filter"></i> Filtrar
+                                        <Icon name="fas fa-filter" /> Filtrar
                                     </button>
                                     <button
                                         className="admin-filtros-btn admin-filtros-btn-secundario"
@@ -487,7 +488,7 @@ function PanelCrud({ config }) {
                                 </div>
                             )}
                             <div className="admin-buscador-wrapper">
-                                <i className="fas fa-search"></i>
+                                <Icon name="fas fa-search" />
                                 <input
                                     className="form-control admin-buscador"
                                     placeholder={`Buscar en ${config.titulo.toLowerCase()}...`}
@@ -504,7 +505,7 @@ function PanelCrud({ config }) {
                                 disabled={!ordenados.length}
                                 title="Descargar las filas filtradas en CSV"
                             >
-                                <i className="fas fa-file-csv"></i> Exportar CSV
+                                <Icon name="fas fa-file-csv" /> Exportar CSV
                             </button>
                         </div>
 
@@ -523,7 +524,7 @@ function PanelCrud({ config }) {
                                                     title={`Ordenar por ${c.label}`}
                                                 >
                                                     {c.label}{' '}
-                                                    <i className={`fas ${ordenKey === c.key ? (ordenDir === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'}`}></i>
+                                                    <Icon name={`fas ${ordenKey === c.key ? (ordenDir === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'}`} />
                                                 </th>
                                             ))}
 {!config.soloLectura || config.eliminar || config.papelera ? (
@@ -548,7 +549,7 @@ function PanelCrud({ config }) {
                                                                 title="Ver detalle"
                                                                 aria-label="Ver detalle"
                                                             >
-                                                                <i className="fas fa-eye"></i>
+                                                                <Icon name="fas fa-eye" />
                                                             </button>
                                                         )}
                                                         {!modoPapelera && (config.acciones || [])
@@ -562,7 +563,7 @@ function PanelCrud({ config }) {
                                                                     aria-label={a.etiqueta}
                                                                     disabled={ejecutandoAccion === String(item.id)}
                                                                 >
-                                                                    <i className={ejecutandoAccion === String(item.id) ? 'fas fa-spinner fa-spin' : `fas ${a.icono}`}></i>
+                                                                    <Icon name={ejecutandoAccion === String(item.id) ? 'fas fa-spinner fa-spin' : `fas ${a.icono}`} />
                                                                 </button>
                                                             ))}
                                                         {modoPapelera ? (
@@ -573,7 +574,7 @@ function PanelCrud({ config }) {
                                                                 aria-label="Restaurar"
                                                                 disabled={restaurandoId === String(item.id)}
                                                             >
-                                                                <i className={restaurandoId === String(item.id) ? 'fas fa-spinner fa-spin' : 'fas fa-rotate-left'}></i>
+                                                                <Icon name={restaurandoId === String(item.id) ? 'fas fa-spinner fa-spin' : 'fas fa-rotate-left'} />
                                                             </button>
                                                         ) : (
                                                             <>
@@ -584,7 +585,7 @@ function PanelCrud({ config }) {
                                                                     title="Editar"
                                                                     aria-label="Editar"
                                                                 >
-                                                                    <i className="fas fa-pen"></i>
+                                                                    <Icon name="fas fa-pen" />
                                                                 </button>
                                                                 )}
                                                                 {config.eliminar && !config.soloLectura && (
@@ -594,7 +595,7 @@ function PanelCrud({ config }) {
                                                                     title="Eliminar"
                                                                     aria-label="Eliminar"
                                                                 >
-                                                                    <i className="fas fa-trash"></i>
+                                                                    <Icon name="fas fa-trash" />
                                                                 </button>
                                                                 )}
                                                             </>
@@ -614,7 +615,7 @@ function PanelCrud({ config }) {
                                         title="Anterior"
                                         aria-label="Página anterior"
                                     >
-                                        <i className="fas fa-chevron-left"></i>
+                                        <Icon name="fas fa-chevron-left" />
                                     </button>
                                     <span>
                                         Página {paginaActual} de {totalPaginas}
@@ -626,7 +627,7 @@ function PanelCrud({ config }) {
                                         title="Siguiente"
                                         aria-label="Página siguiente"
                                     >
-                                        <i className="fas fa-chevron-right"></i>
+                                        <Icon name="fas fa-chevron-right" />
                                     </button>
                                 </div>
                             </div>
@@ -750,11 +751,11 @@ function PanelCrud({ config }) {
                             >
                                 {guardando ? (
                                     <>
-                                        <i className="fas fa-spinner fa-spin"></i> Guardando...
+                                        <Icon name="fas fa-spinner fa-spin" /> Guardando...
                                     </>
                                 ) : (
                                     <>
-                                        <i className="fas fa-check"></i> Guardar
+                                        <Icon name="fas fa-check" /> Guardar
                                     </>
                                 )}
                             </button>
@@ -768,7 +769,7 @@ function PanelCrud({ config }) {
                 <div className="modal-backdrop-custom" onClick={() => { if (!eliminando) setItemAEliminar(null); }}>
                     <div className="modal-custom" onClick={e => e.stopPropagation()}>
                         <div className="modal-icon-danger">
-                            <i className="fas fa-trash-alt"></i>
+                            <Icon name="fas fa-trash-alt" />
                         </div>
                         <h3>¿Eliminar {config.nombreSingular}?</h3>
                         <p>
@@ -790,11 +791,11 @@ function PanelCrud({ config }) {
                             >
                                 {eliminando ? (
                                     <>
-                                        <i className="fas fa-spinner fa-spin"></i> Eliminando...
+                                        <Icon name="fas fa-spinner fa-spin" /> Eliminando...
                                     </>
                                 ) : (
                                     <>
-                                        <i className="fas fa-trash"></i> Sí, eliminar
+                                        <Icon name="fas fa-trash" /> Sí, eliminar
                                     </>
                                 )}
                             </button>
@@ -808,7 +809,7 @@ function PanelCrud({ config }) {
                 <div className="modal-backdrop-custom" onClick={cerrarDetalle}>
                     <div className="modal-custom admin-modal" onClick={e => e.stopPropagation()}>
                         <h3>
-                            <i className={`fas ${config.icono}`}></i>{' '}
+                            <Icon name={`fas ${config.icono}`} />{' '}
                             {typeof config.detalle.titulo === 'function'
                                 ? config.detalle.titulo(detalleItem)
                                 : (config.detalle.titulo || 'Detalle')}

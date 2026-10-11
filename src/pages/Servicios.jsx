@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getServicios } from '../services/api';
@@ -50,7 +51,7 @@ function Servicios() {
             <div className="container">
                 <section className="estatica-hero">
                     <span className="contact-hero-badge">
-                        <i className="fas fa-concierge-bell"></i> Servicios
+                        <Icon name="fas fa-concierge-bell" /> Servicios
                     </span>
                     <h1>Todos los servicios</h1>
                     <p>
@@ -67,7 +68,7 @@ function Servicios() {
                         descripcion="Los servicios son las comodidades que podés marcar al publicar una propiedad."
                         action={
                             <Link to="/propiedades/crear" className="btn-ver-todas">
-                                <i className="fas fa-plus"></i> Publicar primera propiedad
+                                <Icon name="fas fa-plus" /> Publicar primera propiedad
                             </Link>
                         }
                     />

@@ -1,3 +1,4 @@
+﻿import Icon from './Icon';
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 
 // Selector multiple con checkboxes. Se usa para categorias, localidades y
@@ -62,7 +63,7 @@ export default function MultiSelect({
 
     return (
         <div className="filtro-group" ref={contenedor}>
-            <label><i className={`fas ${icon}`}></i> {label}</label>
+            <label><Icon name={`fas ${icon}`} /> {label}</label>
             <div className="multi-select">
                 <button
                     type="button"
@@ -73,7 +74,7 @@ export default function MultiSelect({
                     aria-label={`${label}: ${resumen}`}
                 >
                     <span>{resumen}</span>
-                    <i className={`fas fa-chevron-${abierto ? 'up' : 'down'}`}></i>
+                    <Icon name={`fas fa-chevron-${abierto ? 'up' : 'down'}`} />
                 </button>
 
                 {abierto && (

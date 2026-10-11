@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useSEO } from '../hooks/useSEO';
@@ -43,7 +44,7 @@ function PreguntasFrecuentes() {
             <div className="container">
                 <section className="estatica-hero">
                     <span className="contact-hero-badge">
-                        <i className="fas fa-circle-question"></i> Preguntas frecuentes
+                        <Icon name="fas fa-circle-question" /> Preguntas frecuentes
                     </span>
                     <h1>Resolvé tus dudas</h1>
                     <p>
@@ -58,7 +59,7 @@ function PreguntasFrecuentes() {
                         <details key={i} className="faq-item">
                             <summary>
                                 {item.pregunta}
-                                <i className="fas fa-chevron-down faq-icono"></i>
+                                <Icon name="fas fa-chevron-down faq-icono" />
                             </summary>
                             <div className="faq-respuesta">{item.respuesta}</div>
                         </details>

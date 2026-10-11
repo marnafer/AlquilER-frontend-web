@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 // Provee feedback global a toda la app:
 // - showToast(mensaje, tipo): notificación flotante auto-descartable.
 // - confirm({...}): modal de confirmación que reemplaza el window.confirm nativo.
@@ -51,7 +52,7 @@ export function UIProvider({ children }) {
             <div className="toast-stack" aria-live="polite">
                 {toasts.map(t => (
                     <div key={t.id} className={`toast-global ${t.tipo}`} role="status">
-                        <i className={`fas ${t.tipo === 'success' ? 'fa-check-circle' : t.tipo === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}`}></i>
+                        <Icon name={`fas ${t.tipo === 'success' ? 'fa-check-circle' : t.tipo === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}`} />
                         <span>{t.mensaje}</span>
                     </div>
                 ))}
@@ -73,7 +74,7 @@ export function UIProvider({ children }) {
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className={`modal-icon ${confirmacion.peligro ? 'modal-icon-danger' : 'modal-icon-info'}`}>
-                            <i className={`fas ${confirmacion.peligro ? 'fa-triangle-exclamation' : 'fa-circle-question'}`}></i>
+                            <Icon name={`fas ${confirmacion.peligro ? 'fa-triangle-exclamation' : 'fa-circle-question'}`} />
                         </div>
                         <h3 id="ui-confirm-titulo">{confirmacion.titulo}</h3>
                         <p id="ui-confirm-mensaje">{confirmacion.mensaje}</p>

@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -122,10 +123,10 @@ function Dashboard() {
                         <div className="dash-avatar">{inicial}</div>
                         <div className="dash-hero-text">
                             <span className="dash-hero-badge">
-                                <i className="fas fa-bolt"></i> Panel de control
+                                <Icon name="fas fa-bolt" /> Panel de control
                             </span>
                             <h1>
-                                Hola, <span>{usuario?.nombre || 'Usuario'}</span> <i className="fas fa-hand-sparkles dash-hello-icon"></i>
+                                Hola, <span>{usuario?.nombre || 'Usuario'}</span> <Icon name="fas fa-hand-sparkles dash-hello-icon" />
                             </h1>
                             <p>
                                 Este es tu resumen de actividad en AlquilER.
@@ -139,7 +140,7 @@ function Dashboard() {
                 <section className="dash-stats">
                     <Link to="/mis-propiedades" className="dash-stat-card">
                         <div className="dash-stat-icon teal">
-                            <i className="fas fa-building"></i>
+                            <Icon name="fas fa-building" />
                         </div>
                         <div className="dash-stat-info">
                             <span className="dash-stat-number">{stats.propiedades}</span>
@@ -150,7 +151,7 @@ function Dashboard() {
 
                     <Link to="/reservas" className="dash-stat-card">
                         <div className="dash-stat-icon emerald">
-                            <i className="fas fa-calendar-check"></i>
+                            <Icon name="fas fa-calendar-check" />
                         </div>
                         <div className="dash-stat-info">
                             <span className="dash-stat-number">{stats.reservas}</span>
@@ -161,7 +162,7 @@ function Dashboard() {
 
                     <Link to="/favoritos" className="dash-stat-card">
                         <div className="dash-stat-icon rose">
-                            <i className="fas fa-heart"></i>
+                            <Icon name="fas fa-heart" />
                         </div>
                         <div className="dash-stat-info">
                             <span className="dash-stat-number">{stats.favoritos}</span>
@@ -172,7 +173,7 @@ function Dashboard() {
 
                     <Link to="/consultas" className="dash-stat-card">
                         <div className="dash-stat-icon amber">
-                            <i className="fas fa-comments"></i>
+                            <Icon name="fas fa-comments" />
                         </div>
                         <div className="dash-stat-info">
                             <span className="dash-stat-number">{stats.consultas}</span>
@@ -189,49 +190,49 @@ function Dashboard() {
                     <div className="dash-card">
                         <div className="dash-card-header">
                             <h3>
-                                <i className="fas fa-rocket"></i> Acciones rápidas
+                                <Icon name="fas fa-rocket" /> Acciones rápidas
                             </h3>
                         </div>
                         <div className="dash-actions">
                             <Link to="/propiedades/crear" className="dash-action primary">
                                 <span className="dash-action-icon">
-                                    <i className="fas fa-plus"></i>
+                                    <Icon name="fas fa-plus" />
                                 </span>
                                 <div className="dash-action-text">
                                     <strong>Publicar propiedad</strong>
                                     <small>Sumá un nuevo alquiler</small>
                                 </div>
-                                <i className="fas fa-chevron-right dash-action-arrow"></i>
+                                <Icon name="fas fa-chevron-right dash-action-arrow" />
                             </Link>
                             <Link to="/propiedades" className="dash-action">
                                 <span className="dash-action-icon">
-                                    <i className="fas fa-search"></i>
+                                    <Icon name="fas fa-search" />
                                 </span>
                                 <div className="dash-action-text">
                                     <strong>Explorar propiedades</strong>
                                     <small>Encontrá tu próximo hogar</small>
                                 </div>
-                                <i className="fas fa-chevron-right dash-action-arrow"></i>
+                                <Icon name="fas fa-chevron-right dash-action-arrow" />
                             </Link>
                             <Link to="/favoritos" className="dash-action">
                                 <span className="dash-action-icon">
-                                    <i className="fas fa-heart"></i>
+                                    <Icon name="fas fa-heart" />
                                 </span>
                                 <div className="dash-action-text">
                                     <strong>Mis favoritos</strong>
                                     <small>Propiedades guardadas</small>
                                 </div>
-                                <i className="fas fa-chevron-right dash-action-arrow"></i>
+                                <Icon name="fas fa-chevron-right dash-action-arrow" />
                             </Link>
                             <Link to="/perfil" className="dash-action">
                                 <span className="dash-action-icon">
-                                    <i className="fas fa-user-edit"></i>
+                                    <Icon name="fas fa-user-edit" />
                                 </span>
                                 <div className="dash-action-text">
                                     <strong>Mi perfil</strong>
                                     <small>Actualizá tus datos</small>
                                 </div>
-                                <i className="fas fa-chevron-right dash-action-arrow"></i>
+                                <Icon name="fas fa-chevron-right dash-action-arrow" />
                             </Link>
                         </div>
                     </div>
@@ -240,11 +241,11 @@ function Dashboard() {
                     <div className="dash-card">
                         <div className="dash-card-header">
                             <h3>
-                                <i className="fas fa-calendar-alt"></i> Últimas reservas
+                                <Icon name="fas fa-calendar-alt" /> Últimas reservas
                             </h3>
                             {reservasRecientes.length > 0 && (
                                 <Link to="/reservas" className="dash-card-link">
-                                    Ver todas <i className="fas fa-arrow-right"></i>
+                                    Ver todas <Icon name="fas fa-arrow-right" />
                                 </Link>
                             )}
                         </div>
@@ -256,12 +257,12 @@ function Dashboard() {
                                     return (
                                         <li key={reserva.id} className="dash-reserva-item">
                                             <div className="dash-reserva-icon">
-                                                <i className="fas fa-home"></i>
+                                                <Icon name="fas fa-home" />
                                             </div>
                                             <div className="dash-reserva-info">
                                                 <strong>{reserva.propiedad?.titulo || 'Propiedad'}</strong>
                                                 <span>
-                                                    <i className="far fa-calendar"></i>{' '}
+                                                    <Icon name="far fa-calendar" />{' '}
                                                     {(reserva.fecha_inicio_alquiler || '').slice(0, 10) || '—'} → {(reserva.fecha_fin_alquiler || '').slice(0, 10) || '—'}
                                                 </span>
                                             </div>
@@ -275,7 +276,7 @@ function Dashboard() {
                         ) : (
                             <div className="dash-empty">
                                 <div className="dash-empty-icon">
-                                    <i className="fas fa-calendar-times"></i>
+                                    <Icon name="fas fa-calendar-times" />
                                 </div>
                                 <p>No tenés reservas aún</p>
                                 <Link to="/propiedades" className="dash-empty-btn">
@@ -290,22 +291,22 @@ function Dashboard() {
                         <div className="dash-card">
                             <div className="dash-card-header">
                                 <h3>
-                                    <i className="fas fa-hourglass-half"></i> Reservas por aprobar
+                                    <Icon name="fas fa-hourglass-half" /> Reservas por aprobar
                                 </h3>
                                 <Link to="/reservas" className="dash-card-link">
-                                    Gestionar <i className="fas fa-arrow-right"></i>
+                                    Gestionar <Icon name="fas fa-arrow-right" />
                                 </Link>
                             </div>
                             <ul className="dash-reservas">
                                 {pendientesAprobar.map((reserva) => (
                                     <li key={reserva.id} className="dash-reserva-item">
                                         <div className="dash-reserva-icon warning">
-                                            <i className="fas fa-clock"></i>
+                                            <Icon name="fas fa-clock" />
                                         </div>
                                         <div className="dash-reserva-info">
                                             <strong>{reserva.propiedad?.titulo || 'Propiedad'}</strong>
                                             <span>
-                                                <i className="far fa-calendar"></i>{' '}
+                                                <Icon name="far fa-calendar" />{' '}
                                                 {(reserva.fecha_inicio_alquiler || '').slice(0, 10) || '—'} → {(reserva.fecha_fin_alquiler || '').slice(0, 10) || '—'}
                                             </span>
                                         </div>
@@ -317,7 +318,7 @@ function Dashboard() {
                             </ul>
                             {pendientesAprobar.length >= 4 && (
                                 <Link to="/reservas" className="dash-card-link" style={{ marginTop: 12 }}>
-                                    Ver todas <i className="fas fa-arrow-right"></i>
+                                    Ver todas <Icon name="fas fa-arrow-right" />
                                 </Link>
                             )}
                         </div>
@@ -328,11 +329,11 @@ function Dashboard() {
                         <div className="dash-card">
                             <div className="dash-card-header">
                                 <h3>
-                                    <i className="fas fa-bell"></i> Notificaciones recientes
+                                    <Icon name="fas fa-bell" /> Notificaciones recientes
                                 </h3>
                                 {notificaciones.length > 0 && (
                                     <Link to="/notificaciones" className="dash-card-link">
-                                        Ver todas <i className="fas fa-arrow-right"></i>
+                                        Ver todas <Icon name="fas fa-arrow-right" />
                                     </Link>
                                 )}
                             </div>
@@ -342,7 +343,7 @@ function Dashboard() {
                                     {notificaciones.map((n) => (
                                         <li key={n.id} className="dash-reserva-item">
                                             <div className={`dash-reserva-icon ${!n.leida ? 'teal' : 'muted'}`}>
-                                                <i className={`fas ${iconoDe(n.tipo)}`}></i>
+                                                <Icon name={`fas ${iconoDe(n.tipo)}`} />
                                             </div>
                                             <div className="dash-reserva-info">
                                                 <strong>{n.titulo}</strong>
@@ -361,7 +362,7 @@ function Dashboard() {
                             ) : (
                                 <div className="dash-empty">
                                     <div className="dash-empty-icon">
-                                        <i className="fas fa-bell-slash"></i>
+                                        <Icon name="fas fa-bell-slash" />
                                     </div>
                                     <p>No tenés notificaciones</p>
                                     <Link to="/notificaciones" className="dash-empty-btn">

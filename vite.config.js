@@ -76,36 +76,9 @@ const DINAMICAS_BOOTSTRAP = [
   'btn-link'
 ]
 
-// Clases de estado y utilidad de FontAwesome, elegidas por JavaScript.
-const DINAMICAS_FONTAWESOME = [
-  'fa-toggle-on',
-  'fa-toggle-off',
-  'fa-spin',
-  'fa-spin-reverse',
-  'fa-pulse',
-  'fa-fw',
-  'fa-li',
-  'fa-ul',
-  'fa-border',
-  'fa-pull-left',
-  'fa-pull-right',
-  'fa-stack',
-  'fa-inverse',
-  'fa-fade',
-  'fa-beat',
-  'fa-flip-horizontal',
-  'fa-flip-vertical',
-  'fa-rotate-90',
-  'fa-rotate-180',
-  'fa-rotate-270',
-  'fa-swap-opacity',
-  'fa-width-auto',
-  'fa-xs',
-  'fa-sm',
-  'fa-lg',
-  'fa-1x',
-  'fa-2x',
-  'fa-3x'
+// Clases de la capa de iconos (Phosphor) que el codigo compone en runtime.
+const DINAMICAS_ICONOS = [
+  'ph-icon'
 ]
 
 export default defineConfig(({ command }) => ({
@@ -127,7 +100,7 @@ export default defineConfig(({ command }) => ({
                   './node_modules/react-bootstrap/**/*.js'
                 ],
                 defaultExtractor: (content) => content.match(/[\w-/:]+(?:#\w+)?/g) || [],
-                safelist: [...DINAMICAS_PROPIAS, ...DINAMICAS_BOOTSTRAP, ...DINAMICAS_FONTAWESOME],
+                safelist: [...DINAMICAS_PROPIAS, ...DINAMICAS_BOOTSTRAP, ...DINAMICAS_ICONOS],
                 fontFace: false,
                 keyframes: false
               })

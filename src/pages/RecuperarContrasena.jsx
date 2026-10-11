@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { recuperarContrasena } from '../services/api';
@@ -45,7 +46,7 @@ function RecuperarContrasena() {
 
             {enviado ? (
                 <div className="alert alert-success">
-                    <i className="fas fa-envelope-open-text"></i> Si el correo existe,
+                    <Icon name="fas fa-envelope-open-text" /> Si el correo existe,
                     recibirás un enlace para restablecer tu contraseña. Revisá tu bandeja
                     de entrada o la carpeta de spam.
                 </div>

@@ -1,15 +1,16 @@
+import Icon from './Icon';
 import React from 'react';
 
 const ErrorState = ({ mensaje, onReintentar, mensajeBoton = 'Reintentar' }) => (
     <div className="estado-error">
         <div className="estado-error-icono">
-            <i className="fas fa-triangle-exclamation"></i>
+            <Icon name="fas fa-triangle-exclamation" />
         </div>
         <h3>Algo salió mal</h3>
         <p>{mensaje}</p>
         {onReintentar && (
             <button className="btn-ver-todas" onClick={onReintentar}>
-                <i className="fas fa-rotate-right"></i> {mensajeBoton}
+                <Icon name="fas fa-rotate-right" /> {mensajeBoton}
             </button>
         )}
     </div>
