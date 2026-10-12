@@ -10,7 +10,7 @@ import { useSEO } from '../hooks/useSEO';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
-import Loader from '../components/Loader';
+import SkeletonCard from '../components/SkeletonCard';
 
 function Home() {
     useSEO(
@@ -68,7 +68,40 @@ function Home() {
         navigate(query.toString() ? `/propiedades?${query.toString()}` : '/propiedades');
     };
 
-    if (loading) return <Loader />;
+    if (loading) {
+        return (
+            <>
+                <section className="hero">
+                    <div className="container">
+                        <div className="hero-grid">
+                            <div className="hero-content">
+                                <div className="skeleton" style={{ height: '46px', width: '90%', marginBottom: '12px', borderRadius: '10px' }} />
+                                <div className="skeleton" style={{ height: '18px', width: '80%', marginBottom: '26px', borderRadius: '8px' }} />
+                                <div className="skeleton" style={{ height: '58px', width: '100%', borderRadius: '12px' }} />
+                            </div>
+                            <div className="hero-image">
+                                <div className="skeleton" style={{ height: '100%', width: '100%', borderRadius: '16px', minHeight: '260px' }} />
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="propiedades-home">
+                    <div className="container">
+                        <div className="propiedades-header">
+                            <div className="skeleton" style={{ height: '24px', width: '240px', borderRadius: '8px' }} />
+                            <div className="skeleton" style={{ height: '40px', width: '180px', borderRadius: '8px' }} />
+                        </div>
+                        <div className="propiedades-grid">
+                            {Array.from({ length: 6 }).map((_, i) => (
+                                <SkeletonCard key={i} />
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            </>
+        );
+    }
 
     if (error) {
         return (
