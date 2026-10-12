@@ -124,7 +124,7 @@ function PropiedadDetalle() {
     const [promedioResenas, setPromedioResenas] = useState(0);
     const [reservas, setReservas] = useState([]);
 
-    // ReseÃ±ar
+    // Reseñar
     const [calificacion, setCalificacion] = useState(5);
     const [comentario, setComentario] = useState('');
     const [editandoResena, setEditandoResena] = useState(false);
@@ -183,7 +183,7 @@ function PropiedadDetalle() {
 
     const esDuenio = usuario && propiedad && String(usuario.id) === String(propiedad.usuario_id);
 
-    // ReseÃ±a propia + reserva finalizada calificable (inquilino sobre la propiedad)
+    // Reseña propia + reserva finalizada calificable (inquilino sobre la propiedad)
     const { miResena, reservaCalificable } = useMemo(() => {
         if (!usuario || !propiedad || esDuenio) return { miResena: null, reservaCalificable: null };
 
@@ -218,7 +218,7 @@ function PropiedadDetalle() {
 
         const valor = Number(calificacion);
         if (!valor || valor < 1 || valor > 5) {
-            setErrorResena('SeleccionÃ¡ una calificaciÃ³n de 1 a 5 estrellas.');
+            setErrorResena('Seleccioná una calificación de 1 a 5 estrellas.');
             return;
         }
 
@@ -235,17 +235,17 @@ function PropiedadDetalle() {
             if (resultado.success) {
                 setEditandoResena(false);
                 setExitoResena(miResena
-                    ? 'Tu reseÃ±a se actualizÃ³ correctamente.'
-                    : 'ReseÃ±a publicada. Â¡Gracias por tu aporte!'
+                    ? 'Tu reseña se actualizó correctamente.'
+                    : 'Reseña publicada. ¡Gracias por tu aporte!'
                 );
                 await cargarDatos();
             } else {
                 setErrorResena(
-                    resultado.message || resultado.error || 'No se pudo guardar la reseÃ±a.'
+                    resultado.message || resultado.error || 'No se pudo guardar la reseña.'
                 );
             }
         } catch (err) {
-            setErrorResena('Error de conexiÃ³n al guardar la reseÃ±a.');
+            setErrorResena('Error de conexión al guardar la reseña.');
         } finally {
             setGuardandoResena(false);
         }
@@ -254,9 +254,9 @@ function PropiedadDetalle() {
     const eliminarResena = async () => {
         if (!miResena) return;
         const confirmado = await confirm({
-            titulo: 'Â¿Eliminar tu reseÃ±a?',
-            mensaje: 'No se puede recuperar despuÃ©s de eliminarla.',
-            textoAceptar: 'SÃ­, eliminar',
+            titulo: '¿Eliminar tu reseña?',
+            mensaje: 'No se puede recuperar después de eliminarla.',
+            textoAceptar: 'Sí, eliminar',
             textoCancelar: 'Cancelar',
             peligro: true
         });
@@ -268,13 +268,13 @@ function PropiedadDetalle() {
             const resultado = await deleteResena(miResena.id, token);
             if (resultado.success) {
                 setEditandoResena(false);
-                setExitoResena('Tu reseÃ±a fue eliminada.');
+                setExitoResena('Tu reseña fue eliminada.');
                 await cargarDatos();
             } else {
-                setErrorResena(resultado.message || resultado.error || 'No se pudo eliminar la reseÃ±a.');
+                setErrorResena(resultado.message || resultado.error || 'No se pudo eliminar la reseña.');
             }
         } catch (err) {
-            setErrorResena('Error de conexiÃ³n al eliminar la reseÃ±a.');
+            setErrorResena('Error de conexión al eliminar la reseña.');
         } finally {
             setGuardandoResena(false);
         }
@@ -305,20 +305,20 @@ function PropiedadDetalle() {
         const texto = mensajeConsulta.trim();
         if (!texto) errores.mensaje = 'El mensaje es requerido';
         else if (texto.length < 5) errores.mensaje = 'El mensaje debe tener al menos 5 caracteres';
-        if (!perfilInteresado.fecha_mudanza) errores.fecha_mudanza = 'IndicÃ¡ cuÃ¡ndo querÃ©s mudarte';
+        if (!perfilInteresado.fecha_mudanza) errores.fecha_mudanza = 'Indicá cuándo querés mudarte';
         if (
             !perfilInteresado.cantidad_ocupantes
             || Number(perfilInteresado.cantidad_ocupantes) < 1
             || Number(perfilInteresado.cantidad_ocupantes) > 50
-        ) errores.cantidad_ocupantes = 'IndicÃ¡ entre 1 y 50 ocupantes';
-        if (perfilInteresado.tiene_mascotas === '') errores.tiene_mascotas = 'IndicÃ¡ si tenÃ©s mascotas';
+        ) errores.cantidad_ocupantes = 'Indicá entre 1 y 50 ocupantes';
+        if (perfilInteresado.tiene_mascotas === '') errores.tiene_mascotas = 'Indicá si tenés mascotas';
         if (
             perfilInteresado.tiene_mascotas === 'si'
             && (
                 Number(perfilInteresado.cantidad_mascotas) < 1
                 || Number(perfilInteresado.cantidad_mascotas) > 20
             )
-        ) errores.cantidad_mascotas = 'IndicÃ¡ entre 1 y 20 mascotas';
+        ) errores.cantidad_mascotas = 'Indicá entre 1 y 20 mascotas';
         if (Object.keys(errores).length) {
             setValidacionConsulta(errores);
             return;
@@ -349,7 +349,7 @@ function PropiedadDetalle() {
                     cantidad_mascotas: '0',
                     garantias: []
                 });
-                setExitoConsulta('Consulta enviada correctamente. El propietario la podrÃ¡ ver en su panel de consultas.');
+                setExitoConsulta('Consulta enviada correctamente. El propietario la podrá ver en su panel de consultas.');
             } else {
                 if (result.validation_errors) setValidacionConsulta(result.validation_errors);
                 setErrorConsulta(
@@ -357,7 +357,7 @@ function PropiedadDetalle() {
                 );
             }
         } catch (err) {
-            setErrorConsulta('Error de conexiÃ³n al enviar la consulta.');
+            setErrorConsulta('Error de conexión al enviar la consulta.');
         } finally {
             setEnviandoConsulta(false);
         }
@@ -372,7 +372,7 @@ function PropiedadDetalle() {
     const tituloSEO = propiedad?.titulo || '';
 
     const descripcionSEO = propiedad
-        ? `${propiedad.titulo || 'Propiedad'} en alquiler${localidadTexto ? ` en ${localidadTexto}` : ''}. ${propiedad.cantidad_ambientes ? `${propiedad.cantidad_ambientes} ambientes. ` : ''}${Number(propiedad.precio || 0).toLocaleString('es-AR')} por mes. ReservÃ¡ online o consultÃ¡ directamente con el propietario.`
+        ? `${propiedad.titulo || 'Propiedad'} en alquiler${localidadTexto ? ` en ${localidadTexto}` : ''}. ${propiedad.cantidad_ambientes ? `${propiedad.cantidad_ambientes} ambientes. ` : ''}${Number(propiedad.precio || 0).toLocaleString('es-AR')} por mes. Reservá online o consultá directamente con el propietario.`
         : '';
 
     const imagenSEO = rutaImagenPropiedad(propiedad) || '/assets/img/logo.webp';
@@ -404,10 +404,10 @@ function PropiedadDetalle() {
                 <EmptyState
                     icono="fa-home"
                     titulo="Propiedad no encontrada"
-                    descripcion="La propiedad que buscÃ¡s no existe o fue eliminada."
+                    descripcion="La propiedad que buscás no existe o fue eliminada."
                     action={
                         <Link to="/propiedades" className="btn-ver-todas" style={{ marginTop: '20px', display: 'inline-block' }}>
-                            Volver al catÃ¡logo
+                            Volver al catálogo
                         </Link>
                     }
                 />
@@ -461,7 +461,7 @@ function PropiedadDetalle() {
                 setMostrarModal(false);
                 setFechaInicio('');
                 setFechaFin('');
-                setExitoReserva('Reserva solicitada correctamente. El propietario la revisarÃ¡ en tu panel de reservas.');
+                setExitoReserva('Reserva solicitada correctamente. El propietario la revisará en tu panel de reservas.');
             } else {
                 if (result.validation_errors) setValidacion(result.validation_errors);
                 setErrorReserva(
@@ -469,7 +469,7 @@ function PropiedadDetalle() {
                 );
             }
         } catch (err) {
-            setErrorReserva('Error de conexiÃ³n al crear la reserva.');
+            setErrorReserva('Error de conexión al crear la reserva.');
         } finally {
             setEnviando(false);
         }
@@ -493,7 +493,7 @@ function PropiedadDetalle() {
                                 type="button"
                                 className="detalle-imagen-principal-btn"
                                 onClick={() => abrirGaleria(0)}
-                                aria-label="Abrir galerÃ­a de imÃ¡genes"
+                                aria-label="Abrir galería de imágenes"
                                 style={{
                                     background: 'transparent',
                                     border: 0,
@@ -568,7 +568,7 @@ function PropiedadDetalle() {
                             <h1>{propiedad.titulo || 'Propiedad'}</h1>
                             <p className="propiedad-direccion">
                                 <Icon name="fas fa-map-marker-alt" />{' '}
-                                {propiedad.direccion || 'DirecciÃ³n no especificada'}
+                                {propiedad.direccion || 'Dirección no especificada'}
                             </p>
                         </div>
 
@@ -581,7 +581,7 @@ function PropiedadDetalle() {
                             <div className="detalle-feature">
                                 <Icon name="fas fa-bath" />
                                 <span className="feature-num">{propiedad.cantidad_banos || 0}</span>
-                                <span className="feature-label">BaÃ±os</span>
+                                <span className="feature-label">Baños</span>
                             </div>
                             <div className="detalle-feature">
                                 <Icon name="fas fa-arrows-alt" />
@@ -615,7 +615,7 @@ function PropiedadDetalle() {
                                 <Icon name="fas fa-paw" /> {propiedad.acepta_mascotas ? 'Se aceptan mascotas' : 'No se aceptan mascotas'}
                             </span>
                             <span className={`detalle-politica-badge ${propiedad.acepta_hijos ? 'si' : 'no'}`}>
-                                <Icon name="fas fa-children" /> {propiedad.acepta_hijos ? 'Se aceptan niÃ±os' : 'No se aceptan niÃ±os'}
+                                <Icon name="fas fa-children" /> {propiedad.acepta_hijos ? 'Se aceptan niños' : 'No se aceptan niños'}
                             </span>
                         </div>
 
@@ -623,8 +623,8 @@ function PropiedadDetalle() {
                             const requisitos = propiedad.requisitos_interesados || {};
                             const garantias = {
                                 recibo_sueldo: 'Recibo de sueldo',
-                                garantia_propietaria: 'GarantÃ­a propietaria',
-                                seguro_caucion: 'Seguro de cauciÃ³n',
+                                garantia_propietaria: 'Garantía propietaria',
+                                seguro_caucion: 'Seguro de caución',
                                 garante: 'Garante'
                             };
                             const garantiasAceptadas = Array.isArray(requisitos.garantias_aceptadas)
@@ -655,12 +655,12 @@ function PropiedadDetalle() {
                                     )}
                                     {requisitos.max_ocupantes && (
                                         <p style={{ margin: '4px 0' }}>
-                                            MÃ¡ximo de {requisitos.max_ocupantes} ocupantes
+                                            Máximo de {requisitos.max_ocupantes} ocupantes
                                         </p>
                                     )}
                                     {garantiasAceptadas.length > 0 && (
                                         <p style={{ margin: '4px 0' }}>
-                                            GarantÃ­as aceptadas: {garantiasAceptadas.map(g => garantias[g] || g).join(', ')}
+                                            Garantías aceptadas: {garantiasAceptadas.map(g => garantias[g] || g).join(', ')}
                                         </p>
                                     )}
                                 </section>
@@ -670,7 +670,7 @@ function PropiedadDetalle() {
                         <p
                             className={`propiedad-detalle-descripcion${propiedad.descripcion ? '' : ' vacia'}`}
                         >
-                            {propiedad.descripcion || 'Sin descripciÃ³n'}
+                            {propiedad.descripcion || 'Sin descripción'}
                         </p>
 
                         {exitoReserva && (
@@ -712,7 +712,7 @@ function PropiedadDetalle() {
                                     className="btn-detalle btn-detalle-primario"
                                     disabled={!disponible || esDuenio}
                                     onClick={abrirModal}
-                                    title={esDuenio ? 'No podÃ©s reservar tu propia propiedad' : ''}
+                                    title={esDuenio ? 'No podés reservar tu propia propiedad' : ''}
                                 >
                                     <Icon name="fas fa-calendar-check" />{' '}
                                     {esDuenio
@@ -732,7 +732,7 @@ function PropiedadDetalle() {
                                     className="btn-detalle btn-detalle-secundario"
                                     disabled={esDuenio}
                                     onClick={abrirModalConsulta}
-                                    title={esDuenio ? 'No podÃ©s consultar tu propia propiedad' : ''}
+                                    title={esDuenio ? 'No podés consultar tu propia propiedad' : ''}
                                 >
                                     <Icon name="fas fa-question-circle" />{' '}
                                     {esDuenio ? 'Es tu propiedad' : 'Consultar'}
@@ -742,11 +742,11 @@ function PropiedadDetalle() {
                     </div>
                 </div>
 
-                {/* RESEÃ‘AS */}
+                {/* RESEÑAS */}
                 <section className="resenas-section">
                     <div className="resenas-header">
                         <h2>
-                            <Icon name="fas fa-star" style={{ color: '#f59e0b' }} /> ReseÃ±as
+                            <Icon name="fas fa-star" style={{ color: '#f59e0b' }} /> Reseñas
                         </h2>
                         {resenas.length > 0 && (
                             <div className="resenas-promedio">
@@ -755,7 +755,7 @@ function PropiedadDetalle() {
                                 </span>
                                 <span className="resenas-estrellas">{renderEstrellas(promedioResenas)}</span>
                                 <span className="resenas-promedio-total">
-                                    {resenas.length} {resenas.length === 1 ? 'reseÃ±a' : 'reseÃ±as'}
+                                    {resenas.length} {resenas.length === 1 ? 'reseña' : 'reseñas'}
                                 </span>
                             </div>
                         )}
@@ -796,7 +796,7 @@ function PropiedadDetalle() {
                                     </div>
                                     {miResena && String(r.id) === String(miResena.id) && (
                                         <span className="resena-mia-badge">
-                                            <Icon name="fas fa-star" /> Tu reseÃ±a
+                                            <Icon name="fas fa-star" /> Tu reseña
                                         </span>
                                     )}
                                     {r.fecha_publicacion && (
@@ -833,7 +833,7 @@ function PropiedadDetalle() {
                         </div>
                     ) : (
                         <p className="resenas-vacio">
-                            TodavÃ­a no hay reseÃ±as para esta propiedad.
+                            Todavía no hay reseñas para esta propiedad.
                         </p>
                     )}
 
@@ -841,11 +841,11 @@ function PropiedadDetalle() {
                         <form className="resena-form" onSubmit={enviarResena} noValidate>
                             <h3 className="resena-form-titulo">
                                 <Icon name="fas fa-star" style={{ color: '#f59e0b' }} />{' '}
-                                {miResena ? 'Editar tu reseÃ±a' : 'Calificar esta propiedad'}
+                                {miResena ? 'Editar tu reseña' : 'Calificar esta propiedad'}
                             </h3>
 
                             <div className="resena-selector">
-                                <span className="resena-selector-label">Tu calificaciÃ³n:</span>
+                                <span className="resena-selector-label">Tu calificación:</span>
                                 <span className="resena-selector-estrellas">
                                     {Array.from({ length: 5 }).map((_, i) => {
                                         const valor = i + 1;
@@ -871,7 +871,7 @@ function PropiedadDetalle() {
                                 <textarea
                                     id="resena-comentario"
                                     rows="3"
-                                    placeholder="ContÃ¡ cÃ³mo fue tu experiencia con esta propiedad..."
+                                    placeholder="Contá cómo fue tu experiencia con esta propiedad..."
                                     value={comentario}
                                     onChange={(e) => setComentario(e.target.value)}
                                     maxLength="1000"
@@ -908,7 +908,7 @@ function PropiedadDetalle() {
                                     ) : (
                                         <>
                                             <Icon name="fas fa-paper-plane" />{' '}
-                                            {miResena ? 'Guardar cambios' : 'Publicar reseÃ±a'}
+                                            {miResena ? 'Guardar cambios' : 'Publicar reseña'}
                                         </>
                                     )}
                                 </button>
@@ -922,12 +922,12 @@ function PropiedadDetalle() {
                                 onClick={abrirFormularioResena}
                             >
                                 <Icon name="fas fa-star" />{' '}
-                                {miResena ? 'Editar mi reseÃ±a' : 'Calificar esta propiedad'}
+                                {miResena ? 'Editar mi reseña' : 'Calificar esta propiedad'}
                             </button>
                         </div>
                     ) : isAuthenticated && esDuenio ? (
                         <p className="resenas-vacio">
-                            Como propietario podÃ©s calificar a tus inquilinos desde Mis Reservas.
+                            Como propietario podés calificar a tus inquilinos desde Mis Reservas.
                         </p>
                     ) : null}
                 </section>
@@ -951,7 +951,7 @@ function PropiedadDetalle() {
                             Reservar {propiedad.titulo || 'propiedad'}
                         </h3>
                         <p style={{ marginBottom: 16 }}>
-                            ElegÃ­ las fechas de tu alquiler. El propietario tendrÃ¡ que aprobar tu solicitud.
+                            Elegí las fechas de tu alquiler. El propietario tendrá que aprobar tu solicitud.
                         </p>
 
                         <form onSubmit={enviarReserva} noValidate>
@@ -1056,16 +1056,16 @@ function PropiedadDetalle() {
                             Consultar {propiedad.titulo || 'propiedad'}
                         </h3>
                         <p style={{ marginBottom: 16 }}>
-                            CompletÃ¡ estos datos para que el propietario pueda revisar tu consulta con la informaciÃ³n necesaria.
+                            Completá estos datos para que el propietario pueda revisar tu consulta con la información necesaria.
                         </p>
                         <p style={{ marginBottom: 16, fontSize: 13, color: '#475569' }}>
-                            Tus respuestas se compartirÃ¡n con el propietario de esta propiedad para gestionar tu consulta y priorizar la revisiÃ³n. No generan un rechazo automÃ¡tico.{' '}
-                            <Link to="/privacidad">Ver polÃ­tica de privacidad</Link>.
+                            Tus respuestas se compartirán con el propietario de esta propiedad para gestionar tu consulta y priorizar la revisión. No generan un rechazo automático.{' '}
+                            <Link to="/privacidad">Ver política de privacidad</Link>.
                         </p>
 
                         <form onSubmit={enviarConsulta} noValidate>
                             <div className="form-group" style={{ marginBottom: 14 }}>
-                                <label htmlFor="fecha-mudanza">Â¿CuÃ¡ndo querÃ©s mudarte? *</label>
+                                <label htmlFor="fecha-mudanza">¿Cuándo querés mudarte? *</label>
                                 <input
                                     id="fecha-mudanza"
                                     type="date"
@@ -1092,7 +1092,7 @@ function PropiedadDetalle() {
                                 {validacionConsulta.cantidad_ocupantes && <span className="form-error">{validacionConsulta.cantidad_ocupantes}</span>}
                             </div>
                             <div className="form-group" style={{ marginBottom: 14 }}>
-                                <label htmlFor="tiene-mascotas">Â¿TenÃ©s mascotas? *</label>
+                                <label htmlFor="tiene-mascotas">¿Tenés mascotas? *</label>
                                 <select
                                     id="tiene-mascotas"
                                     value={perfilInteresado.tiene_mascotas}
@@ -1106,12 +1106,12 @@ function PropiedadDetalle() {
                                 >
                                     <option value="">Seleccionar...</option>
                                     <option value="no">No</option>
-                                    <option value="si">SÃ­</option>
+                                    <option value="si">Sí</option>
                                 </select>
                                 {perfilInteresado.tiene_mascotas === 'si' && (
                                     <div style={{ marginTop: 10 }}>
                                         <label htmlFor="cantidad-mascotas" style={{ display: 'block', marginBottom: 6 }}>
-                                            Â¿CuÃ¡ntas?
+                                            ¿Cuántas?
                                         </label>
                                         <input
                                             id="cantidad-mascotas"
@@ -1128,11 +1128,11 @@ function PropiedadDetalle() {
                                 {validacionConsulta.tiene_mascotas && <span className="form-error">{validacionConsulta.tiene_mascotas}</span>}
                             </div>
                             <fieldset className="form-group" style={{ border: 0, padding: 0, margin: '0 0 14px' }}>
-                                <legend>Â¿QuÃ© garantÃ­as podrÃ­as presentar?</legend>
+                                <legend>¿Qué garantías podrías presentar?</legend>
                                 {[
                                     ['recibo_sueldo', 'Recibo de sueldo'],
-                                    ['garantia_propietaria', 'GarantÃ­a propietaria'],
-                                    ['seguro_caucion', 'Seguro de cauciÃ³n'],
+                                    ['garantia_propietaria', 'Garantía propietaria'],
+                                    ['seguro_caucion', 'Seguro de caución'],
                                     ['garante', 'Garante']
                                 ].map(([valor, etiqueta]) => (
                                     <label key={valor} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
@@ -1157,7 +1157,7 @@ function PropiedadDetalle() {
                                 <textarea
                                     id="mensaje-consulta"
                                     rows="4"
-                                    placeholder="Ej: Â¿El precio incluye expensas? Â¿Permite mascotas?"
+                                    placeholder="Ej: ¿El precio incluye expensas? ¿Permite mascotas?"
                                     value={mensajeConsulta}
                                     onChange={(e) => setMensajeConsulta(e.target.value)}
                                     className={validacionConsulta.mensaje ? 'input-error' : ''}
@@ -1221,13 +1221,13 @@ function PropiedadDetalle() {
                     onClick={cerrarLightbox}
                     role="dialog"
                     aria-modal="true"
-                    aria-label="GalerÃ­a de imÃ¡genes"
+                    aria-label="Galería de imágenes"
                 >
                     <button
                         type="button"
                         className="detalle-lightbox-cerrar"
                         onClick={cerrarLightbox}
-                        aria-label="Cerrar galerÃ­a"
+                        aria-label="Cerrar galería"
                     >
                         <Icon name="fas fa-times" />
                     </button>
