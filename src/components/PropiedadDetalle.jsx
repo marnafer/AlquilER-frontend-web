@@ -14,7 +14,7 @@ import {
     updateResena,
     deleteResena
 } from '../services/api';
-import { rutaImagenPropiedad } from '../utils/imagenes';
+import { rutaImagenPropiedad, rutaImagen } from '../utils/imagenes';
 import ServicioIcono from './ServicioIcono';
 import { useAuth } from '../hooks/useAuth';
 import { useUI } from '../context/UIContext';
@@ -41,9 +41,19 @@ function PropiedadDetalle() {
     const [galeriaIndice, setGaleriaIndice] = useState(0);
     const [lightboxAbierto, setLightboxAbierto] = useState(false);
 
-    const imagenesGaleria = propiedad?.imagenes && propiedad.imagenes.length
-        ? propiedad.imagenes
-        : (imagen ? [imagen] : []);
+    // La imagen principal se resuelve acá, antes de usarse en la galería.
+    // (Estaba declarada más abajo y tiraba "Cannot access 'imagen' before
+    // initialization", lo que dejaba la página de detalle en blanco.)
+    const imagen = rutaImagenPropiedad(propiedad);
+
+    // Galería siempre como lista de URLs absolutas (no de objetos):
+    // las miniaturas y el lightbox renderizan src directamente.
+    const imagenesGaleria = (() => {
+        if (propiedad?.imagenes && propiedad.imagenes.length) {
+            return propiedad.imagenes.map(i => rutaImagen(i.ruta)).filter(Boolean);
+        }
+        return imagen ? [imagen] : [];
+    })();
 
     const abrirGaleria = (idx) => {
         if (!imagenesGaleria.length) return;
@@ -407,7 +417,6 @@ function PropiedadDetalle() {
 
     const categoriaNombre = categorias.find(c => c.id === propiedad.categoria_id)?.nombre;
     const disponible = propiedad.disponible !== false;
-    const imagen = rutaImagenPropiedad(propiedad);
     // toISOString() devuelve la fecha en UTC. Argentina es UTC-3, asi que despues
     // de las 21:00 marcaria el dia siguiente como minimo y no dejaria reservar
     // para hoy. Armamos el string con la fecha local.
