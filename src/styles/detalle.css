@@ -266,3 +266,214 @@
     color: var(--primary-dark);
     text-decoration: none !important;
 }
+
+/* Galería de detalle */
+.detalle-imagen-principal-btn:focus-visible,
+.detalle-galeria-nav:focus-visible,
+.detalle-miniatura:focus-visible,
+.detalle-lightbox-nav:focus-visible,
+.detalle-lightbox-cerrar:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.detalle-galeria-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(15, 23, 42, 0.5);
+    color: #fff;
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    z-index: 5;
+}
+
+.detalle-galeria-nav:hover {
+    background: rgba(15, 23, 42, 0.7);
+    transform: translateY(-50%) scale(1.05);
+}
+
+.detalle-galeria-nav.anterior {
+    left: 12px;
+}
+
+.detalle-galeria-nav.siguiente {
+    right: 12px;
+}
+
+.detalle-galeria-contador {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.65);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    z-index: 5;
+    box-shadow: 0 10px 40px -24px rgba(15, 23, 42, 0.8);
+}
+
+.detalle-galeria-miniaturas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+    padding: 0 4px;
+}
+
+.detalle-miniatura {
+    width: 68px;
+    height: 68px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #f1f5f9;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+    .detalle-miniatura {
+        width: 56px;
+        height: 56px;
+    }
+}
+
+.detalle-miniatura.activa {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(29, 64, 175, 0.12);
+}
+
+.detalle-miniatura img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.detalle-lightbox-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 20px;
+}
+
+.detalle-lightbox-img {
+    max-width: min(94vw, 1400px);
+    max-height: min(92vh, 1400px);
+    object-fit: contain;
+    border-radius: 12px;
+    box-shadow: 0 40px 120px -40px rgba(15, 23, 42, 0.9);
+}
+
+.detalle-lightbox-cerrar {
+    position: absolute;
+    top: 24px;
+    right: 28px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    z-index: 10;
+}
+
+.detalle-lightbox-cerrar:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.detalle-lightbox-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border: none;
+    width: 52px;
+    height: 52px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    z-index: 10;
+}
+
+@media (max-width: 768px) {
+    .detalle-lightbox-nav {
+        width: 44px;
+        height: 44px;
+    }
+}
+
+.detalle-lightbox-nav:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.detalle-lightbox-nav.anterior {
+    left: 20px;
+}
+
+@media (max-width: 768px) {
+    .detalle-lightbox-nav.anterior {
+        left: 8px;
+    }
+}
+
+.detalle-lightbox-nav.siguiente {
+    right: 20px;
+}
+
+@media (max-width: 768px) {
+    .detalle-lightbox-nav.siguiente {
+        right: 8px;
+    }
+}
+
+.detalle-lightbox-contador {
+    position: absolute;
+    top: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 10;
+}
+
+@media (max-width: 768px) {
+    .detalle-lightbox-cerrar {
+        top: 12px;
+        right: 12px;
+    }
+
+    .detalle-lightbox-contador {
+        top: 20px;
+    }
+}
