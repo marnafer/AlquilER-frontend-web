@@ -55,7 +55,7 @@
     margin: 0 auto 22px;
     border-radius: 50%;
     background: var(--primary-soft);
-    color: var(--primary-dark);
+    color: var(--primary-ink);
     font-size: 30px;
     display: flex;
     align-items: center;
@@ -71,7 +71,7 @@
 }
 
 .propiedades-empty p {
-    color: var(--gray-500);
+    color: var(--gray-600);
     font-size: 15px;
 }
 
@@ -89,7 +89,7 @@
     margin: 0 auto 22px;
     border-radius: 50%;
     background: var(--primary-soft);
-    color: var(--primary-dark);
+    color: var(--primary-ink);
     font-size: 30px;
     display: flex;
     align-items: center;
@@ -113,7 +113,7 @@
 
 .estado-vacio p,
 .estado-error p {
-    color: var(--gray-500);
+    color: var(--gray-600);
     font-size: 15px;
     max-width: 420px;
     margin: 0 auto 20px;

@@ -24,7 +24,7 @@
 
 .props-results-count strong {
     font-size: 16px;
-    color: var(--primary-dark);
+    color: var(--primary-ink);
 }
 
 /* ========== FILTROS DEL CATÁLOGO ========== */
@@ -59,7 +59,7 @@
 }
 
 .filtro-group label .ph-icon {
-    color: var(--primary-dark);
+    color: var(--primary-ink);
 }
 
 .filtro-group select,
@@ -120,11 +120,11 @@
 .multi-select-btn:disabled {
     cursor: not-allowed;
     background: var(--gray-50);
-    color: var(--gray-400);
+    color: var(--text-faint);
 }
 
 .multi-select-btn .ph-icon {
-    color: var(--gray-400);
+    color: var(--text-faint);
     font-size: 12px;
     flex-shrink: 0;
 }
@@ -178,14 +178,14 @@
     display: block;
     padding: 10px;
     font-size: 13px;
-    color: var(--gray-400);
+    color: var(--text-faint);
     text-align: center;
 }
 
 .btn-limpiar {
     padding: 10px 18px;
     background: #fee2e2;
-    color: #dc2626;
+    color: #b91c1c;
     border: none;
     border-radius: var(--control-radius);
     font-weight: 600;
@@ -238,7 +238,7 @@
 .pag-btn:hover:not(:disabled):not(.active) {
     background: var(--primary-bg);
     border-color: var(--primary-soft);
-    color: var(--primary-dark);
+    color: var(--primary-ink);
     text-decoration: none !important;
 }
 
@@ -255,7 +255,7 @@
 }
 
 .pag-dots {
-    color: var(--gray-400);
+    color: var(--text-faint);
     padding: 0 4px;
     font-weight: 600;
 }

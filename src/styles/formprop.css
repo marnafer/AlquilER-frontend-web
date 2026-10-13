@@ -45,7 +45,7 @@
     height: 64px;
     border-radius: 50%;
     background: #fee2e2;
-    color: #dc2626;
+    color: #b91c1c;
     font-size: 26px;
     display: flex;
     align-items: center;
@@ -171,7 +171,7 @@
 }
 
 .propform-card-header h3 .ph-icon {
-    color: var(--primary-dark);
+    color: var(--primary-ink);
     font-size: 15px;
     background: var(--primary-soft);
     width: 34px;
@@ -273,7 +273,7 @@
 }
 
 .form-help {
-    color: var(--gray-400);
+    color: var(--text-faint);
     font-size: 12.5px;
     font-weight: 500;
 }

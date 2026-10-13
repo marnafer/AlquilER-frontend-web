@@ -947,7 +947,7 @@ function PropiedadDetalle() {
                         }}
                     >
                         <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <Icon name="fas fa-calendar-check" style={{ color: 'var(--primary)' }} />
+                            <Icon name="fas fa-calendar-check" style={{ color: 'var(--primary-ink)' }} />
                             Reservar {propiedad.titulo || 'propiedad'}
                         </h3>
                         <p style={{ marginBottom: 16 }}>
@@ -1052,7 +1052,7 @@ function PropiedadDetalle() {
                         style={{ textAlign: 'left', maxWidth: 460 }}
                     >
                         <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <Icon name="fas fa-question-circle" style={{ color: 'var(--primary)' }} />
+                            <Icon name="fas fa-question-circle" style={{ color: 'var(--primary-ink)' }} />
                             Consultar {propiedad.titulo || 'propiedad'}
                         </h3>
                         <p style={{ marginBottom: 16 }}>

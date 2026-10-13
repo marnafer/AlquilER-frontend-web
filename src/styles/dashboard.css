@@ -136,12 +136,12 @@
     margin-left: auto;
     font-size: 13px;
     font-weight: 600;
-    color: var(--primary);
+    color: var(--primary-ink);
     white-space: nowrap;
 }
 
 .dash-stat-card:hover .dash-stat-ver {
-    color: var(--primary-dark);
+    color: var(--primary-ink);
 }
 
 .dash-stat-card::before {
@@ -253,7 +253,7 @@
 }
 
 .dash-card-header h3 .ph-icon {
-    color: var(--primary-dark);
+    color: var(--primary-ink);
     font-size: 15px;
     background: var(--primary-soft);
     width: 34px;
@@ -266,7 +266,7 @@
 }
 
 .dash-card-link {
-    color: var(--primary-dark);
+    color: var(--primary-ink);
     font-weight: 700;
     font-size: 13px;
     display: inline-flex;
@@ -278,7 +278,7 @@
 
 .dash-card-link:hover,
 .dash-card-link:focus {
-    color: var(--primary);
+    color: var(--primary-ink);
     text-decoration: none !important;
 }
 
@@ -339,7 +339,7 @@
     height: 40px;
     border-radius: 11px;
     background: var(--primary-soft);
-    color: var(--primary-dark);
+    color: var(--primary-ink);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -378,14 +378,14 @@
 }
 
 .dash-action-arrow {
-    color: var(--gray-400);
+    color: var(--text-faint);
     font-size: 12px;
     transition: transform 0.3s ease;
 }
 
 .dash-action:hover .dash-action-arrow {
     transform: translateX(3px);
-    color: var(--primary-dark);
+    color: var(--primary-ink);
 }
 
 .dash-action.primary .dash-action-arrow {
@@ -476,7 +476,7 @@
 }
 
 .dash-reserva-info span .ph-icon {
-    color: var(--primary-dark);
+    color: var(--primary-ink);
     font-size: 11px;
 }
 
@@ -502,17 +502,17 @@
 
 .dash-reserva-badge.cancelada {
     background: #fee2e2;
-    color: #dc2626;
+    color: #b91c1c;
 }
 
 .dash-reserva-badge.finalizada {
     background: var(--primary-soft);
-    color: var(--primary);
+    color: var(--primary-ink);
 }
 
 .dash-reserva-badge.no-leida {
     background: var(--primary-soft);
-    color: var(--primary-dark);
+    color: var(--primary-ink);
 }
 
 .dash-empty {
@@ -529,7 +529,7 @@
     height: 70px;
     border-radius: 50%;
     background: var(--primary-soft);
-    color: var(--primary-dark);
+    color: var(--primary-ink);
     font-size: 26px;
     display: flex;
     align-items: center;

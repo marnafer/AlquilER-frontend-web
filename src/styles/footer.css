@@ -101,7 +101,7 @@
 
 .footer-version {
     font-size: 12px;
-    color: var(--gray-500);
+    color: var(--gray-400);
 }
 
 /* El fondo del footer es siempre oscuro (--navy), asi que en modo oscuro el

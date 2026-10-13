@@ -5,7 +5,7 @@
     gap: 8px;
     background: var(--gray-50);
     border: 1px solid var(--border-subtle);
-    color: var(--primary);
+    color: var(--primary-ink);
     font-weight: 600;
     font-size: 13px;
     padding: 9px 18px;
@@ -19,7 +19,7 @@
 .detalle-volver:focus {
     background: var(--primary-soft);
     border-color: var(--primary-soft);
-    color: var(--primary-dark);
+    color: var(--primary-ink);
     text-decoration: none !important;
 }
 
@@ -192,7 +192,7 @@
     height: 46px;
     border-radius: var(--surface-radius);
     background: var(--primary-soft);
-    color: var(--primary-dark);
+    color: var(--primary-ink);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -256,14 +256,14 @@
 
 .btn-detalle-secundario {
     background: var(--primary-bg);
-    color: var(--primary-dark);
+    color: var(--primary-ink);
     border: 1px solid var(--primary-soft);
 }
 
 .btn-detalle-secundario:hover,
 .btn-detalle-secundario:focus {
     background: var(--primary-soft);
-    color: var(--primary-dark);
+    color: var(--primary-ink);
     text-decoration: none !important;
 }
 

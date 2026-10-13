@@ -86,7 +86,7 @@
 }
 
 .auth-container .register-link a {
-    color: var(--primary);
+    color: var(--primary-ink);
     font-weight: 600;
     cursor: pointer;
 }

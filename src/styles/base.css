@@ -5,6 +5,7 @@
     --primary-dark: #1E40AF;
     --primary-light: #3B82F6;
     --primary-soft: #E0E7FF;
+    --primary-ink: #1E40AF;
     --primary-bg: #FFFFFF;
     --navy: #0F172A;
     --white: #FFFFFF;
@@ -19,6 +20,9 @@
     --gray-600: #475569;
     --gray-700: #334155;
     --gray-800: #1E293B;
+    /* Texto secundario apagado (paginación, contadores, placeholders).
+       Valor por tema para garantizar contraste AA sobre su superficie. */
+    --text-faint: #64748B;
     --border-subtle: #e7ecf2;
     --surface-radius: 14px;
     --control-radius: 10px;
@@ -130,10 +134,11 @@ button:not(:disabled):active {
 
 /* ========== MODO OSCURO (manual, via data-theme="dark" en <html>) ========== */
 :root[data-theme="dark"] {
-    --primary: #3B82F6;
-    --primary-dark: #2563EB;
+--primary: #2563EB;
+--primary-dark: #1D4ED8;
     --primary-light: #60A5FA;
     --primary-soft: #1E293B;
+    --primary-ink: #60A5FA;
     --primary-bg: #0B1220;
     --navy: #070C16;
     --white: #FFFFFF;
@@ -148,6 +153,7 @@ button:not(:disabled):active {
     --gray-600: #BEC9DA;
     --gray-700: #D3DCE8;
     --gray-800: #E6ECF5;
+    --text-faint: #8B9BB4;
     --border-subtle: #22304A;
     --shadow-soft: 0 2px 10px rgba(0, 0, 0, 0.45);
     --shadow-raised: 0 12px 28px rgba(0, 0, 0, 0.55);
@@ -165,7 +171,7 @@ button:not(:disabled):active {
 [data-theme="dark"] .text-muted,
 [data-theme="dark"] .text-body-secondary,
 [data-theme="dark"] .text-secondary {
-    color: var(--gray-400) !important;
+    color: var(--text-faint) !important;
 }
 
 /* Controles de formulario nativos y placeholders legibles en oscuro */
@@ -176,7 +182,7 @@ button:not(:disabled):active {
 }
 
 [data-theme="dark"] ::placeholder {
-    color: var(--gray-400);
+    color: var(--text-faint);
     opacity: 1;
 }
 

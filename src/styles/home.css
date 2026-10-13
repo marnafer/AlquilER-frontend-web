@@ -162,7 +162,7 @@
 .section-badge {
     display: inline-block;
     background: var(--primary-soft);
-    color: var(--primary-dark);
+    color: var(--primary-ink);
     padding: 4px 16px;
     border-radius: 50px;
     font-size: 13px;
@@ -173,7 +173,7 @@
 .section-header h2 {
     font-size: 32px;
     font-weight: 700;
-    color: var(--primary-dark);
+    color: var(--primary-ink);
 }
 
 .section-header p {
@@ -339,7 +339,7 @@
     right: 14px;
     z-index: 2;
     background: rgba(255, 255, 255, 0.92);
-    color: var(--primary-dark);
+    color: var(--primary-ink);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1);
@@ -383,7 +383,7 @@
     border: none;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.92);
-    color: var(--primary-dark);
+    color: var(--primary-ink);
     font-size: 16px;
     display: flex;
     align-items: center;
@@ -478,7 +478,7 @@
 }
 
 .propiedad-direccion .ph-icon {
-    color: var(--primary-dark);
+    color: var(--primary-ink);
     flex-shrink: 0;
 }
 
@@ -522,7 +522,7 @@
 }
 
 .propiedad-features .ph-icon {
-    color: var(--primary-dark);
+    color: var(--primary-ink);
 }
 
 /* Políticas: mascotas / hijos */
@@ -607,7 +607,7 @@
 
 .politica-info > .ph-icon {
     font-size: 20px;
-    color: var(--primary-dark);
+    color: var(--primary-ink);
     width: 34px;
     height: 34px;
     display: inline-flex;
@@ -672,7 +672,7 @@
     padding: 11px;
     border-radius: var(--control-radius);
     background: var(--primary-bg);
-    color: var(--primary-dark);
+    color: var(--primary-ink);
     border: 1px solid var(--border-subtle);
     font-weight: 700;
     font-size: 14px;
@@ -794,7 +794,7 @@
     gap: 8px;
     margin-top: 14px;
     background: var(--primary-soft);
-    color: var(--primary-dark);
+    color: var(--primary-ink);
     padding: 8px 18px;
     border-radius: 50px;
     font-size: 14px;
@@ -833,7 +833,7 @@
 
 .servicio-icon {
     font-size: 28px;
-    color: var(--primary-dark);
+    color: var(--primary-ink);
     margin-bottom: 6px;
     display: block;
 }

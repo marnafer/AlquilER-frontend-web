@@ -95,7 +95,7 @@ function Login() {
             </form>
 
             <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: 'var(--gray-500)' }}>
-                ¿No tenés cuenta?                 <Link to="/register" style={{ color: 'var(--primary)', fontWeight: '600' }}>Registrate</Link>
+                ¿No tenés cuenta?                 <Link to="/register" style={{ color: 'var(--primary-ink)', fontWeight: '600' }}>Registrate</Link>
             </p>
         </div>
     );

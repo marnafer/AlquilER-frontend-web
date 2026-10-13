@@ -316,12 +316,14 @@
     .perfil-hero-actions {
         margin-left: 0;
         width: 100%;
+        flex-direction: column;
         justify-content: center;
     }
 
     .perfil-hero-actions .btn-detalle {
         width: 100%;
         justify-content: center;
+        padding: 12px 20px;
     }
 
     .perfil-card {
@@ -621,7 +623,7 @@
    ============================================ */
 .dash-reserva-badge.rechazada {
     background: #fee2e2;
-    color: #dc2626;
+    color: #b91c1c;
 }
 
 .misreservas-filtros {
@@ -648,7 +650,7 @@
 
 .misreservas-filtro:hover {
     border-color: var(--primary-soft);
-    color: var(--primary-dark);
+    color: var(--primary-ink);
 }
 
 .misreservas-filtro.activo {
@@ -703,7 +705,7 @@
 }
 
 .misreservas-item-contacto .ph-icon {
-    color: var(--primary-dark);
+    color: var(--primary-ink);
     width: 14px;
     text-align: center;
 }
@@ -754,7 +756,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--gray-400);
+    color: var(--text-faint);
     font-size: 22px;
 }
 
@@ -790,7 +792,7 @@
 .misreservas-item-ver {
     font-size: 12px;
     font-weight: 600;
-    color: var(--primary-dark);
+    color: var(--primary-ink);
     text-decoration: none;
 }
 
@@ -819,7 +821,7 @@
 }
 
 .misreservas-item-fechas .ph-icon {
-    color: var(--primary-dark);
+    color: var(--primary-ink);
 }
 
 .misreservas-item-acciones {

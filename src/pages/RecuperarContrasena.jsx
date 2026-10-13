@@ -80,7 +80,7 @@ function RecuperarContrasena() {
 
             <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: 'var(--gray-500)' }}>
                 ¿Recordás tu contraseña?{' '}
-                <Link to="/login" style={{ color: 'var(--primary)', fontWeight: '600' }}>Iniciá sesión</Link>
+                <Link to="/login" style={{ color: 'var(--primary-ink)', fontWeight: '600' }}>Iniciá sesión</Link>
             </p>
         </div>
     );

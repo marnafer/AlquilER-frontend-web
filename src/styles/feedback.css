@@ -22,7 +22,7 @@
 }
 
 .loader p {
-    color: var(--gray-400);
+    color: var(--text-faint);
     font-size: 14px;
 }
 
@@ -36,7 +36,7 @@
 
 .alert-error {
     background: #FEE2E2;
-    color: #DC2626;
+    color: #b91c1c;
     border: 1px solid #FECACA;
 }
 
