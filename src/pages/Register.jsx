@@ -90,7 +90,7 @@ function Register() {
     return (
         <div className="auth-container" style={{ maxWidth: '480px', margin: '40px auto', padding: '40px' }}>
             <h1 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '8px' }}>Crear cuenta</h1>
-            <p style={{ textAlign: 'center', color: '#64748b', marginBottom: '32px' }}>Registrate para alquilar o publicar propiedades</p>
+            <p style={{ textAlign: 'center', color: 'var(--gray-500)', marginBottom: '32px' }}>Registrate para alquilar o publicar propiedades</p>
 
             <form onSubmit={handleSubmit}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -192,8 +192,8 @@ function Register() {
                 </button>
             </form>
 
-            <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: '#64748b' }}>
-                ¿Ya tenés cuenta? <Link to="/login" style={{ color: '#1D4ED8', fontWeight: '600' }}>Iniciá sesión</Link>
+            <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: 'var(--gray-500)' }}>
+                ¿Ya tenés cuenta?                 <Link to="/login" style={{ color: 'var(--primary)', fontWeight: '600' }}>Iniciá sesión</Link>
             </p>
         </div>
     );

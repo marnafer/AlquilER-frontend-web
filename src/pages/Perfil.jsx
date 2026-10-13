@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useUI } from '../context/UIContext';
+import { useTheme } from '../context/ThemeContext';
 import { updatePerfil, getResenasByUsuario } from '../services/api';
 import { useSEO } from '../hooks/useSEO';
 import Loader from '../components/Loader';
@@ -12,6 +13,7 @@ function Perfil() {
     useSEO('Mi perfil', 'Gestioná tus datos personales y tu contraseña en AlquilER.', { noindex: true });
 
     const { usuario, token, loading, refreshUser } = useAuth();
+    const { theme, toggleTheme } = useTheme();
 
     const [editando, setEditando] = useState(false);
     const [guardando, setGuardando] = useState(false);
@@ -95,6 +97,7 @@ function Perfil() {
         setEditando(false);
     };
 
+
     const handleCambiarContrasena = async (e) => {
         e.preventDefault();
         const errores = {};
@@ -162,7 +165,7 @@ function Perfil() {
             <Icon
                 key={i}
                 name={`fas fa-star ${i < valor ? 'estrella-llena' : ''}`}
-                style={{ color: i < valor ? '#f59e0b' : '#cbd5e1', fontSize: 16, marginRight: 2 }}
+                style={{ color: i < valor ? '#f59e0b' : 'var(--gray-400)', fontSize: 16, marginRight: 2 }}
             />
         ));
     };
@@ -197,6 +200,16 @@ function Perfil() {
                             )}
                         </div>
                         <div className="perfil-hero-actions">
+                            <button
+                                type="button"
+                                className="btn-detalle btn-detalle-secundario"
+                                onClick={toggleTheme}
+                                title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                                aria-label={theme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
+                            >
+                                <Icon name={`fas ${theme === 'dark' ? 'fa-sun' : 'fa-moon'}`} />
+                                {theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+                            </button>
                             {!editando && (
                                 <button
                                     className="btn-detalle btn-detalle-primario"
@@ -381,7 +394,7 @@ function Perfil() {
                         </div>
 
                         {cargandoResenas ? (
-                            <div style={{ padding: '20px 0', textAlign: 'center', color: '#64748b' }}>
+                            <div style={{ padding: '20px 0', textAlign: 'center', color: 'var(--gray-500)' }}>
                                 <Icon name="fas fa-spinner fa-spin" /> Cargando reseñas...
                             </div>
                         ) : totalResenas === 0 ? (
@@ -400,24 +413,24 @@ function Perfil() {
                                     <span style={{ fontWeight: 700, fontSize: 18 }}>
                                         {Number(promedioResenas).toFixed(1)}
                                     </span>
-                                    <span style={{ color: '#64748b' }}>
+                                    <span style={{ color: 'var(--gray-500)' }}>
                                         ({totalResenas} {totalResenas === 1 ? 'reseña' : 'reseñas'})
                                     </span>
                                 </div>
 
                                 {resenasRecibidas.length > 0 && (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                        <h4 style={{ margin: 0, fontSize: 14, color: '#475569' }}>
+                                        <h4 style={{ margin: 0, fontSize: 14, color: 'var(--gray-600)' }}>
                                             Últimas reseñas recibidas
                                         </h4>
                                         {resenasRecibidas.slice(0, 3).map((r) => (
                                             <article
                                                 key={r.id}
                                                 style={{
-                                                    border: '1px solid #e2e8f0',
-                                                    borderRadius: 10,
+                                                    border: '1px solid var(--gray-200)',
+                                                    borderRadius: 'var(--control-radius)',
                                                     padding: '12px 14px',
-                                                    background: '#f8fafc'
+                                                    background: 'var(--gray-50)'
                                                 }}
                                             >
                                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -426,14 +439,14 @@ function Perfil() {
                                                         <span style={{ fontSize: 13, fontWeight: 600 }}>{r.calificacion}/5</span>
                                                     </div>
                                                     {r.fecha_publicacion && (
-                                                        <span style={{ fontSize: 12, color: '#64748b' }}>
+                                                        <span style={{ fontSize: 12, color: 'var(--gray-500)' }}>
                                                             <Icon name="far fa-calendar-alt" style={{ marginRight: 4 }} />
                                                             {String(r.fecha_publicacion).slice(0, 10)}
                                                         </span>
                                                     )}
                                                 </div>
                                                 {r.comentario && (
-                                                    <p style={{ margin: 0, fontSize: 13, color: '#334155', lineHeight: 1.5 }}>
+                                                    <p style={{ margin: 0, fontSize: 13, color: 'var(--gray-700)', lineHeight: 1.5 }}>
                                                         {r.comentario}
                                                     </p>
                                                 )}

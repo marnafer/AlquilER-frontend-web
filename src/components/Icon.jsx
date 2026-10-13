@@ -13,8 +13,8 @@ import {
     MagnifyingGlass, MagnifyingGlassMinus, ShieldCheck, TShirt, SignOut, ArrowsDownUp, SortDescending,
     SortAscending, CircleNotch, Plant, Star, StarHalf, Gauge, Tag, ThermometerCold, ThermometerHot,
     X, XCircle, ToggleRight, ToggleLeft, Trash, TrashSimple, Tree, Television, UploadSimple, User,
-    UserCircleGear, Users, UserMinus, IdentificationBadge, UserList, Warehouse, WifiHigh, Browsers,
-    Wrench, Columns, Garage
+    UserCircleGear, Users, UserMinus, IdentificationBadge, UserList,     Warehouse, WifiHigh, Browsers,
+    Wrench, Columns, Garage, Moon, Sun
 } from '@phosphor-icons/react';
 
 // Mapa de nombres "estilo FontAwesome" (sin el prefijo fa-) al componente Phosphor.

@@ -344,8 +344,8 @@ function ConsultasAdmin() {
                                                 style={{
                                                     width: '100%',
                                                     padding: '10px 12px',
-                                                    borderRadius: 10,
-                                                    border: `1px solid ${errorRespuesta ? '#dc2626' : '#cbd5e1'}`,
+                                                    borderRadius: 'var(--control-radius)',
+                                                    border: `1px solid ${errorRespuesta ? '#dc2626' : 'var(--gray-300)'}`,
                                                     fontFamily: 'inherit',
                                                     fontSize: 14,
                                                     resize: 'vertical'

@@ -30,6 +30,19 @@
     <meta name="twitter:title" content="AlquilER - Alquiler de Propiedades" />
     <meta name="twitter:description" content="Encontrá la propiedad ideal para vos. Departamentos, casas, locales comerciales y más." />
     <link rel="stylesheet" href="/src/styles/styles.css" />
+    <!-- Aplica el tema antes del primer pintado para evitar el parpadeo. -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('alquiler-theme');
+          if (t !== 'dark' && t !== 'light') {
+            t = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          document.documentElement.setAttribute('data-theme', t);
+          document.documentElement.style.colorScheme = t;
+        } catch (e) {}
+      })();
+    </script>
     <title>AlquilER - Alquiler de Propiedades</title>
   </head>
   <body>

@@ -2,7 +2,7 @@
 .auth-container {
     max-width: 420px;
     margin: 40px auto;
-    background: var(--white);
+    background: var(--surface);
     padding: 40px;
     border-radius: var(--radius);
     box-shadow: var(--shadow-lg);
@@ -29,7 +29,7 @@
     display: block;
     font-weight: 500;
     font-size: 14px;
-    color: var(--navy);
+    color: var(--heading);
     margin-bottom: 6px;
 }
 
@@ -37,12 +37,12 @@
 .auth-container .form-group select {
     width: 100%;
     padding: 12px 16px;
-    border: 2px solid #E2E8F0;
-    border-radius: 8px;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-sm);
     font-size: 15px;
     transition: var(--transition);
     font-family: inherit;
-    background: var(--white);
+    background: var(--surface);
 }
 
 .auth-container .form-group input:focus,
@@ -58,7 +58,7 @@
     background: var(--primary);
     color: var(--white);
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
@@ -82,7 +82,7 @@
     text-align: center;
     margin-top: 24px;
     font-size: 14px;
-    color: #64748b;
+    color: var(--gray-500);
 }
 
 .auth-container .register-link a {

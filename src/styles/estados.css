@@ -1,9 +1,9 @@
 /* ========== SKELETON LOADING ========== */
 .skeleton {
-    background: linear-gradient(90deg, #eef2f7 25%, #f8fafc 37%, #eef2f7 63%);
+    background: linear-gradient(90deg, var(--border-subtle) 25%, var(--gray-50) 37%, var(--border-subtle) 63%);
     background-size: 400% 100%;
     animation: shimmer 1.4s ease infinite;
-    border-radius: 12px;
+    border-radius: var(--radius);
 }
 
 .skeleton-img {
@@ -66,12 +66,12 @@
 .propiedades-empty h3 {
     font-size: 20px;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--heading);
     margin-bottom: 8px;
 }
 
 .propiedades-empty p {
-    color: #64748b;
+    color: var(--gray-500);
     font-size: 15px;
 }
 
@@ -107,13 +107,13 @@
 .estado-error h3 {
     font-size: 20px;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--heading);
     margin-bottom: 8px;
 }
 
 .estado-vacio p,
 .estado-error p {
-    color: #64748b;
+    color: var(--gray-500);
     font-size: 15px;
     max-width: 420px;
     margin: 0 auto 20px;

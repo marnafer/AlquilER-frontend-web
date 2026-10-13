@@ -23,7 +23,7 @@
 }
 
 .navbar-brand .ph-icon {
-    color: var(--primary);
+    color: var(--primary-light);
     margin-right: 8px;
 }
 
@@ -66,7 +66,7 @@
     background: var(--navy) !important;
     background-color: var(--navy) !important;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
+    border-radius: var(--radius);
     padding: 8px 0;
 }
 

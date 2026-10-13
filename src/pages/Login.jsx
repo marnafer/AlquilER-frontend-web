@@ -42,7 +42,7 @@ function Login() {
     return (
         <div className="auth-container" style={{ maxWidth: '440px', margin: '40px auto', padding: '40px' }}>
             <h1 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '8px' }}>Iniciar Sesión</h1>
-            <p style={{ textAlign: 'center', color: '#64748b', marginBottom: '32px' }}>Ingresá tus credenciales para continuar</p>
+            <p style={{ textAlign: 'center', color: 'var(--gray-500)', marginBottom: '32px' }}>Ingresá tus credenciales para continuar</p>
 
             {error && (
                 <div className="alert alert-error">
@@ -82,7 +82,7 @@ function Login() {
                     <div style={{ textAlign: 'right', marginTop: '4px' }}>
                         <Link
                             to="/recuperar-contrasena"
-                            style={{ fontSize: '13px', color: '#64748b' }}
+                            style={{ fontSize: '13px', color: 'var(--gray-500)' }}
                         >
                             ¿Olvidaste tu contraseña?
                         </Link>
@@ -94,8 +94,8 @@ function Login() {
                 </button>
             </form>
 
-            <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: '#64748b' }}>
-                ¿No tenés cuenta? <Link to="/register" style={{ color: '#1D4ED8', fontWeight: '600' }}>Registrate</Link>
+            <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: 'var(--gray-500)' }}>
+                ¿No tenés cuenta?                 <Link to="/register" style={{ color: 'var(--primary)', fontWeight: '600' }}>Registrate</Link>
             </p>
         </div>
     );

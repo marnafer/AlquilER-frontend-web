@@ -24,7 +24,7 @@
 }
 
 .footer-section h3 span {
-    color: var(--primary);
+    color: var(--primary-light);
 }
 
 .footer-section h4 {
@@ -102,5 +102,24 @@
 .footer-version {
     font-size: 12px;
     color: var(--gray-500);
+}
+
+/* El fondo del footer es siempre oscuro (--navy), asi que en modo oscuro el
+   texto debe quedar claro en vez de heredar los grises invertidos. */
+[data-theme="dark"] .footer {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+[data-theme="dark"] .footer-section p,
+[data-theme="dark"] .footer-section ul li a {
+    color: rgba(255, 255, 255, 0.72);
+}
+
+[data-theme="dark"] .footer-bottom {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+[data-theme="dark"] .footer-version {
+    color: rgba(255, 255, 255, 0.5);
 }
 

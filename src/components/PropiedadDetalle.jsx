@@ -640,9 +640,9 @@ function PropiedadDetalle() {
                                     style={{
                                         marginTop: 18,
                                         padding: 16,
-                                        borderRadius: 12,
-                                        background: '#f8fafc',
-                                        border: '1px solid #e2e8f0'
+                                        borderRadius: 'var(--radius)',
+                                        background: 'var(--gray-50)',
+                                        border: '1px solid var(--gray-200)'
                                     }}
                                 >
                                     <h3 style={{ margin: '0 0 8px', fontSize: 16 }}>
@@ -678,7 +678,7 @@ function PropiedadDetalle() {
                                 background: '#d1fae5',
                                 color: '#065f46',
                                 padding: '12px 16px',
-                                borderRadius: 12,
+                                borderRadius: 'var(--radius)',
                                 fontSize: 14,
                                 marginBottom: 16
                             }}>
@@ -691,7 +691,7 @@ function PropiedadDetalle() {
                                 background: '#d1fae5',
                                 color: '#065f46',
                                 padding: '12px 16px',
-                                borderRadius: 12,
+                                borderRadius: 'var(--radius)',
                                 fontSize: 14,
                                 marginBottom: 16
                             }}>
@@ -766,7 +766,7 @@ function PropiedadDetalle() {
                             background: '#d1fae5',
                             color: '#065f46',
                             padding: '12px 16px',
-                            borderRadius: 12,
+                            borderRadius: 'var(--radius)',
                             fontSize: 14,
                             marginBottom: 16
                         }}>
@@ -878,8 +878,8 @@ function PropiedadDetalle() {
                                     style={{
                                         width: '100%',
                                         padding: '10px 12px',
-                                        borderRadius: 10,
-                                        border: '1px solid #cbd5e1',
+                                        borderRadius: 'var(--control-radius)',
+                                        border: '1px solid var(--gray-300)',
                                         fontFamily: 'inherit',
                                         fontSize: 14,
                                         resize: 'vertical'
@@ -947,7 +947,7 @@ function PropiedadDetalle() {
                         }}
                     >
                         <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <Icon name="fas fa-calendar-check" style={{ color: '#1E40AF' }} />
+                            <Icon name="fas fa-calendar-check" style={{ color: 'var(--primary)' }} />
                             Reservar {propiedad.titulo || 'propiedad'}
                         </h3>
                         <p style={{ marginBottom: 16 }}>
@@ -970,8 +970,8 @@ function PropiedadDetalle() {
                                     style={{
                                         width: '100%',
                                         padding: '10px 12px',
-                                        borderRadius: 10,
-                                        border: `1px solid ${(validacion.fechaInicio || validacion.fecha_inicio_alquiler) ? '#dc2626' : '#cbd5e1'}`
+                                        borderRadius: 'var(--control-radius)',
+                                        border: `1px solid ${(validacion.fechaInicio || validacion.fecha_inicio_alquiler) ? '#dc2626' : 'var(--gray-300)'}`
                                     }}
                                 />
                                 {(validacion.fechaInicio || validacion.fecha_inicio_alquiler) && (
@@ -996,8 +996,8 @@ function PropiedadDetalle() {
                                     style={{
                                         width: '100%',
                                         padding: '10px 12px',
-                                        borderRadius: 10,
-                                        border: `1px solid ${(validacion.fechaFin || validacion.fecha_fin_alquiler) ? '#dc2626' : '#cbd5e1'}`
+                                        borderRadius: 'var(--control-radius)',
+                                        border: `1px solid ${(validacion.fechaFin || validacion.fecha_fin_alquiler) ? '#dc2626' : 'var(--gray-300)'}`
                                     }}
                                 />
                                 {(validacion.fechaFin || validacion.fecha_fin_alquiler) && (
@@ -1052,13 +1052,13 @@ function PropiedadDetalle() {
                         style={{ textAlign: 'left', maxWidth: 460 }}
                     >
                         <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <Icon name="fas fa-question-circle" style={{ color: '#1E40AF' }} />
+                            <Icon name="fas fa-question-circle" style={{ color: 'var(--primary)' }} />
                             Consultar {propiedad.titulo || 'propiedad'}
                         </h3>
                         <p style={{ marginBottom: 16 }}>
                             Completá estos datos para que el propietario pueda revisar tu consulta con la información necesaria.
                         </p>
-                        <p style={{ marginBottom: 16, fontSize: 13, color: '#475569' }}>
+                        <p style={{ marginBottom: 16, fontSize: 13, color: 'var(--gray-600)' }}>
                             Tus respuestas se compartirán con el propietario de esta propiedad para gestionar tu consulta y priorizar la revisión. No generan un rechazo automático.{' '}
                             <Link to="/privacidad">Ver política de privacidad</Link>.
                         </p>
@@ -1164,8 +1164,8 @@ function PropiedadDetalle() {
                                     style={{
                                         width: '100%',
                                         padding: '10px 12px',
-                                        borderRadius: 10,
-                                        border: `1px solid ${validacionConsulta.mensaje ? '#dc2626' : '#cbd5e1'}`,
+                                        borderRadius: 'var(--control-radius)',
+                                        border: `1px solid ${validacionConsulta.mensaje ? '#dc2626' : 'var(--gray-300)'}`,
                                         fontFamily: 'inherit',
                                         fontSize: 14,
                                         resize: 'vertical'

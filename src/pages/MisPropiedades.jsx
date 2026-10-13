@@ -233,6 +233,8 @@ function MisPropiedades() {
                                         <img
                                             src={imagen}
                                             alt={prop.titulo}
+                                            width={750}
+                                            height={500}
                                             loading="lazy"
                                             decoding="async"
                                             onError={(e) => {

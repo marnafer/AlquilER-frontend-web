@@ -988,7 +988,7 @@ if (result.success) {
                                         background: '#d1fae5',
                                         color: '#065f46',
                                         padding: '12px 16px',
-                                        borderRadius: 12,
+                                        borderRadius: 'var(--radius)',
                                         fontSize: 14,
                                         marginBottom: 18
                                     }}>
@@ -1018,7 +1018,7 @@ if (result.success) {
                                                 border: Number(img.es_principal) === 1
                                                     ? '3px solid #16a34a'
                                                     : '1px solid #ddd',
-                                                borderRadius: 8,
+                                                borderRadius: 'var(--radius-sm)',
                                                 overflow: 'hidden',
                                                 position: 'relative'
                                             }}
@@ -1145,8 +1145,8 @@ if (result.success) {
                                                 key={`${archivo.name}-${archivo.lastModified}-${index}`}
                                                 style={{
                                                     width: 160,
-                                                    border: '1px solid #ddd',
-                                                    borderRadius: 8,
+                                                    border: '1px solid var(--gray-200)',
+                                                    borderRadius: 'var(--radius-sm)',
                                                     overflow: 'hidden',
                                                     position: 'relative'
                                                 }}

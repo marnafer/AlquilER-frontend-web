@@ -17,7 +17,7 @@
 }
 
 .props-results-count {
-    color: #64748b;
+    color: var(--gray-500);
     font-size: 14px;
     margin: 0;
 }
@@ -32,7 +32,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 16px;
-    background: var(--white);
+    background: var(--surface);
     padding: 20px;
     border-radius: var(--surface-radius);
     border: 1px solid var(--border-subtle);
@@ -50,7 +50,7 @@
 .filtro-group label {
     font-size: 12.5px;
     font-weight: 700;
-    color: #475569;
+    color: var(--gray-600);
     text-transform: uppercase;
     letter-spacing: 0.4px;
     display: flex;
@@ -69,8 +69,8 @@
     border-radius: var(--control-radius);
     font-size: 14px;
     font-family: inherit;
-    background: var(--white);
-    color: #1e293b;
+    background: var(--surface);
+    color: var(--gray-800);
     transition: var(--transition);
 }
 
@@ -98,8 +98,8 @@
     padding: 10px 14px;
     border: 1px solid var(--border-subtle);
     border-radius: var(--control-radius);
-    background: var(--white);
-    color: #1e293b;
+    background: var(--surface);
+    color: var(--gray-800);
     font-size: 14px;
     font-family: inherit;
     text-align: left;
@@ -108,7 +108,7 @@
 }
 
 .multi-select-btn:hover:not(:disabled) {
-    border-color: #cbd5e1;
+    border-color: var(--gray-300);
 }
 
 .multi-select-btn:focus {
@@ -119,12 +119,12 @@
 
 .multi-select-btn:disabled {
     cursor: not-allowed;
-    background: #f8fafc;
-    color: #94a3b8;
+    background: var(--gray-50);
+    color: var(--gray-400);
 }
 
 .multi-select-btn .ph-icon {
-    color: #94a3b8;
+    color: var(--gray-400);
     font-size: 12px;
     flex-shrink: 0;
 }
@@ -137,7 +137,7 @@
     z-index: 30;
     max-height: 260px;
     overflow-y: auto;
-    background: var(--white);
+    background: var(--surface);
     border: 1px solid var(--border-subtle);
     border-radius: var(--control-radius);
     box-shadow: var(--shadow-raised);
@@ -150,18 +150,18 @@
     align-items: center;
     gap: 8px;
     padding: 7px 8px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     font-size: 13.5px;
     font-weight: 500;
     text-transform: none;
     letter-spacing: normal;
-    color: #334155;
+    color: var(--gray-700);
     cursor: pointer;
     text-overflow: unset;
 }
 
 .multi-select .multi-select-item:hover {
-    background: #f1f5f9;
+    background: var(--gray-100);
 }
 
 .multi-select .multi-select-item input {
@@ -178,7 +178,7 @@
     display: block;
     padding: 10px;
     font-size: 13px;
-    color: #94a3b8;
+    color: var(--gray-400);
     text-align: center;
 }
 
@@ -220,9 +220,9 @@
     min-width: 42px;
     height: 42px;
     padding: 0 12px;
-    border: 1px solid #e2e8f0;
-    background: var(--white);
-    color: #475569;
+    border: 1px solid var(--gray-200);
+    background: var(--surface);
+    color: var(--gray-600);
     border-radius: var(--control-radius);
     font-weight: 600;
     font-size: 14px;
@@ -236,8 +236,8 @@
 }
 
 .pag-btn:hover:not(:disabled):not(.active) {
-    background: #EEF2FF;
-    border-color: #BFDBFE;
+    background: var(--primary-bg);
+    border-color: var(--primary-soft);
     color: var(--primary-dark);
     text-decoration: none !important;
 }
@@ -255,7 +255,7 @@
 }
 
 .pag-dots {
-    color: #94a3b8;
+    color: var(--gray-400);
     padding: 0 4px;
     font-weight: 600;
 }

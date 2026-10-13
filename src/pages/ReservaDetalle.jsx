@@ -20,7 +20,7 @@ const ESTADO_INFO = {
     pendiente: { etiqueta: "Pendiente", icono: "fa-hourglass-half", color: "#92400e", bg: "#fef3c7" },
     confirmada: { etiqueta: "Confirmada", icono: "fa-check-circle", color: "#065f46", bg: "#a7f3d0" },
     rechazada: { etiqueta: "Rechazada", icono: "fa-times-circle", color: "#991b1b", bg: "#fecaca" },
-    cancelada: { etiqueta: "Cancelada", icono: "fa-ban", color: "#475569", bg: "#e2e8f0" },
+    cancelada: { etiqueta: "Cancelada", icono: "fa-ban", color: "var(--gray-600)", bg: 'var(--gray-200)' },
     finalizada: { etiqueta: "Finalizada", icono: "fa-flag-checkered", color: "#1e3a8a", bg: "#bfdbfe" }
 };
 
@@ -141,7 +141,7 @@ function ReservaDetalle() {
         }
     };
 
-    const eInfo = ESTADO_INFO[reserva.estado] || { etiqueta: reserva.estado, icono: "fa-circle", color: "#475569", bg: "#f1f5f9" };
+    const eInfo = ESTADO_INFO[reserva.estado] || { etiqueta: reserva.estado, icono: "fa-circle", color: 'var(--gray-600)', bg: "var(--gray-100)" };
     const img = propiedad ? rutaImagenPropiedad(propiedad) : "";
 
     return (
@@ -188,7 +188,7 @@ function ReservaDetalle() {
 
                                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
                                     <div>
-                                        <div style={{ fontSize: 13, color: "#64748b", marginBottom: 4 }}>Fechas</div>
+                                        <div style={{ fontSize: 13, color: "var(--gray-500)", marginBottom: 4 }}>Fechas</div>
                                         <div style={{ fontSize: 14 }}>
                                             <Icon name="far fa-calendar-alt" /> Desde {soloDia(reserva.fecha_inicio_alquiler)}
                                         </div>
@@ -197,7 +197,7 @@ function ReservaDetalle() {
                                         </div>
                                     </div>
                                     <div>
-                                        <div style={{ fontSize: 13, color: "#64748b", marginBottom: 4 }}>Timestamps</div>
+                                        <div style={{ fontSize: 13, color: 'var(--gray-500)', marginBottom: 4 }}>Timestamps</div>
                                         <div style={{ fontSize: 13 }}>Creada: {formatearFechaHora(reserva.created_at)}</div>
                                         <div style={{ fontSize: 13 }}>Actualizada: {formatearFechaHora(reserva.updated_at)}</div>
                                         {reserva.fecha_confirmacion && (
@@ -247,11 +247,11 @@ function ReservaDetalle() {
                             </div>
                             <div style={{ padding: "20px", display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" }}>
                                 {img && (
-                                    <img src={img} alt={propiedad.titulo || "Propiedad"} loading="lazy" style={{ width: 120, height: 90, objectFit: "cover", borderRadius: 10, border: "1px solid #e2e8f0" }} />
+                                    <img src={img} alt={propiedad.titulo || "Propiedad"} loading="lazy" style={{ width: 120, height: 90, objectFit: "cover", borderRadius: 'var(--control-radius)', border: "1px solid var(--gray-200)" }} />
                                 )}
                                 <div>
                                     <div style={{ fontWeight: 600 }}>{propiedad?.titulo || "—"}</div>
-                                    {propiedad?.direccion && <div style={{ fontSize: 14, color: "#64748b" }}>{propiedad.direccion}</div>}
+                                    {propiedad?.direccion && <div style={{ fontSize: 14, color: 'var(--gray-500)' }}>{propiedad.direccion}</div>}
                                     {propiedad?.id && (
                                         <Link to={`/propiedades/${propiedad.id}`} className="link-underline" style={{ fontSize: 14 }}>
                                             Ver propiedad <Icon name="fas fa-external-link-alt" />
@@ -270,17 +270,17 @@ function ReservaDetalle() {
                                 </div>
                                 <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 12 }}>
                                     {resenas.map((r) => (
-                                        <article key={r.id} style={{ border: "1px solid #e2e8f0", borderRadius: 10, padding: "12px 14px" }}>
+                                        <article key={r.id} style={{ border: '1px solid var(--gray-200)', borderRadius: 'var(--control-radius)', padding: "12px 14px" }}>
                                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                                                     {[1,2,3,4,5].map(n => (
-                                                        <Icon key={n} name="fas fa-star" style={{ fontSize: 12, color: n <= Number(r.calificacion) ? "#f59e0b" : "#cbd5e1" }} />
+                                                        <Icon key={n} name="fas fa-star" style={{ fontSize: 12, color: n <= Number(r.calificacion) ? "#f59e0b" : "var(--gray-400)" }} />
                                                     ))}
                                                     <span style={{ fontSize: 13, fontWeight: 600 }}>{r.calificacion}/5</span>
                                                 </div>
-                                                <span style={{ fontSize: 12, color: "#64748b" }}>{formatearFechaHora(r.created_at)}</span>
+                                                <span style={{ fontSize: 12, color: 'var(--gray-500)' }}>{formatearFechaHora(r.created_at)}</span>
                                             </div>
-                                            <div style={{ fontSize: 13, color: "#475569", marginTop: 6 }}>Tipo: {r.tipo} • Calificador #{r.calificador_id}</div>
+                                            <div style={{ fontSize: 13, color: 'var(--gray-600)', marginTop: 6 }}>Tipo: {r.tipo} • Calificador #{r.calificador_id}</div>
                                             {r.comentario && <p style={{ margin: "6px 0 0", fontSize: 13 }}>{r.comentario}</p>}
                                         </article>
                                     ))}
@@ -299,15 +299,15 @@ function ReservaDetalle() {
                             <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 14 }}>
                                 {inquilino && (
                                     <div>
-                                        <div style={{ fontSize: 13, color: "#64748b" }}>Inquilino</div>
+                                        <div style={{ fontSize: 13, color: 'var(--gray-500)' }}>Inquilino</div>
                                         <div style={{ fontWeight: 600 }}>{[inquilino.nombre, inquilino.apellido].filter(Boolean).join(" ") || `#${inquilino.id}`}</div>
                                         {inquilino.email && <div style={{ fontSize: 13 }}><Icon name="fas fa-envelope" /> {inquilino.email}</div>}
                                         {inquilino.telefono && <div style={{ fontSize: 13 }}><Icon name="fas fa-phone-alt" /> {inquilino.telefono}</div>}
                                     </div>
                                 )}
                                 {propietario && (
-                                    <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: 14 }}>
-                                        <div style={{ fontSize: 13, color: "#64748b" }}>Propietario</div>
+                                    <div style={{ borderTop: "1px solid var(--gray-200)", paddingTop: 14 }}>
+                                        <div style={{ fontSize: 13, color: 'var(--gray-500)' }}>Propietario</div>
                                         <div style={{ fontWeight: 600 }}>{[propietario.nombre, propietario.apellido].filter(Boolean).join(" ") || `#${propietario.id}`}</div>
                                         {propietario.email && <div style={{ fontSize: 13 }}><Icon name="fas fa-envelope" /> {propietario.email}</div>}
                                         {propietario.telefono && <div style={{ fontSize: 13 }}><Icon name="fas fa-phone-alt" /> {propietario.telefono}</div>}

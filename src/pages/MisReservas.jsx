@@ -429,7 +429,7 @@ function MisReservas() {
                                                  </button>
                                              )}
                                              {reserva.estado === 'finalizada' && yaCalificoReserva(reserva) && (
-                                                 <span className="dash-reserva-badge" style={{ background: '#f1f5f9', color: '#475569' }}>
+                                                 <span className="dash-reserva-badge" style={{ background: 'var(--gray-100)', color: 'var(--gray-600)' }}>
                                                      <Icon name="fas fa-star" /> Ya calificaste
                                                  </span>
                                              )}
@@ -526,8 +526,8 @@ function MisReservas() {
                                     style={{
                                         width: '100%',
                                         padding: '10px 12px',
-                                        borderRadius: 10,
-                                        border: `1px solid ${validacionCalificacion.comentario ? '#dc2626' : '#cbd5e1'}`,
+                                        borderRadius: 'var(--control-radius)',
+                                        border: `1px solid ${validacionCalificacion.comentario ? '#dc2626' : 'var(--gray-300)'}`,
                                         fontFamily: 'inherit',
                                         fontSize: 14,
                                         resize: 'vertical'

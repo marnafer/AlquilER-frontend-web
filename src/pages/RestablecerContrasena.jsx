@@ -66,7 +66,7 @@ function RestablecerContrasena() {
             <h1 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '8px' }}>
                 Nueva contraseña
             </h1>
-            <p style={{ textAlign: 'center', color: '#64748b', marginBottom: '32px' }}>
+            <p style={{ textAlign: 'center', color: 'var(--gray-500)', marginBottom: '32px' }}>
                 Elegí una contraseña nueva para tu cuenta
             </p>
 
@@ -109,9 +109,9 @@ function RestablecerContrasena() {
                 </button>
             </form>
 
-            <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: '#64748b' }}>
+            <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: 'var(--gray-500)' }}>
                 ¿Recordás tu contraseña?{' '}
-                <Link to="/login" style={{ color: '#1D4ED8', fontWeight: '600' }}>Iniciá sesión</Link>
+                <Link to="/login" style={{ color: 'var(--primary)', fontWeight: '600' }}>Iniciá sesión</Link>
             </p>
         </div>
     );

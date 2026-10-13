@@ -21,6 +21,8 @@ function PropiedadCardImage({ src, alt }) {
         <img
             src={src}
             alt={alt}
+            width={750}
+            height={500}
             onError={() => setImgError(true)}
             loading="lazy"
             decoding="async"

@@ -19,7 +19,7 @@
 }
 
 .modal-custom {
-    background: var(--white);
+    background: var(--surface);
     border-radius: 20px;
     padding: 32px 28px 24px;
     max-width: 420px;
@@ -57,19 +57,19 @@
 .modal-custom h3 {
     font-size: 19px;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--heading);
     margin-bottom: 8px;
 }
 
 .modal-custom p {
-    color: #64748b;
+    color: var(--gray-500);
     font-size: 14.5px;
     line-height: 1.55;
     margin-bottom: 22px;
 }
 
 .modal-custom p strong {
-    color: #0f172a;
+    color: var(--heading);
     font-weight: 700;
 }
 
@@ -134,20 +134,20 @@
 .propform-header h1 {
     font-size: clamp(26px, 3.5vw, 36px);
     font-weight: 800;
-    color: #0f172a;
+    color: var(--heading);
     margin: 8px 0 4px;
 }
 
 .propform-header p {
-    color: #64748b;
+    color: var(--gray-500);
     font-size: 15.5px;
     margin: 0;
     max-width: 600px;
 }
 
 .propform-card {
-    background: #fff;
-    border: 1px solid #eef2f7;
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
     border-radius: 18px;
     padding: 28px;
     margin-bottom: 20px;
@@ -157,13 +157,13 @@
 .propform-card-header {
     margin-bottom: 22px;
     padding-bottom: 14px;
-    border-bottom: 1px solid #eef2f7;
+    border-bottom: 1px solid var(--border-subtle);
 }
 
 .propform-card-header h3 {
     font-size: 17px;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--heading);
     margin: 0;
     display: flex;
     align-items: center;
@@ -173,10 +173,10 @@
 .propform-card-header h3 .ph-icon {
     color: var(--primary-dark);
     font-size: 15px;
-    background: #E0E7FF;
+    background: var(--primary-soft);
     width: 34px;
     height: 34px;
-    border-radius: 10px;
+    border-radius: var(--control-radius);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -206,7 +206,7 @@
 .propform-page .form-group label {
     font-size: 13px;
     font-weight: 700;
-    color: #475569;
+    color: var(--gray-600);
     text-transform: uppercase;
     letter-spacing: 0.4px;
 }
@@ -221,12 +221,12 @@
 .propform-page .form-group textarea {
     width: 100%;
     padding: 12px 14px;
-    border: 2px solid #e2e8f0;
-    border-radius: 10px;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--control-radius);
     font-size: 14.5px;
     font-family: inherit;
-    background: #fff;
-    color: #0f172a;
+    background: var(--surface);
+    color: var(--heading);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     resize: vertical;
 }
@@ -273,7 +273,7 @@
 }
 
 .form-help {
-    color: #94a3b8;
+    color: var(--gray-400);
     font-size: 12.5px;
     font-weight: 500;
 }
@@ -288,7 +288,7 @@
 .propform-input-prefix span {
     position: absolute;
     left: 14px;
-    color: #64748b;
+    color: var(--gray-500);
     font-weight: 700;
     font-size: 14.5px;
     pointer-events: none;

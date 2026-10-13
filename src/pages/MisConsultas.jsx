@@ -337,9 +337,9 @@ function MisConsultas() {
                                                         fontSize: 11,
                                                         fontWeight: 700,
                                                         color: precalificacion.estado === 'coincide' ? '#166534'
-                                                            : precalificacion.estado === 'revisar' ? '#92400e' : '#475569',
+                                                            : precalificacion.estado === 'revisar' ? '#92400e' : 'var(--gray-600)',
                                                         background: precalificacion.estado === 'coincide' ? '#dcfce7'
-                                                            : precalificacion.estado === 'revisar' ? '#fef3c7' : '#e2e8f0'
+                                                            : precalificacion.estado === 'revisar' ? '#fef3c7' : 'var(--gray-200)'
                                                     }}
                                                 >
                                                     {ETIQUETAS_PRECALIFICACION[precalificacion.estado]}
@@ -381,9 +381,9 @@ function MisConsultas() {
                                                     style={{
                                                         padding: 16,
                                                         marginBottom: 16,
-                                                        borderRadius: 12,
-                                                        background: '#f8fafc',
-                                                        border: '1px solid #e2e8f0'
+                                                        borderRadius: 'var(--radius)',
+                                                        background: 'var(--gray-50)',
+                                                        border: '1px solid var(--gray-200)'
                                                     }}
                                                 >
                                                     <strong>Datos del interesado</strong>
@@ -405,7 +405,7 @@ function MisConsultas() {
                                                         display: 'block',
                                                         marginTop: 8,
                                                         color: evaluacion.estado === 'coincide' ? '#166534'
-                                                            : evaluacion.estado === 'revisar' ? '#92400e' : '#475569'
+                                                            : evaluacion.estado === 'revisar' ? '#92400e' : 'var(--gray-600)'
                                                     }}>
                                                         {ETIQUETAS_PRECALIFICACION[evaluacion.estado]}
                                                     </strong>
@@ -414,7 +414,7 @@ function MisConsultas() {
                                                             {evaluacion.motivos.map(motivo => <li key={motivo}>{motivo}</li>)}
                                                         </ul>
                                                     )}
-                                                    <small style={{ display: 'block', marginTop: 8, color: '#64748b' }}>
+                                                    <small style={{ display: 'block', marginTop: 8, color: 'var(--gray-500)' }}>
                                                         Es una referencia para ordenar consultas, no una decisión automática de alquiler.
                                                     </small>
                                                 </section>
@@ -456,8 +456,8 @@ function MisConsultas() {
                                             style={{
                                                 width: '100%',
                                                 padding: '10px 12px',
-                                                borderRadius: 10,
-                                                border: `1px solid ${errorRespuesta ? '#dc2626' : '#cbd5e1'}`,
+                                                borderRadius: 'var(--control-radius)',
+                                                border: `1px solid ${errorRespuesta ? '#dc2626' : 'var(--gray-300)'}`,
                                                 fontFamily: 'inherit',
                                                 fontSize: 14,
                                                 resize: 'vertical'
