@@ -1,0 +1,380 @@
+import Icon from '../components/Icon';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import { useSEO } from '../hooks/useSEO';
+import { getMisPropiedades, deletePropiedad, updatePropiedad } from '../services/api';
+import { rutaImagenPropiedad } from '../utils/imagenes';
+import ServicioIcono from '../components/ServicioIcono';
+import { useUI } from '../context/UIContext';
+import Loader from '../components/Loader';
+import EmptyState from '../components/EmptyState';
+import ErrorState from '../components/ErrorState';
+
+const MAX_SERVICIOS_VISIBLES = 4;
+
+// /api/propiedades/mis-propiedades trae los servicios en cada propiedad
+// (con pivot). Acepta tambien la forma anidada de /propiedades/{id}/servicios
+// para no romper si el payload cambia.
+const aServicios = (filas) => (Array.isArray(filas) ? filas : [])
+    .map(fila => ({
+        id: fila.id ?? fila.servicio_id ?? fila.servicio?.id,
+        nombre: fila.nombre ?? fila.servicio?.nombre
+    }))
+    .filter(servicio => servicio.nombre);
+
+function ServiciosTarjeta({ servicios, expandido, onToggle }) {
+    if (servicios.length === 0) {
+        return <p className="misprops-servicios-vacio">Sin servicios cargados</p>;
+    }
+
+    const visibles = expandido ? servicios : servicios.slice(0, MAX_SERVICIOS_VISIBLES);
+    const ocultos = servicios.length - visibles.length;
+
+    return (
+        <div className="misprops-servicios">
+            {visibles.map(servicio => (
+                <span className="misprops-servicio" key={servicio.id}>
+                    <ServicioIcono nombre={servicio.nombre} /> {servicio.nombre}
+                </span>
+            ))}
+            {ocultos > 0 && (
+                <button type="button" className="misprops-servicio misprops-servicios-mas" onClick={onToggle}>
+                    +{ocultos} más
+                </button>
+            )}
+            {expandido && servicios.length > MAX_SERVICIOS_VISIBLES && (
+                <button type="button" className="misprops-servicio misprops-servicios-mas" onClick={onToggle}>
+                    Ver menos
+                </button>
+            )}
+        </div>
+    );
+}
+
+function MisPropiedades() {
+    useSEO('Mis propiedades', 'Gestioná las propiedades que publicaste en AlquilER.', { noindex: true });
+
+    const { token, usuario } = useAuth();
+    const { showToast } = useUI();
+    const [loading, setLoading] = useState(true);
+    const [propiedades, setPropiedades] = useState([]);
+    const [eliminando, setEliminando] = useState(false);
+    const [propiedadAEliminar, setPropiedadAEliminar] = useState(null);
+    const [actualizando, setActualizando] = useState(null);
+    const [serviciosExpandidos, setServiciosExpandidos] = useState({});
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        cargarPropiedades();
+        // Depende de usuario.id y no de usuario: AuthContext reemplaza el objeto
+        // cuando llega /usuarios/me, y depender del objeto hacia que el panel
+        // pidiera todas las propiedades otra vez.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [usuario?.id]);
+
+    // Los servicios ya vienen en cada propiedad, asi que no hace falta pedir
+    // /propiedades/{id}/servicios por cada una (era un N+1).
+    const cargarPropiedades = async () => {
+        if (!usuario) return;
+        setError('');
+        setLoading(true);
+        try {
+            const resultado = await getMisPropiedades(token);
+            const lista = (Array.isArray(resultado) ? resultado : []).map(prop => ({
+                ...prop,
+                servicios: aServicios(prop.servicios)
+            }));
+            setPropiedades(lista);
+        } catch (error) {
+            console.error('Error cargando propiedades:', error);
+            setError(error.message || 'No pudimos cargar tus propiedades. Probá de nuevo en unos momentos.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleEliminarClick = (propiedad) => {
+        setPropiedadAEliminar(propiedad);
+    };
+
+    const cancelarEliminar = () => {
+        setPropiedadAEliminar(null);
+    };
+
+    const confirmarEliminar = async () => {
+        if (!propiedadAEliminar) return;
+        setEliminando(true);
+        try {
+            const result = await deletePropiedad(propiedadAEliminar.id, token);
+            if (result.success) {
+                setPropiedades(prev =>
+                    prev.filter(p => p.id !== propiedadAEliminar.id)
+                );
+                setPropiedadAEliminar(null);
+                showToast('Propiedad eliminada correctamente.');
+            } else {
+                showToast(result.message || result.error || 'No se pudo eliminar.', 'error');
+                setPropiedadAEliminar(null);
+            }
+        } catch (error) {
+            showToast('Error de conexión al eliminar.', 'error');
+        } finally {
+            setEliminando(false);
+        }
+    };
+
+    const toggleDisponible = async (prop) => {
+        setActualizando(prop.id);
+        try {
+            const result = await updatePropiedad(prop.id, { disponible: prop.disponible ? 0 : 1 }, token);
+            if (result.success) {
+                setPropiedades(prev => prev.map(p =>
+                    p.id === prop.id ? { ...p, disponible: p.disponible ? 0 : 1 } : p
+                ));
+                if (result.message) showToast(result.message);
+            } else {
+                showToast(result.message || result.error || 'No se pudo actualizar la disponibilidad.', 'error');
+            }
+        } catch (error) {
+            showToast('Error de conexión al actualizar la disponibilidad.', 'error');
+        } finally {
+            setActualizando(null);
+        }
+    };
+
+    const toggleServicios = (id) => {
+        setServiciosExpandidos(prev => ({ ...prev, [id]: !prev[id] }));
+    };
+
+    if (loading) return <Loader />;
+
+    if (error) {
+        return (
+            <div className="misprops-page">
+                <div className="container">
+                    <ErrorState
+                        mensaje={error}
+                        onReintentar={() => { setError(''); cargarPropiedades(); }}
+                    />
+                </div>
+            </div>
+        );
+    }
+
+    const totalDisponibles = propiedades.filter(p => p.disponible).length;
+    const totalAlquiladas = propiedades.filter(p => !p.disponible).length;
+
+    return (
+        <div className="misprops-page">
+            <div className="container">
+
+                {/* HERO */}
+                <section className="misprops-hero">
+                    <div className="misprops-hero-content">
+                        <span className="misprops-hero-badge">
+                            <Icon name="fas fa-building" /> Panel de mis propiedades
+                        </span>
+                        <h1>
+                            Mis <span>Propiedades</span>
+                        </h1>
+                        <p>
+                            Administrá tus propiedades publicadas, editá su información
+                            o dá de baja las que ya no ofrezcas.
+                        </p>
+                    </div>
+                    <div className="misprops-hero-actions">
+                        <Link to="/propiedades/crear" className="btn-detalle btn-detalle-primario">
+                            <Icon name="fas fa-plus" /> Publicar nueva
+                        </Link>
+                    </div>
+                </section>
+
+                {/* ESTADÍSTICAS */}
+                <section className="misprops-stats">
+                    <div className="misprops-stat">
+                        <div className="misprops-stat-icon teal">
+                            <Icon name="fas fa-building" />
+                        </div>
+                        <div>
+                            <span className="misprops-stat-num">{propiedades.length}</span>
+                            <span className="misprops-stat-label">Total</span>
+                        </div>
+                    </div>
+                    <div className="misprops-stat">
+                        <div className="misprops-stat-icon emerald">
+                            <Icon name="fas fa-check-circle" />
+                        </div>
+                        <div>
+                            <span className="misprops-stat-num">{totalDisponibles}</span>
+                            <span className="misprops-stat-label">Disponibles</span>
+                        </div>
+                    </div>
+                    <div className="misprops-stat">
+                        <div className="misprops-stat-icon slate">
+                            <Icon name="fas fa-key" />
+                        </div>
+                        <div>
+                            <span className="misprops-stat-num">{totalAlquiladas}</span>
+                            <span className="misprops-stat-label">Alquiladas</span>
+                        </div>
+                    </div>
+                </section>
+
+                {/* GRID O EMPTY STATE */}
+                {propiedades.length > 0 ? (
+                    <section className="misprops-grid">
+                        {propiedades.map(prop => {
+                            const imagen = rutaImagenPropiedad(prop);
+                            return (
+                            <div className="misprops-card" key={prop.id}>
+                                <div className="misprops-card-image">
+                                    {imagen ? (
+                                        <img
+                                            src={imagen}
+                                            alt={prop.titulo}
+                                            width={750}
+                                            height={500}
+                                            loading="lazy"
+                                            decoding="async"
+                                            onError={(e) => {
+                                                e.target.style.display = 'none';
+                                                e.target.parentElement.classList.add('sin-imagen');
+                                            }}
+                                        />
+                                    ) : (
+                                        <div className="sin-imagen"></div>
+                                    )}
+                                    <span className={`misprops-estado ${prop.disponible ? 'disponible' : 'alquilada'}`}>
+                                        {prop.disponible ? 'Disponible' : 'Alquilada'}
+                                    </span>
+                                </div>
+
+                                <div className="misprops-card-body">
+                                    <h3>{prop.titulo || 'Sin título'}</h3>
+                                    <p className="misprops-direccion">
+                                        <Icon name="fas fa-map-marker-alt" />{' '}
+                                        {prop.direccion || 'Sin dirección'}
+                                    </p>
+
+                                    <div className="misprops-meta">
+                                        <div className="misprops-precio">
+                                            ${Number(prop.precio || 0).toLocaleString()}
+                                            <span>/mes</span>
+                                        </div>
+                                        <div className="misprops-features">
+                                            <span><Icon name="fas fa-bed" /> {prop.cantidad_dormitorios || 0}</span>
+                                            <span><Icon name="fas fa-bath" /> {prop.cantidad_banos || 0}</span>
+                                        </div>
+                                    </div>
+
+                                    <ServiciosTarjeta
+                                        servicios={prop.servicios || []}
+                                        expandido={!!serviciosExpandidos[prop.id]}
+                                        onToggle={() => toggleServicios(prop.id)}
+                                    />
+
+                                    <div className="misprops-actions">
+                                        <button
+                                            className="misprops-btn toggle"
+                                            onClick={() => toggleDisponible(prop)}
+                                            disabled={actualizando === prop.id}
+                                            title={prop.disponible ? 'Marcar como no disponible' : 'Marcar como disponible'}
+                                            aria-label={prop.disponible ? 'Marcar como no disponible' : 'Marcar como disponible'}
+                                        >
+                                            {actualizando === prop.id ? (
+                                                <Icon name="fas fa-spinner fa-spin" />
+                                            ) : (
+                                                <Icon name={`fas fa-toggle-${prop.disponible ? 'on' : 'off'}`} />
+                                            )}
+                                            {prop.disponible ? 'Poner alquilada' : 'Poner disponible'}
+                                        </button>
+                                        <Link
+                                            to={`/propiedades/${prop.id}`}
+                                            className="misprops-btn ver"
+                                        >
+                                            <Icon name="fas fa-eye" /> Ver
+                                        </Link>
+                                        <Link
+                                            to={`/propiedades/${prop.id}/editar`}
+                                            className="misprops-btn editar"
+                                        >
+                                            <Icon name="fas fa-pen" /> Editar
+                                        </Link>
+                                        <button
+                                            className="misprops-btn eliminar"
+                                            onClick={() => handleEliminarClick(prop)}
+                                            title="Eliminar"
+                                            aria-label="Eliminar propiedad"
+                                        >
+                                            <Icon name="fas fa-trash" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            );
+                        })}
+                    </section>
+                ) : (
+                    <EmptyState
+                        icono="fa-building"
+                        titulo="Todavía no publicaste propiedades"
+                        descripcion="Publicá tu primera propiedad y empezá a recibir consultas."
+                        action={
+                            <Link
+                                to="/propiedades/crear"
+                                className="btn-ver-todas"
+                                style={{ marginTop: '20px', display: 'inline-block' }}
+                            >
+                                <Icon name="fas fa-plus" /> Publicar propiedad
+                            </Link>
+                        }
+                    />
+                )}
+
+            </div>
+
+            {/* MODAL DE CONFIRMACIÓN */}
+            {propiedadAEliminar && (
+                <div className="modal-backdrop-custom" onClick={cancelarEliminar}>
+                    <div className="modal-custom" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-icon-danger">
+                            <Icon name="fas fa-trash-alt" />
+                        </div>
+                        <h3>¿Eliminar propiedad?</h3>
+                        <p>
+                            Estás por eliminar <strong>{propiedadAEliminar.titulo}</strong>.
+                            Esta acción no se puede deshacer.
+                        </p>
+                        <div className="modal-actions">
+                            <button
+                                className="btn-detalle btn-detalle-secundario"
+                                onClick={cancelarEliminar}
+                                disabled={eliminando}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                className="btn-detalle btn-detalle-danger"
+                                onClick={confirmarEliminar}
+                                disabled={eliminando}
+                            >
+                                {eliminando ? (
+                                    <>
+                                        <Icon name="fas fa-spinner fa-spin" /> Eliminando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Icon name="fas fa-trash" /> Sí, eliminar
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+export default MisPropiedades;

@@ -1,0 +1,405 @@
+import Icon from '../../components/Icon';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
+import { useUI } from '../../context/UIContext';
+import {
+    getConsultasAdmin,
+    getConsultasByUsuario,
+    getUsuarios,
+    getMensajesConsulta,
+    enviarMensajeConsulta,
+    deleteConsulta,
+    restoreConsulta
+} from '../../services/api';
+import Loader from '../../components/Loader';
+import EmptyState from '../../components/EmptyState';
+
+function ConsultasAdmin() {
+    const { token, usuario } = useAuth();
+    const { confirm, showToast } = useUI();
+
+    const [items, setItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [modoPapelera, setModoPapelera] = useState(false);
+
+    const [usuarios, setUsuarios] = useState([]);
+    const [usuarioFiltro, setUsuarioFiltro] = useState('');
+
+    const [activa, setActiva] = useState(null);
+    const [mensajes, setMensajes] = useState([]);
+    const [cargandoMensajes, setCargandoMensajes] = useState(false);
+
+    const [respuesta, setRespuesta] = useState('');
+    const [enviandoRespuesta, setEnviandoRespuesta] = useState(false);
+    const [errorRespuesta, setErrorRespuesta] = useState('');
+    const [exitoRespuesta, setExitoRespuesta] = useState('');
+
+    const [procesandoId, setProcesandoId] = useState(null);
+
+    const extraerItems = (res) => {
+        if (Array.isArray(res)) return res;
+        if (Array.isArray(res?.data)) return res.data;
+        if (Array.isArray(res?.data?.items)) return res.data.items;
+        return [];
+    };
+
+    const cargar = useCallback(async () => {
+        setLoading(true);
+        try {
+            const res = usuarioFiltro
+                ? await getConsultasByUsuario(usuarioFiltro, token)
+                : await getConsultasAdmin(token, modoPapelera);
+            if (res.status === 403) {
+                showToast('No autorizado para ver el listado de consultas.', 'error');
+            }
+            setItems(extraerItems(res));
+            setActiva(null);
+            setMensajes([]);
+        } catch (e) {
+            showToast('Error al cargar las consultas.', 'error');
+        } finally {
+            setLoading(false);
+        }
+    }, [token, modoPapelera, usuarioFiltro]);
+
+    useEffect(() => {
+        cargar();
+    }, [cargar]);
+
+    const cargarUsuarios = useCallback(async () => {
+        try {
+            const res = await getUsuarios(token);
+            setUsuarios(extraerItems(res));
+        } catch (e) {
+            setUsuarios([]);
+        }
+    }, [token]);
+
+    useEffect(() => {
+        cargarUsuarios();
+    }, [cargarUsuarios]);
+
+    const abrirConsulta = async (item) => {
+        setActiva(item);
+        setRespuesta('');
+        setErrorRespuesta('');
+        setExitoRespuesta('');
+        setCargandoMensajes(true);
+        try {
+            const res = await getMensajesConsulta(item.id, token);
+            setMensajes(extraerItems(res));
+        } catch (e) {
+            setMensajes([]);
+        } finally {
+            setCargandoMensajes(false);
+        }
+    };
+
+    const responder = async (e) => {
+        e.preventDefault();
+        const texto = respuesta.trim();
+        if (!texto) {
+            setErrorRespuesta('El mensaje es requerido');
+            return;
+        }
+        if (texto.length < 5) {
+            setErrorRespuesta('El mensaje debe tener al menos 5 caracteres');
+            return;
+        }
+
+        setEnviandoRespuesta(true);
+        setErrorRespuesta('');
+        setExitoRespuesta('');
+        try {
+            const result = await enviarMensajeConsulta(activa.id, texto, token);
+            if (result.success) {
+                setRespuesta('');
+                setExitoRespuesta('Mensaje enviado correctamente.');
+                const res = await getMensajesConsulta(activa.id, token);
+                setMensajes(extraerItems(res));
+            } else {
+                setErrorRespuesta(
+                    result.error || result.message || 'No se pudo enviar el mensaje.'
+                );
+            }
+        } catch (err) {
+            setErrorRespuesta('Error de conexión al enviar el mensaje.');
+        } finally {
+            setEnviandoRespuesta(false);
+        }
+    };
+
+    const eliminar = async (item) => {
+        const confirmado = await confirm({
+            titulo: '¿Eliminar consulta?',
+            mensaje: `La consulta #${item.id} con su conversación se moverá a la papelera.`,
+            textoAceptar: 'Sí, eliminar',
+            textoCancelar: 'Cancelar',
+            peligro: true
+        });
+        if (!confirmado) return;
+        setProcesandoId(String(item.id));
+        try {
+            const result = await deleteConsulta(item.id, token);
+            if (result.success) {
+                showToast('Consulta movida a la papelera.');
+                cargar();
+            } else {
+                showToast(result.error || result.message || 'No se pudo eliminar la consulta.', 'error');
+            }
+        } catch (err) {
+            showToast('Error de conexión al eliminar la consulta.', 'error');
+        } finally {
+            setProcesandoId(null);
+        }
+    };
+
+    const restaurar = async (item) => {
+        setProcesandoId(String(item.id));
+        try {
+            const result = await restoreConsulta(item.id, token);
+            if (result.success) {
+                showToast('Consulta restaurada.');
+                cargar();
+            } else {
+                showToast(result.error || result.message || 'No se pudo restaurar la consulta.', 'error');
+            }
+        } catch (err) {
+            showToast('Error de conexión al restaurar la consulta.', 'error');
+        } finally {
+            setProcesandoId(null);
+        }
+    };
+
+    const nombreDe = (m) => {
+        if (!m) return 'Usuario';
+        return m.nombre || m.apellido || m.email || 'Usuario';
+    };
+
+    const formatearFecha = (fecha) => {
+        if (!fecha) return '';
+        return String(fecha).replace('T', ' ').slice(0, 16);
+    };
+
+    if (loading) return <Loader />;
+
+    return (
+        <div className="admin-page">
+            <div className="container">
+                <section className="admin-hero">
+                    <div className="admin-hero-content">
+                        <span className="admin-hero-badge">
+                            <Icon name="fas fa-comments" /> Administración
+                        </span>
+                        <h1>Consultas</h1>
+                        <p>Leé las consultas de los interesados y respondé a cada conversación.</p>
+                    </div>
+                    <div className="admin-hero-actions">
+                        <label className="admin-filtro">
+                            <span className="admin-filtro-label">Por usuario</span>
+                            <select
+                                className="form-control"
+                                value={usuarioFiltro}
+                                onChange={e => {
+                                    setUsuarioFiltro(e.target.value);
+                                    if (e.target.value) setModoPapelera(false);
+                                }}
+                            >
+                                <option value="">Todos</option>
+                                {usuarios.map(u => (
+                                    <option key={u.id} value={u.id}>
+                                        {u.apellido ? `${u.nombre} ${u.apellido}` : u.nombre} ({u.email})
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                        <button
+                            className="btn-detalle btn-detalle-secundario"
+                            onClick={() => setModoPapelera(v => !v)}
+                            disabled={Boolean(usuarioFiltro)}
+                        >
+                            <Icon name={modoPapelera ? 'fas fa-list' : 'fas fa-trash-can-arrow-up'} />
+                            {modoPapelera ? 'Ver activas' : 'Papelera'}
+                        </button>
+                    </div>
+                </section>
+
+                {modoPapelera && (
+                    <div className="alert alert-info d-flex align-items-center gap-2">
+                        <Icon name="fas fa-trash-can-arrow-up" />
+                        <span>Estás viendo la papelera. Las consultas eliminadas aparecen acá y podés restaurarlas.</span>
+                    </div>
+                )}
+
+                {items.length > 0 ? (
+                    <div className="misconsultas-grid">
+                        <div className="misconsultas-lista">
+                            {items.map(c => (
+                                <div
+                                    key={c.id}
+                                    className={`misconsultas-item admin-consulta-item ${activa && activa.id === c.id ? 'active' : ''}`}
+                                    onClick={() => abrirConsulta(c)}
+                                >
+                                    <div className="misconsultas-item-img">
+                                        <Icon name="fas fa-comments" />
+                                    </div>
+                                    <div className="misconsultas-item-body">
+                                        <div className="misconsultas-item-cabecera">
+                                            <span className="misconsultas-origen recibida">#{c.id}</span>
+                                            <span className="misconsultas-fecha">
+                                                {formatearFecha(c.fecha_consulta)}
+                                            </span>
+                                        </div>
+                                        <p className="misconsultas-item-titulo">
+                                            {c.propiedad?.titulo || `Propiedad #${c.propiedad_id}`}
+                                        </p>
+                                        <p className="misconsultas-item-detalle">
+                                            De {c.usuario
+                                                ? `${c.usuario.nombre} ${c.usuario.apellido || ''}`.trim()
+                                                : `Usuario #${c.usuario_id}`}
+                                        </p>
+                                    </div>
+                                    <div className="admin-consulta-acciones" onClick={e => e.stopPropagation()}>
+                                        {modoPapelera ? (
+                                            <button
+                                                className="admin-btn restaurar"
+                                                onClick={() => restaurar(c)}
+                                                title="Restaurar"
+                                                aria-label="Restaurar consulta"
+                                                disabled={procesandoId === String(c.id)}
+                                            >
+                                                <Icon name={procesandoId === String(c.id) ? 'fas fa-spinner fa-spin' : 'fas fa-rotate-left'} />
+                                            </button>
+                                        ) : (
+                                            <button
+                                                className="admin-btn eliminar"
+                                                onClick={() => eliminar(c)}
+                                                title="Eliminar"
+                                                aria-label="Eliminar consulta"
+                                                disabled={procesandoId === String(c.id)}
+                                            >
+                                                <Icon name={procesandoId === String(c.id) ? 'fas fa-spinner fa-spin' : 'fas fa-trash'} />
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="misconsultas-hilo">
+                            {activa ? (
+                                <>
+                                    <div className="misconsultas-hilo-cabecera">
+                                        <h3>
+                                            {activa.propiedad?.titulo || `Propiedad #${activa.propiedad_id}`}
+                                        </h3>
+                                        <Link
+                                            to={`/propiedades/${activa.propiedad_id}`}
+                                            className="misconsultas-ver-propiedad"
+                                        >
+                                            Ver propiedad <Icon name="fas fa-external-link-alt" />
+                                        </Link>
+                                    </div>
+
+                                    <div className="misconsultas-mensajes">
+                                        {cargandoMensajes ? (
+                                            <div className="misconsultas-cargando">
+                                                <Icon name="fas fa-spinner fa-spin" /> Cargando conversación...
+                                            </div>
+                                        ) : mensajes.length > 0 ? (
+                                            mensajes.map(m => {
+                                                const esMio = String(m.usuario_id) === String(usuario.id);
+                                                return (
+                                                    <div
+                                                        key={m.id}
+                                                        className={`misconsultas-burbuja ${esMio ? 'mio' : 'otro'}`}
+                                                    >
+                                                        <div className="misconsultas-burbuja-cabecera">
+                                                            <strong>{esMio ? 'Vos (Admin)' : nombreDe(m.usuario)}</strong>
+                                                            <span>{formatearFecha(m.fecha_mensaje)}</span>
+                                                        </div>
+                                                        <p>{m.mensaje}</p>
+                                                    </div>
+                                                );
+                                            })
+                                        ) : (
+                                            <div className="misconsultas-empty-hilo">
+                                                Sin mensajes todavía.
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {modoPapelera || Boolean(activa.deleted_at) ? (
+                                        <div className="misconsultas-empty-hilo">
+                                            Consulta eliminada: no se pueden agregar mensajes.
+                                        </div>
+                                    ) : (
+                                        <form onSubmit={responder} className="misconsultas-responder" noValidate>
+                                            <textarea
+                                                rows="2"
+                                                placeholder="Responder como administrador..."
+                                                value={respuesta}
+                                                onChange={(e) => setRespuesta(e.target.value)}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '10px 12px',
+                                                    borderRadius: 'var(--control-radius)',
+                                                    border: `1px solid ${errorRespuesta ? '#dc2626' : 'var(--gray-300)'}`,
+                                                    fontFamily: 'inherit',
+                                                    fontSize: 14,
+                                                    resize: 'vertical'
+                                                }}
+                                            />
+                                            {errorRespuesta && (
+                                                <span className="form-error">{errorRespuesta}</span>
+                                            )}
+                                            {exitoRespuesta && (
+                                                <span style={{ color: '#065f46', fontSize: 13 }}>
+                                                    <Icon name="fas fa-check-circle" /> {exitoRespuesta}
+                                                </span>
+                                            )}
+                                            <button
+                                                type="submit"
+                                                className="btn-detalle btn-detalle-primario"
+                                                disabled={enviandoRespuesta}
+                                                style={{ marginTop: 10, justifySelf: 'flex-end' }}
+                                            >
+                                                {enviandoRespuesta ? (
+                                                    <>
+                                                        <Icon name="fas fa-spinner fa-spin" /> Enviando...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Icon name="fas fa-paper-plane" /> Enviar
+                                                    </>
+                                                )}
+                                            </button>
+                                        </form>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="misconsultas-empty-hilo">
+                                    <Icon name="fas fa-comments" />
+                                    <p>Seleccioná una consulta para ver la conversación.</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                ) : (
+                    <EmptyState
+                        icono={modoPapelera ? 'fa-trash-can-arrow-up' : 'fa-comments'}
+                        titulo={modoPapelera ? 'La papelera está vacía' : 'No hay consultas'}
+                        descripcion={
+                            modoPapelera
+                                ? 'Las consultas eliminadas aparecerán acá y podrás restaurarlas.'
+                                : 'Los interesados consultan sobre las propiedades y las respuestas llegan a este panel.'
+                        }
+                    />
+                )}
+            </div>
+        </div>
+    );
+}
+
+export default ConsultasAdmin;

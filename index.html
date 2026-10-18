@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" sizes="48x48" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1D4ED8" />
+    <meta name="description" content="AlquilER - Encontrá la propiedad ideal para vos. Departamentos, casas, locales comerciales y más." />
+
+    <!-- Tipografías: Inter para texto y Plus Jakarta Sans para titulos. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+        rel="stylesheet"
+    />
+
+    <!-- Compartir en redes. La imagen (og:image) y la URL canonica se agregan
+         cuando exista el dominio publico y una imagen social 1200x630. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="AlquilER" />
+    <meta property="og:locale" content="es_AR" />
+    <meta property="og:title" content="AlquilER - Alquiler de Propiedades" />
+    <meta property="og:description" content="Encontrá la propiedad ideal para vos. Departamentos, casas, locales comerciales y más." />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="AlquilER - Alquiler de Propiedades" />
+    <meta name="twitter:description" content="Encontrá la propiedad ideal para vos. Departamentos, casas, locales comerciales y más." />
+    <link rel="stylesheet" href="/src/styles/styles.css" />
+    <!-- Aplica el tema antes del primer pintado para evitar el parpadeo. -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('alquiler-theme');
+          if (t !== 'dark' && t !== 'light') {
+            t = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          document.documentElement.setAttribute('data-theme', t);
+          document.documentElement.style.colorScheme = t;
+        } catch (e) {}
+      })();
+    </script>
+    <title>AlquilER - Alquiler de Propiedades</title>
+  </head>
+  <body>
+    <noscript>Necesitas habilitar JavaScript para ejecutar esta aplicación.</noscript>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

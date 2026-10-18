@@ -1,0 +1,191 @@
+/* ========== PALETA AZUL ========== */
+:root {
+    /* Paleta azul professional */
+    --primary: #1D4ED8;
+    --primary-dark: #1E40AF;
+    --primary-light: #3B82F6;
+    --primary-soft: #E0E7FF;
+    --primary-ink: #1E40AF;
+    --primary-bg: #FFFFFF;
+    --navy: #0F172A;
+    --white: #FFFFFF;
+    --surface: #FFFFFF;
+    --heading: #0F172A;
+    --gray-50: #FFFFFF;
+    --gray-100: #F1F5F9;
+    --gray-200: #E2E8F0;
+    --gray-300: #CBD5E1;
+    --gray-400: #94A3B8;
+    --gray-500: #64748B;
+    --gray-600: #475569;
+    --gray-700: #334155;
+    --gray-800: #1E293B;
+    /* Texto secundario apagado (paginación, contadores, placeholders).
+       Valor por tema para garantizar contraste AA sobre su superficie. */
+    --text-faint: #64748B;
+    --border-subtle: #e7ecf2;
+    --surface-radius: 14px;
+    --control-radius: 10px;
+    --radius-sm: 8px;
+    --radius: 12px;
+    --radius-lg: 16px;
+    --shadow-soft: 0 2px 10px rgba(15, 23, 42, 0.06);
+    --shadow-raised: 0 12px 28px rgba(15, 23, 42, 0.09);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.15);
+    --transition: all 0.3s ease;
+    /* Tipografías: Inter para cuerpo, Plus Jakarta Sans para titulos */
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-heading: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ========== RESET Y BASE ========== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-body);
+    background: var(--primary-bg);
+    color: var(--gray-800);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding-top: 72px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Titulos: Plus Jakarta Sans en toda la interfaz */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+/* Links: sin subrayado por defecto */
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+/* Solo los links dentro de un párrafo se subrayan */
+p a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+p a:hover {
+    text-decoration: underline;
+}
+
+ul {
+    list-style: none;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 20px;
+    width: 100%;
+}
+
+/* ========== MICRO-INTERACCIONES (GLOBALES) ========== */
+
+/* Feedback al presionar: atenua el boton sin moverlo del layout.
+   Solo filter para no chocar con transform de los hover. */
+button:not(:disabled):active {
+    filter: brightness(0.92);
+}
+
+/* Foco visible consistente al navegar con teclado */
+:focus-visible {
+    outline: 2px solid var(--primary-light);
+    outline-offset: 2px;
+}
+
+/* Respeta la preferencia de movimiento reducida del sistema */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ========== MODO OSCURO (manual, via data-theme="dark" en <html>) ========== */
+:root[data-theme="dark"] {
+--primary: #2563EB;
+--primary-dark: #1D4ED8;
+    --primary-light: #60A5FA;
+    --primary-soft: #1E293B;
+    --primary-ink: #60A5FA;
+    --primary-bg: #0B1220;
+    --navy: #070C16;
+    --white: #FFFFFF;
+    --surface: #131C2E;
+    --heading: #F1F5F9;
+    --gray-50: #0F172A;
+    --gray-100: #182238;
+    --gray-200: #26344C;
+    --gray-300: #3A4B68;
+    --gray-400: #8B9BB4;
+    --gray-500: #A5B4CB;
+    --gray-600: #BEC9DA;
+    --gray-700: #D3DCE8;
+    --gray-800: #E6ECF5;
+    --text-faint: #8B9BB4;
+    --border-subtle: #22304A;
+    --shadow-soft: 0 2px 10px rgba(0, 0, 0, 0.45);
+    --shadow-raised: 0 12px 28px rgba(0, 0, 0, 0.55);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.55);
+    color-scheme: dark;
+}
+
+[data-theme="dark"] body {
+    color-scheme: dark;
+}
+
+/* Utilidades de texto de Bootstrap (text-muted/text-secondary) usan un gris
+   oscuro fijo que sobre nuestras superficies oscuras queda ilegible. */
+[data-theme="dark"] .text-muted,
+[data-theme="dark"] .text-body-secondary,
+[data-theme="dark"] .text-secondary {
+    color: var(--text-faint) !important;
+}
+
+/* Controles de formulario nativos y placeholders legibles en oscuro */
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+    color-scheme: dark;
+}
+
+[data-theme="dark"] ::placeholder {
+    color: var(--text-faint);
+    opacity: 1;
+}
+
+:root[data-theme="light"] {
+    color-scheme: light;
+}

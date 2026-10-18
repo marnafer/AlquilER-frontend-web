@@ -1,0 +1,261 @@
+/* ========== PÁGINA DE PROPIEDADES (CATÁLOGO) ========== */
+.props-page {
+    background: var(--primary-bg);
+}
+
+.props-body {
+    padding: 100px 0 60px;
+}
+
+.props-results {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.props-results-count {
+    color: var(--gray-500);
+    font-size: 14px;
+    margin: 0;
+}
+
+.props-results-count strong {
+    font-size: 16px;
+    color: var(--primary-ink);
+}
+
+/* ========== FILTROS DEL CATÁLOGO ========== */
+.props-filtros {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    background: var(--surface);
+    padding: 20px;
+    border-radius: var(--surface-radius);
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 24px;
+    align-items: end;
+}
+
+.filtro-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filtro-group label {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filtro-group label .ph-icon {
+    color: var(--primary-ink);
+}
+
+.filtro-group select,
+.filtro-group input {
+    padding: 10px 14px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--control-radius);
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--surface);
+    color: var(--gray-800);
+    transition: var(--transition);
+}
+
+.filtro-group select:focus,
+.filtro-group input:focus {
+    outline: none;
+    border-color: rgba(29, 78, 216, 0.45);
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
+}
+
+.filtro-search {
+    grid-column: span 2;
+}
+
+.multi-select {
+    position: relative;
+}
+
+.multi-select-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 14px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--control-radius);
+    background: var(--surface);
+    color: var(--gray-800);
+    font-size: 14px;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.multi-select-btn:hover:not(:disabled) {
+    border-color: var(--gray-300);
+}
+
+.multi-select-btn:focus {
+    outline: none;
+    border-color: rgba(29, 78, 216, 0.45);
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
+}
+
+.multi-select-btn:disabled {
+    cursor: not-allowed;
+    background: var(--gray-50);
+    color: var(--text-faint);
+}
+
+.multi-select-btn .ph-icon {
+    color: var(--text-faint);
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.multi-select-panel {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 30;
+    max-height: 260px;
+    overflow-y: auto;
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--control-radius);
+    box-shadow: var(--shadow-raised);
+    padding: 6px;
+}
+
+/* Los items usan label, asi que hay que anular el estilo del label del grupo */
+.multi-select .multi-select-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 13.5px;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: normal;
+    color: var(--gray-700);
+    cursor: pointer;
+    text-overflow: unset;
+}
+
+.multi-select .multi-select-item:hover {
+    background: var(--gray-100);
+}
+
+.multi-select .multi-select-item input {
+    width: 15px;
+    height: 15px;
+    padding: 0;
+    margin: 0;
+    accent-color: var(--primary);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.multi-select-vacio {
+    display: block;
+    padding: 10px;
+    font-size: 13px;
+    color: var(--text-faint);
+    text-align: center;
+}
+
+.btn-limpiar {
+    padding: 10px 18px;
+    background: #fee2e2;
+    color: #b91c1c;
+    border: none;
+    border-radius: var(--control-radius);
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: var(--transition);
+    align-self: end;
+    font-family: inherit;
+    text-decoration: none !important;
+}
+
+.btn-limpiar:hover,
+.btn-limpiar:focus {
+    background: #fecaca;
+    text-decoration: none !important;
+}
+
+/* ========== PAGINACIÓN ========== */
+.props-paginacion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+}
+
+.pag-btn {
+    min-width: 42px;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid var(--gray-200);
+    background: var(--surface);
+    color: var(--gray-600);
+    border-radius: var(--control-radius);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    text-decoration: none !important;
+}
+
+.pag-btn:hover:not(:disabled):not(.active) {
+    background: var(--primary-bg);
+    border-color: var(--primary-soft);
+    color: var(--primary-ink);
+    text-decoration: none !important;
+}
+
+.pag-btn.active {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 6px 16px -6px rgba(59, 130, 246, 0.5);
+}
+
+.pag-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.pag-dots {
+    color: var(--text-faint);
+    padding: 0 4px;
+    font-weight: 600;
+}

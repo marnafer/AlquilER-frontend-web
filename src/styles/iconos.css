@@ -1,0 +1,19 @@
+/* ============================================
+   Iconos (Phosphor Icons).
+   El componente Icon renderiza un <svg> que hereda el color y el tamano
+   del texto, igual que una fuente de iconos. Estas reglas solo ajustan la
+   alineacion vertical y la animacion de giro.
+   ============================================ */
+
+svg.ph-icon {
+    display: inline-block;
+    vertical-align: -0.125em;
+    flex: none;
+    line-height: 1;
+}
+
+@keyframes ph-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

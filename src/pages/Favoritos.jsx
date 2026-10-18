@@ -1,0 +1,152 @@
+import Icon from '../components/Icon';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import { getFavoritos, removeFavorito } from '../services/api';
+import { useSEO } from '../hooks/useSEO';
+import PropiedadCard from '../components/PropiedadCard';
+import Loader from '../components/Loader';
+import EmptyState from '../components/EmptyState';
+
+function Favoritos() {
+    useSEO('Mis favoritos', 'Tus propiedades guardadas en AlquilER.', { noindex: true });
+
+    const { token } = useAuth();
+    const [favoritos, setFavoritos] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const cargarFavoritos = useCallback(async () => {
+        try {
+            const result = await getFavoritos(token);
+
+            // Normalizar distintos formatos de respuesta
+            let items = [];
+            if (result?.success && result?.data) {
+                items = result.data.items || result.data || [];
+            } else if (Array.isArray(result)) {
+                items = result;
+            } else if (result?.data) {
+                items = result.data;
+            }
+
+            setFavoritos(Array.isArray(items) ? items : []);
+        } catch (error) {
+            console.error('Error cargando favoritos:', error);
+            setFavoritos([]);
+        } finally {
+            setLoading(false);
+        }
+    }, [token]);
+
+    useEffect(() => {
+        cargarFavoritos();
+    }, [cargarFavoritos]);
+
+    const handleEliminar = async (propiedadId) => {
+        try {
+            const result = await removeFavorito(propiedadId, token);
+            if (result?.success) {
+                // Actualizamos la lista local sin recargar
+                setFavoritos(prev =>
+                    prev.filter(fav => {
+                        const favId = fav.propiedad_id || fav.id;
+                        return String(favId) !== String(propiedadId);
+                    })
+                );
+            }
+        } catch (error) {
+            console.error('Error eliminando favorito:', error);
+        }
+    };
+
+    const handleCardFavorito = (propiedadId, esFavorito) => {
+        if (esFavorito) return;
+        setFavoritos(prev =>
+            prev.filter(fav => {
+                const favId = fav.propiedad_id || fav?.propiedad?.id;
+                return String(favId) !== String(propiedadId);
+            })
+        );
+    };
+
+    if (loading) return <Loader />;
+
+    return (
+        <div className="favoritos-page">
+            <div className="container">
+
+                {/* HERO */}
+                <section className="fav-hero">
+                    <div className="fav-hero-content">
+                        <span className="fav-hero-badge">
+                            <Icon name="fas fa-heart" /> Tus favoritos
+                        </span>
+                        <h1>
+                            Propiedades que <span>te gustaron</span>
+                        </h1>
+                        <p>
+                            Guardá las propiedades que más te interesan y volvé a ellas cuando quieras.
+                        </p>
+                    </div>
+                    <div className="fav-hero-icon">
+                        <Icon name="fas fa-heart" />
+                    </div>
+                </section>
+
+                {/* RESULTADOS */}
+                {favoritos.length > 0 ? (
+                    <>
+                        <div className="fav-results">
+                            <p className="fav-results-count">
+                                <strong>{favoritos.length}</strong>{' '}
+                                {favoritos.length === 1 ? 'propiedad guardada' : 'propiedades guardadas'}
+                            </p>
+                        </div>
+
+                        <div className="propiedades-grid">
+                            {favoritos.map(fav => {
+                                // La propiedad puede venir anidada o plana
+                                const prop = fav.propiedad || fav;
+                                const propiedadId = prop.id || fav.propiedad_id;
+                                const categoriaNombre = prop.categoria_nombre || prop.categoria?.nombre;
+
+                                return (
+                                    <div key={propiedadId} className="fav-item-wrapper">
+                                        <PropiedadCard
+                                            propiedad={{ ...prop, id: propiedadId }}
+                                            categoriaNombre={categoriaNombre}
+                                            esFavoritoInicial={true}
+                                            onFavorito={handleCardFavorito}
+                                        />
+                                        <button
+                                            className="fav-remove-btn"
+                                            onClick={() => handleEliminar(propiedadId)}
+                                            title="Quitar de favoritos"
+                                        >
+                                            <Icon name="fas fa-trash-alt" />
+                                            <span>Quitar</span>
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </>
+                ) : (
+                    <EmptyState
+                        icono="fa-heart"
+                        titulo="No tenés favoritos todavía"
+                        descripcion="Cuando encuentres una propiedad que te guste, tocá el corazón para guardarla acá."
+                        action={
+                            <Link to="/propiedades" className="btn-ver-todas" style={{ marginTop: '20px', display: 'inline-block' }}>
+                                <Icon name="fas fa-search" /> Explorar propiedades
+                            </Link>
+                        }
+                    />
+                )}
+
+            </div>
+        </div>
+    );
+}
+
+export default Favoritos;
