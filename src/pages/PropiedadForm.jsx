@@ -933,16 +933,16 @@ if (result.success) {
                                     }))}
                                 />
                             </div>
-                            <fieldset className="form-group propform-col-full" style={{ border: 0, padding: 0, margin: 0 }}>
-                                <legend style={{ fontWeight: 600, marginBottom: 8 }}>Garantías que aceptás</legend>
-                                <div style={{ display: 'grid', gap: 8 }}>
+                            <fieldset className="propform-col-full" style={{ border: 0, padding: 0, margin: 0, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                <legend style={{ fontWeight: 600, marginBottom: 4 }}>Garantías que aceptás</legend>
+                                <div className="propform-garantias">
                                     {[
                                         ['recibo_sueldo', 'Recibo de sueldo'],
                                         ['garantia_propietaria', 'Garantía propietaria'],
                                         ['seguro_caucion', 'Seguro de caución'],
                                         ['garante', 'Garante']
                                     ].map(([valor, etiqueta]) => (
-                                        <label key={valor} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                        <label key={valor} className="propform-garantia">
                                             <input
                                                 type="checkbox"
                                                 checked={formData.requisitos_interesados.garantias_aceptadas.includes(valor)}
