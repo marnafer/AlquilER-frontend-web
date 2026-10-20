@@ -847,6 +847,39 @@ export async function getResenasByReserva(reservaId, token) {
     }
 }
 
+export async function getMisResenasPropiedades(token) {
+    try {
+        const response = await fetch(`${API_URL}/api/resenas/mis-propiedades`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: errorDeConexion(error) };
+    }
+}
+
+export async function getMisResenasComoInquilino(token) {
+    try {
+        const response = await fetch(`${API_URL}/api/resenas/como-inquilino`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: errorDeConexion(error) };
+    }
+}
+
+export async function getResenasByCalificador(calificadorId, token) {
+    try {
+        const response = await fetch(`${API_URL}/api/resenas/calificador/${calificadorId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: errorDeConexion(error) };
+    }
+}
+
 // ============================================
 // ADMIN - USUARIOS
 // ============================================

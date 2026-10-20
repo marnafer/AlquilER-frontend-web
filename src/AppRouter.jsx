@@ -25,6 +25,7 @@ const MisPropiedades = lazy(() => import('./pages/MisPropiedades'));
 const MisReservas = lazy(() => import('./pages/MisReservas'));
 const ReservaDetalle = lazy(() => import('./pages/ReservaDetalle'));
 const MisConsultas = lazy(() => import('./pages/MisConsultas'));
+const MisResenas = lazy(() => import('./pages/MisResenas'));
 const Notificaciones = lazy(() => import('./pages/Notificaciones'));
 const PropiedadForm = lazy(() => import('./pages/PropiedadForm'));
 const NotFound = lazy(() => import('./pages/NotFound'));
@@ -239,6 +240,14 @@ function AppRouter() {
                         element={
                             <PrivateRoute>
                                 <MisConsultas />
+                            </PrivateRoute>
+                        }
+                    />
+                    <Route
+                        path="/mis-resenas"
+                        element={
+                            <PrivateRoute>
+                                <MisResenas />
                             </PrivateRoute>
                         }
                     />

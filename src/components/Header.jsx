@@ -272,6 +272,9 @@ function Header() {
                                 <NavDropdown.Item as={Link} to="/consultas" onClick={() => setExpanded(false)}>
                                     <Icon name="fas fa-comments" /> Consultas
                                 </NavDropdown.Item>
+                                <NavDropdown.Item as={Link} to="/mis-resenas" onClick={() => setExpanded(false)}>
+                                    <Icon name="fas fa-star" /> Mis reseñas
+                                </NavDropdown.Item>
                                 <NavDropdown.Divider />
                                 <NavDropdown.Item onClick={handleLogout} className="text-danger">
                                     <Icon name="fas fa-sign-out-alt" /> Cerrar Sesión
