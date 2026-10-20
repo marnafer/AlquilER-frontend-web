@@ -1,4 +1,4 @@
-﻿import Icon from './Icon';
+import Icon from './Icon';
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 
 // Selector multiple con checkboxes. Se usa para categorias, localidades y

@@ -215,6 +215,34 @@
     padding: 60px 0;
 }
 
+/* Vistos recientemente: banda suave para diferenciarla del catálogo y
+   máximo 4 tarjetas por fila para que no se estiren cuando hay pocas. */
+.vistos-recientemente {
+    background: var(--gray-100);
+}
+
+.vistos-recientemente .propiedades-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1024px) {
+    .vistos-recientemente .propiedades-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .vistos-recientemente .propiedades-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .vistos-recientemente .propiedades-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 .propiedades-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));

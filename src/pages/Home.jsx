@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getTodasLasPropiedades, getPropiedadesDestacadas, getCategorias, getServicios, getLocalidades } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
+import { leerVistosRecientemente } from '../utils/vistosRecientemente';
 import PropiedadCardImage from '../components/PropiedadCardImage';
 import ServicioIcono from '../components/ServicioIcono';
 import { iconoCategoria } from '../utils/categorias';
@@ -24,6 +25,7 @@ function Home() {
     const [categorias, setCategorias] = useState([]);
     const [servicios, setServicios] = useState([]);
     const [localidades, setLocalidades] = useState([]);
+    const [vistosIds, setVistosIds] = useState(() => leerVistosRecientemente());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -126,6 +128,14 @@ function Home() {
     const propiedadesAMostrar = hayDestacadas
         ? destacadasDisponibles.slice(0, 6)
         : disponibles.slice(0, 6);
+
+    // "Vistos recientemente": resolvemos los IDs guardados contra las
+    // propiedades ya cargadas, así no hacemos ningún pedido extra. Solo
+    // mostramos las que siguen disponibles y sin repetir la actual.
+    const vistosRecientes = vistosIds
+        .map(id => disponibles.find(p => Number(p.id) === id))
+        .filter(Boolean)
+        .slice(0, 4);
 
     const ocultarHero = (e) => {
         const hero = e.currentTarget.closest('.hero-image');
@@ -240,6 +250,53 @@ function Home() {
                     </div>
                 </div>
             </section>
+
+            {/* VISTOS RECIENTEMENTE */}
+            {vistosRecientes.length > 0 && (
+                <section className="propiedades-destacadas vistos-recientemente">
+                    <div className="container">
+                        <div className="section-header reveal">
+                            <span className="section-badge">Tu historial</span>
+                            <h2>Vistos recientemente</h2>
+                            <p>Seguí donde lo dejaste</p>
+                        </div>
+
+                        <div className="propiedades-grid">
+                            {vistosRecientes.map((prop, i) => (
+                                <div
+                                    className="propiedad-card reveal"
+                                    key={prop.id}
+                                    style={{ transitionDelay: `${i * 80}ms` }}
+                                >
+                                    <div className="propiedad-image">
+                                        <PropiedadCardImage
+                                            src={rutaImagenPropiedad(prop)}
+                                            alt={prop.titulo || 'Propiedad'}
+                                        />
+                                    </div>
+                                    <div className="propiedad-info">
+                                        <h3>{prop.titulo}</h3>
+                                        <p className="propiedad-direccion">
+                                            <Icon name="fas fa-map-marker-alt" /> {prop.direccion}
+                                        </p>
+                                        <p className="propiedad-precio">
+                                            ${Number(prop.precio || 0).toLocaleString()}<span>/mes</span>
+                                        </p>
+                                        <div className="propiedad-features">
+                                            <span><Icon name="fas fa-bed" /> {prop.cantidad_dormitorios || 0} dorm.</span>
+                                            <span><Icon name="fas fa-bath" /> {prop.cantidad_banos || 0} {Number(prop.cantidad_banos) === 1 ? 'baño' : 'baños'}</span>
+                                            <span><Icon name="fas fa-arrows-alt" /> {prop.cantidad_ambientes || 0} amb.</span>
+                                        </div>
+                                        <Link to={`/propiedades/${prop.id}`} className="btn-ver">
+                                            <Icon name="fas fa-eye" /> Ver más
+                                        </Link>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )}
 
             {/* CATEGORÍAS */}
             <section className="categorias">

@@ -1,4 +1,4 @@
-﻿import Icon from './Icon';
+import Icon from './Icon';
 import React from 'react';
 
 const EmptyState = ({ icono = 'fa-folder-open', titulo, descripcion, action, children }) => (

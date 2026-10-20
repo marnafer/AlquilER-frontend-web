@@ -18,6 +18,7 @@ import {
     removeFavorito
 } from '../services/api';
 import { rutaImagenPropiedad, rutaImagen } from '../utils/imagenes';
+import { registrarVisto } from '../utils/vistosRecientemente';
 import ServicioIcono from './ServicioIcono';
 import { useAuth } from '../hooks/useAuth';
 import { useUI } from '../context/UIContext';
@@ -152,6 +153,7 @@ function PropiedadDetalle() {
             ]);
             setPropiedad(prop);
             setCategorias(cats);
+            if (prop?.id) registrarVisto(prop.id);
             const servItems = serviciosRes?.items || serviciosRes || [];
             setServicios(Array.isArray(servItems) ? servItems : []);
             if (resenasRes && resenasRes.success && Array.isArray(resenasRes.data.items)) {

@@ -1,4 +1,4 @@
-﻿import Icon from './Icon';
+import Icon from './Icon';
 import { useEffect, useState } from 'react';
 
 function PropiedadCardImage({ src, alt }) {

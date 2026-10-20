@@ -81,8 +81,52 @@ const DINAMICAS_ICONOS = [
   'ph-icon'
 ]
 
+// Vite sirve el HTML con "Content-Type: text/html" sin charset. Chrome da
+// prioridad al header HTTP sobre el <meta charset>, así que en algunos equipos
+// (codepage regional Windows-1252) todos los acentos se rompen. Forzamos
+// charset=utf-8 en el header para el dev server y el preview.
+function charsetUtf8Plugin() {
+  return {
+    name: 'charset-utf8',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const setHeader = res.setHeader.bind(res);
+        res.setHeader = (name, value) => {
+          if (
+            String(name).toLowerCase() === 'content-type' &&
+            typeof value === 'string' &&
+            value.startsWith('text/html') &&
+            !/charset/i.test(value)
+          ) {
+            value = `${value}; charset=utf-8`;
+          }
+          return setHeader(name, value);
+        };
+        next();
+      });
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const setHeader = res.setHeader.bind(res);
+        res.setHeader = (name, value) => {
+          if (
+            String(name).toLowerCase() === 'content-type' &&
+            typeof value === 'string' &&
+            value.startsWith('text/html') &&
+            !/charset/i.test(value)
+          ) {
+            value = `${value}; charset=utf-8`;
+          }
+          return setHeader(name, value);
+        };
+        next();
+      });
+    }
+  };
+}
+
 export default defineConfig(({ command }) => ({
-  plugins: [react()],
+  plugins: [charsetUtf8Plugin(), react()],
   css: {
     postcss: {
       // La purga corre solo en build. En desarrollo se conserva el CSS completo
