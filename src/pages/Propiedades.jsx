@@ -1,7 +1,7 @@
 import Icon from '../components/Icon';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { getPropiedades, getCategorias, getProvincias, getLocalidades, getFavoritos, getServicios } from '../services/api';
+import { getTodasLasPropiedades, getCategorias, getProvincias, getLocalidades, getFavoritos, getServicios } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import { useSEO } from '../hooks/useSEO';
 import PropiedadCard from '../components/PropiedadCard';
@@ -55,7 +55,7 @@ function Propiedades() {
     const [orden, setOrden] = useState(searchParams.get('orden') || 'recientes');
     const [pagina, setPagina] = useState(Number(searchParams.get('pagina')) || 1);
 
-    const POR_PAGINA = 9;
+    const POR_PAGINA = 10;
 
     // La description refleja la busqueda activa: si el visitante llego desde
     // Google con "departamentos en Rosario", el snippet debe coincidir.
@@ -96,7 +96,7 @@ function Propiedades() {
         setError('');
         try {
             const [props, cats, provs, locs, servs] = await Promise.all([
-                getPropiedades(),
+                getTodasLasPropiedades(),
                 getCategorias(),
                 getProvincias(),
                 getLocalidades(),

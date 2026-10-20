@@ -173,14 +173,36 @@ export async function enviarMensajeContacto(data) {
 // PROPIEDADES
 // ============================================
 
-export async function getPropiedades() {
+export async function getPropiedades({ page = 1, perPage = 10 } = {}) {
     try {
-        const response = await fetch(`${API_URL}/api/propiedades`);
+        const params = new URLSearchParams();
+        params.set('page', String(page));
+        params.set('per_page', String(perPage));
+        const response = await fetch(`${API_URL}/api/propiedades?${params.toString()}`);
         const result = await response.json();
         if (result.success && result.data && result.data.items) {
-            return result.data.items;
+            return result.data;
         }
-        return result.data || [];
+        return { items: [], total: 0, pagination: null };
+    } catch (error) {
+        throw new ErrorRed('No pudimos conectar con el servidor para cargar las propiedades. Probá de nuevo en unos momentos.');
+    }
+}
+
+// El catálogo filtra y pagina en el cliente, así que necesita todas las
+// propiedades. Recorre las páginas del backend (per_page máximo 50) y las une.
+export async function getTodasLasPropiedades() {
+    try {
+        const primera = await getPropiedades({ page: 1, perPage: 50 });
+        const items = [...primera.items];
+        const totalPaginas = primera.pagination?.last_page || 1;
+
+        for (let page = 2; page <= totalPaginas; page++) {
+            const siguiente = await getPropiedades({ page, perPage: 50 });
+            items.push(...siguiente.items);
+        }
+
+        return items;
     } catch (error) {
         throw new ErrorRed('No pudimos conectar con el servidor para cargar las propiedades. Probá de nuevo en unos momentos.');
     }

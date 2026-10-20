@@ -1,7 +1,7 @@
 import Icon from '../components/Icon';
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getPropiedades, getPropiedadesDestacadas, getCategorias, getServicios, getLocalidades } from '../services/api';
+import { getTodasLasPropiedades, getPropiedadesDestacadas, getCategorias, getServicios, getLocalidades } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
 import PropiedadCardImage from '../components/PropiedadCardImage';
 import ServicioIcono from '../components/ServicioIcono';
@@ -40,7 +40,7 @@ function Home() {
         setError('');
         try {
             const [props, dest, cats, serv, localidadesRes] = await Promise.all([
-                getPropiedades(),
+                getTodasLasPropiedades(),
                 getPropiedadesDestacadas(),
                 getCategorias(),
                 getServicios(),

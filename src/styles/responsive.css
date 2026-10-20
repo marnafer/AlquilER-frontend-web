@@ -3,6 +3,18 @@
     .servicios-grid {
         grid-template-columns: repeat(4, 1fr);
     }
+
+    /* Catálogo: 4 por fila */
+    .props-body .propiedades-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1024px) {
+    /* Catálogo: 3 por fila */
+    .props-body .propiedades-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 1024px) {
@@ -141,6 +153,11 @@
     /* Grids */
     .propiedades-grid {
         grid-template-columns: 1fr;
+    }
+
+    /* Catálogo: 2 por fila */
+    .props-body .propiedades-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .categorias-grid {
@@ -429,6 +446,11 @@
 }
 
 @media (max-width: 480px) {
+    /* Catálogo: 1 por fila */
+    .props-body .propiedades-grid {
+        grid-template-columns: 1fr;
+    }
+
     /* Grids */
     .categorias-grid {
         flex-direction: column;

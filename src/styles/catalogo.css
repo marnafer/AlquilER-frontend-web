@@ -7,6 +7,18 @@
     padding: 100px 0 60px;
 }
 
+/* El catálogo usa un contenedor más ancho que el resto del sitio para que
+   entren 5 tarjetas por fila sin que queden chicas. */
+.props-body.container {
+    max-width: 1600px;
+}
+
+/* 5 propiedades por fila. */
+.props-body .propiedades-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 20px;
+}
+
 .props-results {
     display: flex;
     justify-content: space-between;
@@ -82,7 +94,7 @@
 }
 
 .filtro-search {
-    grid-column: span 2;
+    grid-column: span 3;
 }
 
 .multi-select {
