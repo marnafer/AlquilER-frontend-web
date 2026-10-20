@@ -80,14 +80,21 @@
 /* Search Box */
 .search-box {
     display: flex;
-    gap: 8px;
+    flex-direction: column;
+    gap: 10px;
     background: var(--surface);
-    padding: 8px;
+    padding: 12px;
     border: 1px solid var(--border-subtle);
     border-radius: var(--surface-radius);
     box-shadow: var(--shadow-soft);
     max-width: 100%;
     margin-bottom: 24px;
+}
+
+.search-box-row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
 }
 
 .search-box input,
@@ -101,6 +108,49 @@
     color: var(--gray-800);
     min-width: 0;
     font-family: inherit;
+}
+
+.search-autocomplete {
+    flex: 1;
+    position: relative;
+    min-width: 0;
+}
+
+.search-autocomplete input {
+    width: 100%;
+}
+
+.search-sugerencias {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--control-radius);
+    box-shadow: var(--shadow-raised);
+    list-style: none;
+    margin: 0;
+    padding: 6px;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.search-sugerencias li {
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--gray-700);
+}
+
+.search-sugerencias li:hover {
+    background: var(--gray-100);
+    color: var(--primary-ink);
 }
 
 .search-box input:focus,
@@ -1014,4 +1064,36 @@
     background: var(--primary-ink);
     width: 24px;
     border-radius: 999px;
+}
+/* ========== HOME CATEGORIAS ========== */
+.home-categorias {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.home-categoria-btn {
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border-subtle);
+    background: var(--gray-50);
+    color: var(--gray-700);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.home-categoria-btn:hover {
+    border-color: var(--primary-ink);
+    color: var(--primary-ink);
+}
+
+.home-categoria-btn.active {
+    background: var(--primary-ink);
+    border-color: var(--primary-ink);
+    color: #fff;
 }

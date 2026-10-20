@@ -32,11 +32,25 @@ function Home() {
 
     const [busqueda, setBusqueda] = useState('');
     const [categoriaBusqueda, setCategoriaBusqueda] = useState('');
+    const [sugerencias, setSugerencias] = useState([]);
+    const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
         cargarDatos();
     }, []);
+
+    useEffect(() => {
+        if (busqueda.trim().length < 2) {
+            setSugerencias([]);
+            return;
+        }
+        const q = busqueda.toLowerCase();
+        const matches = localidades
+            .filter(l => (l.nombre || '').toLowerCase().includes(q))
+            .slice(0, 8);
+        setSugerencias(matches);
+    }, [busqueda, localidades]);
 
     const cargarDatos = async () => {
         setLoading(true);
@@ -164,26 +178,57 @@ function Home() {
                             <p>Las mejores propiedades en alquiler. Departamentos, casas, locales comerciales y más.</p>
 
                             <form onSubmit={handleBuscar} className="search-box">
-                                <input
-                                    type="text"
-                                    placeholder="¿Dónde querés vivir?"
-                                    aria-label="Buscar propiedad por dirección o título"
-                                    value={busqueda}
-                                    onChange={(e) => setBusqueda(e.target.value)}
-                                />
-                                <select
-                                    aria-label="Filtrar por categoría"
-                                    value={categoriaBusqueda}
-                                    onChange={(e) => setCategoriaBusqueda(e.target.value)}
-                                >
-                                    <option value="">Todas las categorías</option>
+                                <div className="search-box-row">
+                                    <div className="search-autocomplete">
+                                        <input
+                                            type="text"
+                                            placeholder="Localidad"
+                                            aria-label="Buscar propiedad por dirección o título"
+                                            value={busqueda}
+                                            onChange={(e) => { setBusqueda(e.target.value); setMostrarSugerencias(true); }}
+                                            onFocus={() => setMostrarSugerencias(true)}
+                                            onBlur={() => setTimeout(() => setMostrarSugerencias(false), 150)}
+                                            autoComplete="off"
+                                        />
+                                        {mostrarSugerencias && sugerencias.length > 0 && (
+                                            <ul className="search-sugerencias">
+                                                {sugerencias.map(s => (
+                                                    <li
+                                                        key={s.id}
+                                                        onMouseDown={() => {
+                                                            setBusqueda(s.nombre);
+                                                            setMostrarSugerencias(false);
+                                                        }}
+                                                    >
+                                                        <Icon name="fas fa-map-marker-alt" /> {s.nombre}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </div>
+                                    <button type="submit" className="btn-search">
+                                        <Icon name="fas fa-search" /> Buscar
+                                    </button>
+                                </div>
+                                <div className="home-categorias">
+                                    <button
+                                        type="button"
+                                        className={`home-categoria-btn ${categoriaBusqueda === '' ? 'active' : ''}`}
+                                        onClick={() => setCategoriaBusqueda('')}
+                                    >
+                                        Todas
+                                    </button>
                                     {categorias.map(cat => (
-                                        <option key={cat.id} value={cat.id}>{cat.nombre}</option>
+                                        <button
+                                            type="button"
+                                            key={cat.id}
+                                            className={`home-categoria-btn ${String(categoriaBusqueda) === String(cat.id) ? 'active' : ''}`}
+                                            onClick={() => setCategoriaBusqueda(String(cat.id))}
+                                        >
+                                            {cat.nombre}
+                                        </button>
                                     ))}
-                                </select>
-                                <button type="submit" className="btn-search">
-                                    <Icon name="fas fa-search" /> Buscar
-                                </button>
+                                </div>
                             </form>
                         </div>
 
