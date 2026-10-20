@@ -890,14 +890,6 @@ function PropiedadDetalle() {
                                             >
                                                 <Icon name="fas fa-pen" /> Editar
                                             </button>
-                                            <button
-                                                type="button"
-                                                className="resena-btn resena-btn-danger"
-                                                onClick={eliminarResena}
-                                                disabled={guardandoResena}
-                                            >
-                                                <Icon name="fas fa-trash" /> Eliminar
-                                            </button>
                                         </div>
                                     )}
                                 </article>
