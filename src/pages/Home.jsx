@@ -26,6 +26,7 @@ function Home() {
     const [servicios, setServicios] = useState([]);
     const [localidades, setLocalidades] = useState([]);
     const [vistosIds, setVistosIds] = useState(() => leerVistosRecientemente());
+    const [paginaCarrusel, setPaginaCarrusel] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -125,9 +126,19 @@ function Home() {
 
     const hayDestacadas = destacadasDisponibles.length > 0;
 
-    const propiedadesAMostrar = hayDestacadas
-        ? destacadasDisponibles.slice(0, 6)
-        : disponibles.slice(0, 6);
+    // Un solo carrusel: destacadas primero y luego recientes (sin duplicar)
+    const propiedadesCarrusel = [
+        ...destacadasDisponibles,
+        ...disponibles.filter(p => !destacadasDisponibles.some(d => Number(d.id) === Number(p.id)))
+    ].slice(0, 12);
+
+    const porPaginaCarrusel = 4;
+    const totalPaginasCarrusel = Math.max(1, Math.ceil(propiedadesCarrusel.length / porPaginaCarrusel));
+    const paginaSeguraCarrusel = Math.min(paginaCarrusel, totalPaginasCarrusel - 1);
+    const propiedadesAMostrar = propiedadesCarrusel.slice(
+        paginaSeguraCarrusel * porPaginaCarrusel,
+        (paginaSeguraCarrusel + 1) * porPaginaCarrusel
+    );
 
     // "Vistos recientemente": resolvemos los IDs guardados contra las
     // propiedades ya cargadas, así no hacemos ningún pedido extra. Solo
@@ -195,7 +206,7 @@ function Home() {
                 </div>
             </section>
 
-            {/* PROPIEDADES DESTACADAS */}
+            {/* PROPIEDADES DESTACADAS / RECIENTES (CARRUSEL) */}
             <section className="propiedades-destacadas">
                 <div className="container">
                     <div className="section-header reveal">
@@ -204,46 +215,82 @@ function Home() {
                         <p>{hayDestacadas ? 'Las propiedades destacadas por nuestro equipo' : 'Las últimas publicaciones en AlquilER'}</p>
                     </div>
 
-                    <div className="propiedades-grid">
-                        {propiedadesAMostrar.length === 0 && (
-                            <EmptyState
-                                icono="fa-home"
-                                titulo="Todavía no hay propiedades disponibles"
-                                descripcion="Pronto vas a encontrar departamentos, casas y más en alquiler."
-                            />
-                        )}
-                        {propiedadesAMostrar.map((prop, i) => (
-                            <div
-                                className="propiedad-card reveal"
-                                key={prop.id}
-                                style={{ transitionDelay: `${i * 80}ms` }}
-                            >
-                                <div className="propiedad-image">
-                                    <PropiedadCardImage
-                                        src={rutaImagenPropiedad(prop)}
-                                        alt={prop.titulo || 'Propiedad'}
-                                    />
-                                </div>
-                                <div className="propiedad-info">
-                                    <h3>{prop.titulo}</h3>
-                                    <p className="propiedad-direccion">
-                                        <Icon name="fas fa-map-marker-alt" /> {prop.direccion}
-                                    </p>
-                                    <p className="propiedad-precio">
-                                        ${Number(prop.precio || 0).toLocaleString()}<span>/mes</span>
-                                    </p>
-                                    <div className="propiedad-features">
-                                        <span><Icon name="fas fa-bed" /> {prop.cantidad_dormitorios || 0} dorm.</span>
-                                        <span><Icon name="fas fa-bath" /> {prop.cantidad_banos || 0} {Number(prop.cantidad_banos) === 1 ? 'baño' : 'baños'}</span>
-                                        <span><Icon name="fas fa-arrows-alt" /> {prop.cantidad_ambientes || 0} amb.</span>
+                    <div className="home-carrusel">
+                        <button
+                            type="button"
+                            className="home-carrusel-btn"
+                            onClick={() => setPaginaCarrusel(p => Math.max(0, p - 1))}
+                            disabled={paginaSeguraCarrusel === 0}
+                            aria-label="Anterior"
+                        >
+                            <Icon name="fas fa-chevron-left" />
+                        </button>
+
+                        <div className="propiedades-grid home-carrusel-grid">
+                            {propiedadesAMostrar.length === 0 && (
+                                <EmptyState
+                                    icono="fa-home"
+                                    titulo="Todavía no hay propiedades disponibles"
+                                    descripcion="Pronto vas a encontrar departamentos, casas y más en alquiler."
+                                />
+                            )}
+                            {propiedadesAMostrar.map((prop, i) => (
+                                <div
+                                    className="propiedad-card reveal"
+                                    key={prop.id}
+                                    style={{ transitionDelay: `${i * 80}ms` }}
+                                >
+                                    <div className="propiedad-image">
+                                        <PropiedadCardImage
+                                            src={rutaImagenPropiedad(prop)}
+                                            alt={prop.titulo || 'Propiedad'}
+                                        />
                                     </div>
-                                    <Link to={`/propiedades/${prop.id}`} className="btn-ver">
-                                        <Icon name="fas fa-eye" /> Ver más
-                                    </Link>
+                                    <div className="propiedad-info">
+                                        <h3>{prop.titulo}</h3>
+                                        <p className="propiedad-direccion">
+                                            <Icon name="fas fa-map-marker-alt" /> {prop.direccion}
+                                        </p>
+                                        <p className="propiedad-precio">
+                                            ${Number(prop.precio || 0).toLocaleString()}<span>/mes</span>
+                                        </p>
+                                        <div className="propiedad-features">
+                                            <span><Icon name="fas fa-bed" /> {prop.cantidad_dormitorios || 0} dorm.</span>
+                                            <span><Icon name="fas fa-bath" /> {prop.cantidad_banos || 0} {Number(prop.cantidad_banos) === 1 ? 'baño' : 'baños'}</span>
+                                            <span><Icon name="fas fa-arrows-alt" /> {prop.cantidad_ambientes || 0} amb.</span>
+                                        </div>
+                                        <Link to={`/propiedades/${prop.id}`} className="btn-ver">
+                                            <Icon name="fas fa-eye" /> Ver más
+                                        </Link>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
+
+                        <button
+                            type="button"
+                            className="home-carrusel-btn"
+                            onClick={() => setPaginaCarrusel(p => Math.min(totalPaginasCarrusel - 1, p + 1))}
+                            disabled={paginaSeguraCarrusel >= totalPaginasCarrusel - 1}
+                            aria-label="Siguiente"
+                        >
+                            <Icon name="fas fa-chevron-right" />
+                        </button>
                     </div>
+
+                    {totalPaginasCarrusel > 1 && (
+                        <div className="home-carrusel-dots">
+                            {Array.from({ length: totalPaginasCarrusel }).map((_, i) => (
+                                <button
+                                    key={i}
+                                    type="button"
+                                    className={`home-carrusel-dot ${i === paginaSeguraCarrusel ? 'active' : ''}`}
+                                    onClick={() => setPaginaCarrusel(i)}
+                                    aria-label={`Página ${i + 1}`}
+                                />
+                            ))}
+                        </div>
+                    )}
 
                     <div className="section-footer reveal">
                         <Link to="/propiedades" className="btn-ver-todas">Ver todas las propiedades</Link>

@@ -955,4 +955,63 @@
 
 [data-theme="dark"] .propiedad-badge.alquilada {
     color: #475569;
+}/* ========== HOME CARRUSEL ========== */
+.home-carrusel {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.home-carrusel-btn {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--border-subtle);
+    background: var(--surface);
+    color: var(--primary-ink);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.home-carrusel-btn:hover:not(:disabled) {
+    background: var(--primary-ink);
+    color: #fff;
+}
+
+.home-carrusel-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.home-carrusel-grid {
+    flex: 1;
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.home-carrusel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.home-carrusel-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: none;
+    background: var(--gray-300);
+    cursor: pointer;
+    padding: 0;
+    transition: var(--transition);
+}
+
+.home-carrusel-dot.active {
+    background: var(--primary-ink);
+    width: 24px;
+    border-radius: 999px;
 }
