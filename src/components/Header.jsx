@@ -109,6 +109,24 @@ function Header() {
         }
     };
 
+    const rutaDe = (n) => {
+        const ref = n?.referencia_id;
+        switch (n?.tipo) {
+            case 'reserva_nueva':
+            case 'reserva_confirmada':
+            case 'reserva_rechazada':
+            case 'reserva_finalizada':
+                return ref ? `/reservas/${ref}` : '/reservas';
+            case 'consulta_nueva':
+            case 'mensaje_nuevo':
+                return '/consultas';
+            case 'resena_nueva':
+                return ref ? `/reservas/${ref}` : '/mis-resenas';
+            default:
+                return '/notificaciones';
+        }
+    };
+
     const formatearFecha = (fecha) => {
         if (!fecha) return '';
         const d = new Date(fecha);
@@ -208,15 +226,20 @@ function Header() {
                                                     <div
                                                         key={n.id}
                                                         className={`notif-item ${!n.leida ? 'notif-item-no-leida' : ''}`}
-                                                        onClick={() =>
-                                                            !n.leida && alMarcarLeida(n.id)
-                                                        }
-                                                        role={!n.leida ? 'button' : undefined}
-                                                        tabIndex={!n.leida ? 0 : undefined}
+                                                        style={{ cursor: 'pointer' }}
+                                                        onClick={() => {
+                                                            if (!n.leida) alMarcarLeida(n.id);
+                                                            setVerDropdown(false);
+                                                            navigate(rutaDe(n));
+                                                        }}
+                                                        role="button"
+                                                        tabIndex={0}
                                                         onKeyDown={(e) => {
-                                                            if (!n.leida && (e.key === 'Enter' || e.key === ' ')) {
+                                                            if (e.key === 'Enter' || e.key === ' ') {
                                                                 e.preventDefault();
-                                                                alMarcarLeida(n.id);
+                                                                if (!n.leida) alMarcarLeida(n.id);
+                                                                setVerDropdown(false);
+                                                                navigate(rutaDe(n));
                                                             }
                                                         }}
                                                     >

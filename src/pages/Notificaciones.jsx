@@ -1,6 +1,6 @@
 import Icon from '../components/Icon';
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useSEO } from '../hooks/useSEO';
 import { useUI } from '../context/UIContext';
@@ -24,8 +24,27 @@ const ICONOS_POR_TIPO = {
 
 function Notificaciones() {
     useSEO('Notificaciones', 'Avisos de reservas, consultas y mensajes en AlquilER.', { noindex: true });
-
+    
     const { token } = useAuth();
+    const navigate = useNavigate();
+
+    const rutaDe = (n) => {
+        const ref = n?.referencia_id;
+        switch (n?.tipo) {
+            case 'reserva_nueva':
+            case 'reserva_confirmada':
+            case 'reserva_rechazada':
+            case 'reserva_finalizada':
+                return ref ? `/reservas/${ref}` : '/reservas';
+            case 'consulta_nueva':
+            case 'mensaje_nuevo':
+                return '/consultas';
+            case 'resena_nueva':
+                return ref ? `/reservas/${ref}` : '/mis-resenas';
+            default:
+                return '/notificaciones';
+        }
+    };
     const { showToast } = useUI();
 
     const [items, setItems] = useState([]);
@@ -200,9 +219,14 @@ function Notificaciones() {
                 {items.length > 0 ? (
                     <div className="notificaciones-lista">
                         {visibles.map(n => (
-                            <div
+                            <Link
                                 key={n.id}
+                                to={rutaDe(n)}
                                 className={`notificaciones-item ${!n.leida ? 'no-leida' : ''}`}
+                                style={{ cursor: 'pointer', textDecoration: 'none', color: 'inherit', display: 'block' }}
+                                onClick={() => {
+                                    if (!n.leida) marcarLeida(n.id);
+                                }}
                             >
                                 <div className="notificaciones-item-icon">
                                     <Icon name={`fas ${iconoDe(n.tipo)}`} />
@@ -223,7 +247,7 @@ function Notificaciones() {
                                     <button
                                         type="button"
                                         className="notificaciones-item-marcar"
-                                        onClick={() => marcarLeida(n.id)}
+                                        onClick={(e) => { e.stopPropagation(); marcarLeida(n.id); }}
                                         disabled={marcandoId === n.id}
                                         aria-label="Marcar como leída"
                                     >
@@ -234,7 +258,7 @@ function Notificaciones() {
                                         )}
                                     </button>
                                 )}
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 ) : (

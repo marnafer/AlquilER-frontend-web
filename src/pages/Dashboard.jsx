@@ -1,8 +1,8 @@
 import Icon from '../components/Icon';
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { getMisPropiedades, getReservas, separarReservas, getFavoritos, getConsultas, getNotificaciones, getMisResenasPropiedades, getMisResenasComoInquilino, getResenasByCalificador } from '../services/api';
+import { getMisPropiedades, getReservas, separarReservas, getFavoritos, getConsultas, getNotificaciones, getMisResenasPropiedades, getMisResenasComoInquilino, getResenasByCalificador, marcarNotificacionLeida } from '../services/api';
 import { useSEO } from '../hooks/useSEO';
 import Loader from '../components/Loader';
 import ErrorState from '../components/ErrorState';
@@ -17,8 +17,27 @@ const ICONOS_NOTIF = {
 
 function Dashboard() {
     useSEO('Mi panel', 'Resumen de tus propiedades, reservas, consultas y notificaciones en AlquilER.', { noindex: true });
-
+    
     const { token, usuario } = useAuth();
+    const navigate = useNavigate();
+
+    const rutaDe = (n) => {
+        const ref = n?.referencia_id;
+        switch (n?.tipo) {
+            case 'reserva_nueva':
+            case 'reserva_confirmada':
+            case 'reserva_rechazada':
+            case 'reserva_finalizada':
+                return ref ? `/reservas/${ref}` : '/reservas';
+            case 'consulta_nueva':
+            case 'mensaje_nuevo':
+                return '/consultas';
+            case 'resena_nueva':
+                return ref ? `/reservas/${ref}` : '/mis-resenas';
+            default:
+                return '/notificaciones';
+        }
+    };
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [stats, setStats] = useState({
@@ -307,26 +326,38 @@ function Dashboard() {
                             </div>
 
                             {notificaciones.length > 0 ? (
-                                <ul className="dash-reservas">
-                                    {notificaciones.map((n) => (
-                                        <li key={n.id} className="dash-reserva-item">
-                                            <div className={`dash-reserva-icon ${!n.leida ? 'teal' : 'muted'}`}>
-                                                <Icon name={`fas ${iconoDe(n.tipo)}`} />
-                                            </div>
-                                            <div className="dash-reserva-info">
-                                                <strong>{n.titulo}</strong>
-                                                <span>
-                                                    {formatearFecha(n.fecha_notificacion)}
-                                                </span>
-                                            </div>
-                                            {!n.leida && (
-                                                <span className="dash-reserva-badge no-leida">
-                                                    Nueva
-                                                </span>
-                                            )}
-                                        </li>
-                                    ))}
-                                </ul>
+                            <ul className="dash-reservas">
+                                {notificaciones.map((n) => (
+                                    <li
+                                        key={n.id}
+                                        className="dash-reserva-item"
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        <Link
+                                            to={rutaDe(n)}
+                                            style={{ display: 'contents', color: 'inherit', textDecoration: 'none' }}
+                                            onClick={() => {
+                                                if (!n.leida) marcarNotificacionLeida(n.id, token);
+                                            }}
+                                        >
+                                        <div className={`dash-reserva-icon ${!n.leida ? 'teal' : 'muted'}`}>
+                                            <Icon name={`fas ${iconoDe(n.tipo)}`} />
+                                        </div>
+                                        <div className="dash-reserva-info">
+                                            <strong>{n.titulo}</strong>
+                                            <span>
+                                                {formatearFecha(n.fecha_notificacion)}
+                                            </span>
+                                        </div>
+                                        {!n.leida && (
+                                            <span className="dash-reserva-badge no-leida">
+                                                Nueva
+                                            </span>
+                                        )}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
                             ) : (
                                 <div className="dash-empty">
                                     <div className="dash-empty-icon">
