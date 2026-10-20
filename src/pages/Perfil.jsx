@@ -1,10 +1,10 @@
 import Icon from '../components/Icon';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useUI } from '../context/UIContext';
 import { useTheme } from '../context/ThemeContext';
-import { updatePerfil } from '../services/api';
+import { updatePerfil, getMisResenasPropiedades, getMisResenasComoInquilino } from '../services/api';
 import { useSEO } from '../hooks/useSEO';
 import Loader from '../components/Loader';
 import EmptyState from '../components/EmptyState';
@@ -13,6 +13,36 @@ function Perfil() {
     useSEO('Mi perfil', 'Gestioná tus datos personales y tu contraseña en AlquilER.', { noindex: true });
 
     const { usuario, token, loading, refreshUser } = useAuth();
+
+    useEffect(() => {
+        if (!token) return;
+        let activo = true;
+        (async () => {
+            try {
+                const [resProp, resInq] = await Promise.all([
+                    getMisResenasPropiedades(token),
+                    getMisResenasComoInquilino(token)
+                ]);
+                if (!activo) return;
+                const itemsProp = Array.isArray(resProp?.data?.items)
+                    ? resProp.data.items
+                    : (Array.isArray(resProp?.data) ? resProp.data : []);
+                const itemsInq = Array.isArray(resInq?.data?.items)
+                    ? resInq.data.items
+                    : (Array.isArray(resInq?.data) ? resInq.data : []);
+                const prom = (arr) => arr.length
+                    ? arr.reduce((a, r) => a + (Number(r.calificacion) || 0), 0) / arr.length
+                    : 0;
+                setReputacion({
+                    inquilino: { promedio: prom(itemsInq), total: itemsInq.length },
+                    propietario: { promedio: prom(itemsProp), total: itemsProp.length }
+                });
+            } catch (e) {
+                // silencioso
+            }
+        })();
+        return () => { activo = false; };
+    }, [token]);
     const { theme, toggleTheme } = useTheme();
 
     const [editando, setEditando] = useState(false);
@@ -23,6 +53,11 @@ function Perfil() {
     const [passRepetir, setPassRepetir] = useState('');
     const [passErrores, setPassErrores] = useState({});
     const [guardandoPass, setGuardandoPass] = useState(false);
+
+    const [reputacion, setReputacion] = useState({
+        inquilino: { promedio: 0, total: 0 },
+        propietario: { promedio: 0, total: 0 }
+    });
 
     const [formData, setFormData] = useState({
         nombre: '',
@@ -347,21 +382,59 @@ function Perfil() {
                         )}
                     </div>
 
-                    {/* REPUTACIÓN */}
-                    <div className="perfil-card">
-                        <div className="perfil-card-header">
-                            <h3>
-                                <Icon name="fas fa-star" /> Mi reputación
-                            </h3>
+                        {/* REPUTACIÓN */}
+                        <div className="perfil-card">
+                            <div className="perfil-card-header">
+                                <h3>
+                                    <Icon name="fas fa-star" /> Mi reputación
+                                </h3>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 16 }}>
+                                <div>
+                                    <span className="perfil-dato-label">Como inquilino</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                                        {[...Array(5)].map((_, i) => (
+                                            <Icon
+                                                key={i}
+                                                name="fas fa-star"
+                                                style={{ color: i < Math.round(reputacion.inquilino.promedio) ? '#f59e0b' : 'var(--gray-400)', fontSize: 18 }}
+                                            />
+                                        ))}
+                                        <span style={{ fontWeight: 700, marginLeft: 4 }}>
+                                            {reputacion.inquilino.promedio ? reputacion.inquilino.promedio.toFixed(1) : '—'}
+                                        </span>
+                                        <span style={{ color: 'var(--text-faint)', fontSize: 13 }}>
+                                            ({reputacion.inquilino.total} {reputacion.inquilino.total === 1 ? 'reseña' : 'reseñas'})
+                                        </span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span className="perfil-dato-label">Como propietario</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                                        {[...Array(5)].map((_, i) => (
+                                            <Icon
+                                                key={i}
+                                                name="fas fa-star"
+                                                style={{ color: i < Math.round(reputacion.propietario.promedio) ? '#f59e0b' : 'var(--gray-400)', fontSize: 18 }}
+                                            />
+                                        ))}
+                                        <span style={{ fontWeight: 700, marginLeft: 4 }}>
+                                            {reputacion.propietario.promedio ? reputacion.propietario.promedio.toFixed(1) : '—'}
+                                        </span>
+                                        <span style={{ color: 'var(--text-faint)', fontSize: 13 }}>
+                                            ({reputacion.propietario.total} {reputacion.propietario.total === 1 ? 'reseña' : 'reseñas'})
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p className="perfil-form-help">
+                                Mirá las reseñas que recibiste como inquilino, las de tus propiedades y las que
+                                escribiste a lo largo de tus alquileres.
+                            </p>
+                            <Link to="/mis-resenas" className="btn-detalle btn-detalle-primario">
+                                <Icon name="fas fa-star" /> Ver mis reseñas
+                            </Link>
                         </div>
-                        <p className="perfil-form-help">
-                            Mirá las reseñas que recibiste como inquilino, las de tus propiedades y las que
-                            escribiste a lo largo de tus alquileres.
-                        </p>
-                        <Link to="/mis-resenas" className="btn-detalle btn-detalle-primario">
-                            <Icon name="fas fa-star" /> Ver mis reseñas
-                        </Link>
-                    </div>
 
                 </section>
 
