@@ -978,15 +978,24 @@ function PropiedadDetalle() {
                                 </button>
                             </div>
                         </form>
-                    ) : isAuthenticated && !esDuenio && (miResena || reservaCalificable) ? (
+                    ) : isAuthenticated && !esDuenio && !miResena && reservaCalificable ? (
                         <div className="resena-cta">
                             <button
                                 type="button"
                                 className="btn-detalle btn-detalle-primario"
                                 onClick={abrirFormularioResena}
                             >
-                                <Icon name="fas fa-star" />{' '}
-                                {miResena ? 'Editar mi reseña' : 'Calificar esta propiedad'}
+                                <Icon name="fas fa-star" /> Calificar esta propiedad
+                            </button>
+                        </div>
+                    ) : isAuthenticated && !esDuenio && miResena ? (
+                        <div className="resena-cta">
+                            <button
+                                type="button"
+                                className="btn-detalle btn-detalle-secundario"
+                                disabled
+                            >
+                                <Icon name="fas fa-check" /> Ya calificaste esta propiedad
                             </button>
                         </div>
                     ) : isAuthenticated && esDuenio ? (
