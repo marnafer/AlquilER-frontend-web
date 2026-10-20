@@ -12,9 +12,13 @@ import {
     separarReservas,
     createResena,
     updateResena,
-    deleteResena
+    deleteResena,
+    getFavoritos,
+    addFavorito,
+    removeFavorito
 } from '../services/api';
 import { rutaImagenPropiedad, rutaImagen } from '../utils/imagenes';
+import { registrarVisto } from '../utils/vistosRecientemente';
 import ServicioIcono from './ServicioIcono';
 import { useAuth } from '../hooks/useAuth';
 import { useUI } from '../context/UIContext';
@@ -36,6 +40,8 @@ function PropiedadDetalle() {
     const [propiedad, setPropiedad] = useState(null);
     const [categorias, setCategorias] = useState([]);
     const [servicios, setServicios] = useState([]);
+    const [esFavorito, setEsFavorito] = useState(false);
+    const [favLoading, setFavLoading] = useState(false);
     const [loading, setLoading] = useState(true);
     const [imgError, setImgError] = useState(false);
     const [galeriaIndice, setGaleriaIndice] = useState(0);
@@ -147,6 +153,7 @@ function PropiedadDetalle() {
             ]);
             setPropiedad(prop);
             setCategorias(cats);
+            if (prop?.id) registrarVisto(prop.id);
             const servItems = serviciosRes?.items || serviciosRes || [];
             setServicios(Array.isArray(servItems) ? servItems : []);
             if (resenasRes && resenasRes.success && Array.isArray(resenasRes.data.items)) {
@@ -159,8 +166,27 @@ function PropiedadDetalle() {
             if (token) {
                 const res = await getReservas(token);
                 setReservas(separarReservas(res).todas);
+                try {
+                    const favs = await getFavoritos(token);
+                    let favItems = [];
+                    if (favs?.success && favs?.data) {
+                        favItems = favs.data.items || favs.data || [];
+                    } else if (Array.isArray(favs)) {
+                        favItems = favs;
+                    } else if (favs?.data) {
+                        favItems = favs.data;
+                    }
+                    const esFav = favItems.some(f => {
+                        const favId = f.propiedad_id || f.id || f?.propiedad?.id;
+                        return String(favId) === String(id);
+                    });
+                    setEsFavorito(esFav);
+                } catch (e) {
+                    console.error('Error cargando favoritos:', e);
+                }
             } else {
                 setReservas([]);
+                setEsFavorito(false);
             }
             setGaleriaIndice(0);
             setLightboxAbierto(false);
@@ -171,6 +197,31 @@ function PropiedadDetalle() {
             setError(error.message || 'No pudimos cargar los detalles de la propiedad.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleFavorito = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!isAuthenticated || favLoading) return;
+        setFavLoading(true);
+        try {
+            if (esFavorito) {
+                const result = await removeFavorito(id, token);
+                if (result?.success) {
+                    setEsFavorito(false);
+                }
+            } else {
+                const result = await addFavorito(id, token);
+                const yaEstaba = result?.error && String(result.error).toLowerCase().includes('ya est');
+                if (result?.success || yaEstaba) {
+                    setEsFavorito(true);
+                }
+            }
+        } catch (error) {
+            console.error('Error actualizando favorito:', error);
+        } finally {
+            setFavLoading(false);
         }
     };
 
@@ -545,6 +596,27 @@ function PropiedadDetalle() {
                         <div className="propiedad-precio-pill detalle-precio-pill">
                             ${Number(propiedad.precio || 0).toLocaleString()}<span>/mes</span>
                         </div>
+                        {isAuthenticated ? (
+                            <button
+                                type="button"
+                                className={`detalle-fav-btn ${esFavorito ? 'active' : ''}`}
+                                aria-label={esFavorito ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                                aria-pressed={esFavorito}
+                                disabled={favLoading}
+                                onClick={handleFavorito}
+                            >
+                                <Icon name={esFavorito ? 'fas fa-heart' : 'far fa-heart'} />
+                            </button>
+                        ) : (
+                            <Link
+                                to="/login"
+                                className="detalle-fav-btn"
+                                title="Iniciar sesión para guardar en favoritos"
+                                aria-label="Agregar a favoritos"
+                            >
+                                <Icon name="far fa-heart" />
+                            </Link>
+                        )}
                     </div>
 
                     {imagenesGaleria.length > 1 && (
@@ -818,14 +890,6 @@ function PropiedadDetalle() {
                                             >
                                                 <Icon name="fas fa-pen" /> Editar
                                             </button>
-                                            <button
-                                                type="button"
-                                                className="resena-btn resena-btn-danger"
-                                                onClick={eliminarResena}
-                                                disabled={guardandoResena}
-                                            >
-                                                <Icon name="fas fa-trash" /> Eliminar
-                                            </button>
                                         </div>
                                     )}
                                 </article>
@@ -914,15 +978,24 @@ function PropiedadDetalle() {
                                 </button>
                             </div>
                         </form>
-                    ) : isAuthenticated && !esDuenio && (miResena || reservaCalificable) ? (
+                    ) : isAuthenticated && !esDuenio && !miResena && reservaCalificable ? (
                         <div className="resena-cta">
                             <button
                                 type="button"
                                 className="btn-detalle btn-detalle-primario"
                                 onClick={abrirFormularioResena}
                             >
-                                <Icon name="fas fa-star" />{' '}
-                                {miResena ? 'Editar mi reseña' : 'Calificar esta propiedad'}
+                                <Icon name="fas fa-star" /> Calificar esta propiedad
+                            </button>
+                        </div>
+                    ) : isAuthenticated && !esDuenio && miResena ? (
+                        <div className="resena-cta">
+                            <button
+                                type="button"
+                                className="btn-detalle btn-detalle-secundario"
+                                disabled
+                            >
+                                <Icon name="fas fa-check" /> Ya calificaste esta propiedad
                             </button>
                         </div>
                     ) : isAuthenticated && esDuenio ? (

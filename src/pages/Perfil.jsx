@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useUI } from '../context/UIContext';
 import { useTheme } from '../context/ThemeContext';
-import { updatePerfil, getResenasByUsuario } from '../services/api';
+import { updatePerfil, getMisResenasPropiedades, getMisResenasComoInquilino } from '../services/api';
 import { useSEO } from '../hooks/useSEO';
 import Loader from '../components/Loader';
 import EmptyState from '../components/EmptyState';
@@ -13,6 +13,36 @@ function Perfil() {
     useSEO('Mi perfil', 'Gestioná tus datos personales y tu contraseña en AlquilER.', { noindex: true });
 
     const { usuario, token, loading, refreshUser } = useAuth();
+
+    useEffect(() => {
+        if (!token) return;
+        let activo = true;
+        (async () => {
+            try {
+                const [resProp, resInq] = await Promise.all([
+                    getMisResenasPropiedades(token),
+                    getMisResenasComoInquilino(token)
+                ]);
+                if (!activo) return;
+                const itemsProp = Array.isArray(resProp?.data?.items)
+                    ? resProp.data.items
+                    : (Array.isArray(resProp?.data) ? resProp.data : []);
+                const itemsInq = Array.isArray(resInq?.data?.items)
+                    ? resInq.data.items
+                    : (Array.isArray(resInq?.data) ? resInq.data : []);
+                const prom = (arr) => arr.length
+                    ? arr.reduce((a, r) => a + (Number(r.calificacion) || 0), 0) / arr.length
+                    : 0;
+                setReputacion({
+                    inquilino: { promedio: prom(itemsInq), total: itemsInq.length },
+                    propietario: { promedio: prom(itemsProp), total: itemsProp.length }
+                });
+            } catch (e) {
+                // silencioso
+            }
+        })();
+        return () => { activo = false; };
+    }, [token]);
     const { theme, toggleTheme } = useTheme();
 
     const [editando, setEditando] = useState(false);
@@ -24,10 +54,10 @@ function Perfil() {
     const [passErrores, setPassErrores] = useState({});
     const [guardandoPass, setGuardandoPass] = useState(false);
 
-    const [resenasRecibidas, setResenasRecibidas] = useState([]);
-    const [promedioResenas, setPromedioResenas] = useState(0);
-    const [totalResenas, setTotalResenas] = useState(0);
-    const [cargandoResenas, setCargandoResenas] = useState(true);
+    const [reputacion, setReputacion] = useState({
+        inquilino: { promedio: 0, total: 0 },
+        propietario: { promedio: 0, total: 0 }
+    });
 
     const [formData, setFormData] = useState({
         nombre: '',
@@ -36,28 +66,6 @@ function Perfil() {
         telefono: '',
         domicilio: ''
     });
-
-    useEffect(() => {
-        if (!usuario || !token) return;
-        const cargarResenas = async () => {
-            setCargandoResenas(true);
-            try {
-                const res = await getResenasByUsuario(usuario.id, token);
-                const data = res?.data || res || {};
-                setResenasRecibidas(Array.isArray(data.items) ? data.items : []);
-                setPromedioResenas(data.promedio || 0);
-                setTotalResenas(data.total || 0);
-            } catch (error) {
-                console.error('Error cargando reseñas:', error);
-                setResenasRecibidas([]);
-                setPromedioResenas(0);
-                setTotalResenas(0);
-            } finally {
-                setCargandoResenas(false);
-            }
-        };
-        cargarResenas();
-    }, [usuario, token]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -158,17 +166,6 @@ function Perfil() {
     const inicial = (usuario.nombre?.[0] || 'U').toUpperCase();
     const esAdministrador = usuario.rol === 'administrador';
     const rolLabel = esAdministrador ? 'Administrador' : 'Usuario';
-
-    const renderEstrellas = (n) => {
-        const valor = Math.round(Number(n) || 0);
-        return [...Array(5)].map((_, i) => (
-            <Icon
-                key={i}
-                name={`fas fa-star ${i < valor ? 'estrella-llena' : ''}`}
-                style={{ color: i < valor ? '#f59e0b' : 'var(--gray-400)', fontSize: 16, marginRight: 2 }}
-            />
-        ));
-    };
 
     return (
         <div className="perfil-page">
@@ -385,78 +382,59 @@ function Perfil() {
                         )}
                     </div>
 
-                    {/* REPUTACIÓN */}
-                    <div className="perfil-card">
-                        <div className="perfil-card-header">
-                            <h3>
-                                <Icon name="fas fa-star" /> Mi reputación
-                            </h3>
-                        </div>
-
-                        {cargandoResenas ? (
-                            <div style={{ padding: '20px 0', textAlign: 'center', color: 'var(--gray-500)' }}>
-                                <Icon name="fas fa-spinner fa-spin" /> Cargando reseñas...
+                        {/* REPUTACIÓN */}
+                        <div className="perfil-card">
+                            <div className="perfil-card-header">
+                                <h3>
+                                    <Icon name="fas fa-star" /> Mi reputación
+                                </h3>
                             </div>
-                        ) : totalResenas === 0 ? (
-                            <div className="resenas-vacio" style={{ textAlign: 'left', padding: '10px 0' }}>
-                                <Icon name="fas fa-star-half-alt" />
-                                <p style={{ marginTop: 6 }}>
-                                    Todavía no recibiste reseñas.
-                                </p>
-                            </div>
-                        ) : (
-                            <>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                        {renderEstrellas(promedioResenas)}
-                                    </div>
-                                    <span style={{ fontWeight: 700, fontSize: 18 }}>
-                                        {Number(promedioResenas).toFixed(1)}
-                                    </span>
-                                    <span style={{ color: 'var(--gray-500)' }}>
-                                        ({totalResenas} {totalResenas === 1 ? 'reseña' : 'reseñas'})
-                                    </span>
-                                </div>
-
-                                {resenasRecibidas.length > 0 && (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                        <h4 style={{ margin: 0, fontSize: 14, color: 'var(--gray-600)' }}>
-                                            Últimas reseñas recibidas
-                                        </h4>
-                                        {resenasRecibidas.slice(0, 3).map((r) => (
-                                            <article
-                                                key={r.id}
-                                                style={{
-                                                    border: '1px solid var(--gray-200)',
-                                                    borderRadius: 'var(--control-radius)',
-                                                    padding: '12px 14px',
-                                                    background: 'var(--gray-50)'
-                                                }}
-                                            >
-                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                                        {renderEstrellas(r.calificacion)}
-                                                        <span style={{ fontSize: 13, fontWeight: 600 }}>{r.calificacion}/5</span>
-                                                    </div>
-                                                    {r.fecha_publicacion && (
-                                                        <span style={{ fontSize: 12, color: 'var(--gray-500)' }}>
-                                                            <Icon name="far fa-calendar-alt" style={{ marginRight: 4 }} />
-                                                            {String(r.fecha_publicacion).slice(0, 10)}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                {r.comentario && (
-                                                    <p style={{ margin: 0, fontSize: 13, color: 'var(--gray-700)', lineHeight: 1.5 }}>
-                                                        {r.comentario}
-                                                    </p>
-                                                )}
-                                            </article>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 16 }}>
+                                <div>
+                                    <span className="perfil-dato-label">Como inquilino</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                                        {[...Array(5)].map((_, i) => (
+                                            <Icon
+                                                key={i}
+                                                name="fas fa-star"
+                                                style={{ color: i < Math.round(reputacion.inquilino.promedio) ? '#f59e0b' : 'var(--gray-400)', fontSize: 18 }}
+                                            />
                                         ))}
+                                        <span style={{ fontWeight: 700, marginLeft: 4 }}>
+                                            {reputacion.inquilino.promedio ? reputacion.inquilino.promedio.toFixed(1) : '—'}
+                                        </span>
+                                        <span style={{ color: 'var(--text-faint)', fontSize: 13 }}>
+                                            ({reputacion.inquilino.total} {reputacion.inquilino.total === 1 ? 'reseña' : 'reseñas'})
+                                        </span>
                                     </div>
-                                )}
-                            </>
-                        )}
-                    </div>
+                                </div>
+                                <div>
+                                    <span className="perfil-dato-label">Como propietario</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                                        {[...Array(5)].map((_, i) => (
+                                            <Icon
+                                                key={i}
+                                                name="fas fa-star"
+                                                style={{ color: i < Math.round(reputacion.propietario.promedio) ? '#f59e0b' : 'var(--gray-400)', fontSize: 18 }}
+                                            />
+                                        ))}
+                                        <span style={{ fontWeight: 700, marginLeft: 4 }}>
+                                            {reputacion.propietario.promedio ? reputacion.propietario.promedio.toFixed(1) : '—'}
+                                        </span>
+                                        <span style={{ color: 'var(--text-faint)', fontSize: 13 }}>
+                                            ({reputacion.propietario.total} {reputacion.propietario.total === 1 ? 'reseña' : 'reseñas'})
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p className="perfil-form-help">
+                                Mirá las reseñas que recibiste como inquilino, las de tus propiedades y las que
+                                escribiste a lo largo de tus alquileres.
+                            </p>
+                            <Link to="/mis-resenas" className="btn-detalle btn-detalle-primario">
+                                <Icon name="fas fa-star" /> Ver mis reseñas
+                            </Link>
+                        </div>
 
                 </section>
 

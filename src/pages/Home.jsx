@@ -1,8 +1,9 @@
 import Icon from '../components/Icon';
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getPropiedades, getPropiedadesDestacadas, getCategorias, getServicios, getLocalidades } from '../services/api';
+import { getTodasLasPropiedades, getPropiedadesDestacadas, getCategorias, getServicios, getLocalidades } from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
+import { leerVistosRecientemente } from '../utils/vistosRecientemente';
 import PropiedadCardImage from '../components/PropiedadCardImage';
 import ServicioIcono from '../components/ServicioIcono';
 import { iconoCategoria } from '../utils/categorias';
@@ -24,23 +25,39 @@ function Home() {
     const [categorias, setCategorias] = useState([]);
     const [servicios, setServicios] = useState([]);
     const [localidades, setLocalidades] = useState([]);
+    const [vistosIds, setVistosIds] = useState(() => leerVistosRecientemente());
+    const [paginaCarrusel, setPaginaCarrusel] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
     const [busqueda, setBusqueda] = useState('');
     const [categoriaBusqueda, setCategoriaBusqueda] = useState('');
+    const [sugerencias, setSugerencias] = useState([]);
+    const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
         cargarDatos();
     }, []);
 
+    useEffect(() => {
+        if (busqueda.trim().length < 2) {
+            setSugerencias([]);
+            return;
+        }
+        const q = busqueda.toLowerCase();
+        const matches = localidades
+            .filter(l => (l.nombre || '').toLowerCase().includes(q))
+            .slice(0, 8);
+        setSugerencias(matches);
+    }, [busqueda, localidades]);
+
     const cargarDatos = async () => {
         setLoading(true);
         setError('');
         try {
             const [props, dest, cats, serv, localidadesRes] = await Promise.all([
-                getPropiedades(),
+                getTodasLasPropiedades(),
                 getPropiedadesDestacadas(),
                 getCategorias(),
                 getServicios(),
@@ -123,9 +140,27 @@ function Home() {
 
     const hayDestacadas = destacadasDisponibles.length > 0;
 
-    const propiedadesAMostrar = hayDestacadas
-        ? destacadasDisponibles.slice(0, 6)
-        : disponibles.slice(0, 6);
+    // Un solo carrusel: destacadas primero y luego recientes (sin duplicar)
+    const propiedadesCarrusel = [
+        ...destacadasDisponibles,
+        ...disponibles.filter(p => !destacadasDisponibles.some(d => Number(d.id) === Number(p.id)))
+    ].slice(0, 12);
+
+    const porPaginaCarrusel = 4;
+    const totalPaginasCarrusel = Math.max(1, Math.ceil(propiedadesCarrusel.length / porPaginaCarrusel));
+    const paginaSeguraCarrusel = Math.min(paginaCarrusel, totalPaginasCarrusel - 1);
+    const propiedadesAMostrar = propiedadesCarrusel.slice(
+        paginaSeguraCarrusel * porPaginaCarrusel,
+        (paginaSeguraCarrusel + 1) * porPaginaCarrusel
+    );
+
+    // "Vistos recientemente": resolvemos los IDs guardados contra las
+    // propiedades ya cargadas, así no hacemos ningún pedido extra. Solo
+    // mostramos las que siguen disponibles y sin repetir la actual.
+    const vistosRecientes = vistosIds
+        .map(id => disponibles.find(p => Number(p.id) === id))
+        .filter(Boolean)
+        .slice(0, 4);
 
     const ocultarHero = (e) => {
         const hero = e.currentTarget.closest('.hero-image');
@@ -143,26 +178,57 @@ function Home() {
                             <p>Las mejores propiedades en alquiler. Departamentos, casas, locales comerciales y más.</p>
 
                             <form onSubmit={handleBuscar} className="search-box">
-                                <input
-                                    type="text"
-                                    placeholder="¿Dónde querés vivir?"
-                                    aria-label="Buscar propiedad por dirección o título"
-                                    value={busqueda}
-                                    onChange={(e) => setBusqueda(e.target.value)}
-                                />
-                                <select
-                                    aria-label="Filtrar por categoría"
-                                    value={categoriaBusqueda}
-                                    onChange={(e) => setCategoriaBusqueda(e.target.value)}
-                                >
-                                    <option value="">Todas las categorías</option>
+                                <div className="search-box-row">
+                                    <div className="search-autocomplete">
+                                        <input
+                                            type="text"
+                                            placeholder="Localidad"
+                                            aria-label="Buscar propiedad por dirección o título"
+                                            value={busqueda}
+                                            onChange={(e) => { setBusqueda(e.target.value); setMostrarSugerencias(true); }}
+                                            onFocus={() => setMostrarSugerencias(true)}
+                                            onBlur={() => setTimeout(() => setMostrarSugerencias(false), 150)}
+                                            autoComplete="off"
+                                        />
+                                        {mostrarSugerencias && sugerencias.length > 0 && (
+                                            <ul className="search-sugerencias">
+                                                {sugerencias.map(s => (
+                                                    <li
+                                                        key={s.id}
+                                                        onMouseDown={() => {
+                                                            setBusqueda(s.nombre);
+                                                            setMostrarSugerencias(false);
+                                                        }}
+                                                    >
+                                                        <Icon name="fas fa-map-marker-alt" /> {s.nombre}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </div>
+                                    <button type="submit" className="btn-search">
+                                        <Icon name="fas fa-search" /> Buscar
+                                    </button>
+                                </div>
+                                <div className="home-categorias">
+                                    <button
+                                        type="button"
+                                        className={`home-categoria-btn ${categoriaBusqueda === '' ? 'active' : ''}`}
+                                        onClick={() => setCategoriaBusqueda('')}
+                                    >
+                                        Todas
+                                    </button>
                                     {categorias.map(cat => (
-                                        <option key={cat.id} value={cat.id}>{cat.nombre}</option>
+                                        <button
+                                            type="button"
+                                            key={cat.id}
+                                            className={`home-categoria-btn ${String(categoriaBusqueda) === String(cat.id) ? 'active' : ''}`}
+                                            onClick={() => setCategoriaBusqueda(String(cat.id))}
+                                        >
+                                            {cat.nombre}
+                                        </button>
                                     ))}
-                                </select>
-                                <button type="submit" className="btn-search">
-                                    <Icon name="fas fa-search" /> Buscar
-                                </button>
+                                </div>
                             </form>
                         </div>
 
@@ -185,7 +251,7 @@ function Home() {
                 </div>
             </section>
 
-            {/* PROPIEDADES DESTACADAS */}
+            {/* PROPIEDADES DESTACADAS / RECIENTES (CARRUSEL) */}
             <section className="propiedades-destacadas">
                 <div className="container">
                     <div className="section-header reveal">
@@ -194,52 +260,135 @@ function Home() {
                         <p>{hayDestacadas ? 'Las propiedades destacadas por nuestro equipo' : 'Las últimas publicaciones en AlquilER'}</p>
                     </div>
 
-                    <div className="propiedades-grid">
-                        {propiedadesAMostrar.length === 0 && (
-                            <EmptyState
-                                icono="fa-home"
-                                titulo="Todavía no hay propiedades disponibles"
-                                descripcion="Pronto vas a encontrar departamentos, casas y más en alquiler."
-                            />
-                        )}
-                        {propiedadesAMostrar.map((prop, i) => (
-                            <div
-                                className="propiedad-card reveal"
-                                key={prop.id}
-                                style={{ transitionDelay: `${i * 80}ms` }}
-                            >
-                                <div className="propiedad-image">
-                                    <PropiedadCardImage
-                                        src={rutaImagenPropiedad(prop)}
-                                        alt={prop.titulo || 'Propiedad'}
-                                    />
-                                </div>
-                                <div className="propiedad-info">
-                                    <h3>{prop.titulo}</h3>
-                                    <p className="propiedad-direccion">
-                                        <Icon name="fas fa-map-marker-alt" /> {prop.direccion}
-                                    </p>
-                                    <p className="propiedad-precio">
-                                        ${Number(prop.precio || 0).toLocaleString()}<span>/mes</span>
-                                    </p>
-                                    <div className="propiedad-features">
-                                        <span><Icon name="fas fa-bed" /> {prop.cantidad_dormitorios || 0} dorm.</span>
-                                        <span><Icon name="fas fa-bath" /> {prop.cantidad_banos || 0} {Number(prop.cantidad_banos) === 1 ? 'baño' : 'baños'}</span>
-                                        <span><Icon name="fas fa-arrows-alt" /> {prop.cantidad_ambientes || 0} amb.</span>
+                    <div className="home-carrusel">
+                        <button
+                            type="button"
+                            className="home-carrusel-btn"
+                            onClick={() => setPaginaCarrusel(p => Math.max(0, p - 1))}
+                            disabled={paginaSeguraCarrusel === 0}
+                            aria-label="Anterior"
+                        >
+                            <Icon name="fas fa-chevron-left" />
+                        </button>
+
+                        <div className="propiedades-grid home-carrusel-grid">
+                            {propiedadesAMostrar.length === 0 && (
+                                <EmptyState
+                                    icono="fa-home"
+                                    titulo="Todavía no hay propiedades disponibles"
+                                    descripcion="Pronto vas a encontrar departamentos, casas y más en alquiler."
+                                />
+                            )}
+                            {propiedadesAMostrar.map((prop, i) => (
+                                <div
+                                    className="propiedad-card reveal"
+                                    key={prop.id}
+                                    style={{ transitionDelay: `${i * 80}ms` }}
+                                >
+                                    <div className="propiedad-image">
+                                        <PropiedadCardImage
+                                            src={rutaImagenPropiedad(prop)}
+                                            alt={prop.titulo || 'Propiedad'}
+                                        />
                                     </div>
-                                    <Link to={`/propiedades/${prop.id}`} className="btn-ver">
-                                        <Icon name="fas fa-eye" /> Ver más
-                                    </Link>
+                                    <div className="propiedad-info">
+                                        <h3>{prop.titulo}</h3>
+                                        <p className="propiedad-direccion">
+                                            <Icon name="fas fa-map-marker-alt" /> {prop.direccion}
+                                        </p>
+                                        <p className="propiedad-precio">
+                                            ${Number(prop.precio || 0).toLocaleString()}<span>/mes</span>
+                                        </p>
+                                        <div className="propiedad-features">
+                                            <span><Icon name="fas fa-bed" /> {prop.cantidad_dormitorios || 0} dorm.</span>
+                                            <span><Icon name="fas fa-bath" /> {prop.cantidad_banos || 0} {Number(prop.cantidad_banos) === 1 ? 'baño' : 'baños'}</span>
+                                            <span><Icon name="fas fa-arrows-alt" /> {prop.cantidad_ambientes || 0} amb.</span>
+                                        </div>
+                                        <Link to={`/propiedades/${prop.id}`} className="btn-ver">
+                                            <Icon name="fas fa-eye" /> Ver más
+                                        </Link>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
+
+                        <button
+                            type="button"
+                            className="home-carrusel-btn"
+                            onClick={() => setPaginaCarrusel(p => Math.min(totalPaginasCarrusel - 1, p + 1))}
+                            disabled={paginaSeguraCarrusel >= totalPaginasCarrusel - 1}
+                            aria-label="Siguiente"
+                        >
+                            <Icon name="fas fa-chevron-right" />
+                        </button>
                     </div>
+
+                    {totalPaginasCarrusel > 1 && (
+                        <div className="home-carrusel-dots">
+                            {Array.from({ length: totalPaginasCarrusel }).map((_, i) => (
+                                <button
+                                    key={i}
+                                    type="button"
+                                    className={`home-carrusel-dot ${i === paginaSeguraCarrusel ? 'active' : ''}`}
+                                    onClick={() => setPaginaCarrusel(i)}
+                                    aria-label={`Página ${i + 1}`}
+                                />
+                            ))}
+                        </div>
+                    )}
 
                     <div className="section-footer reveal">
                         <Link to="/propiedades" className="btn-ver-todas">Ver todas las propiedades</Link>
                     </div>
                 </div>
             </section>
+
+            {/* VISTOS RECIENTEMENTE */}
+            {vistosRecientes.length > 0 && (
+                <section className="propiedades-destacadas vistos-recientemente">
+                    <div className="container">
+                        <div className="section-header reveal">
+                            <span className="section-badge">Tu historial</span>
+                            <h2>Vistos recientemente</h2>
+                            <p>Seguí donde lo dejaste</p>
+                        </div>
+
+                        <div className="propiedades-grid">
+                            {vistosRecientes.map((prop, i) => (
+                                <div
+                                    className="propiedad-card reveal"
+                                    key={prop.id}
+                                    style={{ transitionDelay: `${i * 80}ms` }}
+                                >
+                                    <div className="propiedad-image">
+                                        <PropiedadCardImage
+                                            src={rutaImagenPropiedad(prop)}
+                                            alt={prop.titulo || 'Propiedad'}
+                                        />
+                                    </div>
+                                    <div className="propiedad-info">
+                                        <h3>{prop.titulo}</h3>
+                                        <p className="propiedad-direccion">
+                                            <Icon name="fas fa-map-marker-alt" /> {prop.direccion}
+                                        </p>
+                                        <p className="propiedad-precio">
+                                            ${Number(prop.precio || 0).toLocaleString()}<span>/mes</span>
+                                        </p>
+                                        <div className="propiedad-features">
+                                            <span><Icon name="fas fa-bed" /> {prop.cantidad_dormitorios || 0} dorm.</span>
+                                            <span><Icon name="fas fa-bath" /> {prop.cantidad_banos || 0} {Number(prop.cantidad_banos) === 1 ? 'baño' : 'baños'}</span>
+                                            <span><Icon name="fas fa-arrows-alt" /> {prop.cantidad_ambientes || 0} amb.</span>
+                                        </div>
+                                        <Link to={`/propiedades/${prop.id}`} className="btn-ver">
+                                            <Icon name="fas fa-eye" /> Ver más
+                                        </Link>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )}
 
             {/* CATEGORÍAS */}
             <section className="categorias">

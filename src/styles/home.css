@@ -80,14 +80,21 @@
 /* Search Box */
 .search-box {
     display: flex;
-    gap: 8px;
+    flex-direction: column;
+    gap: 10px;
     background: var(--surface);
-    padding: 8px;
+    padding: 12px;
     border: 1px solid var(--border-subtle);
     border-radius: var(--surface-radius);
     box-shadow: var(--shadow-soft);
     max-width: 100%;
     margin-bottom: 24px;
+}
+
+.search-box-row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
 }
 
 .search-box input,
@@ -101,6 +108,49 @@
     color: var(--gray-800);
     min-width: 0;
     font-family: inherit;
+}
+
+.search-autocomplete {
+    flex: 1;
+    position: relative;
+    min-width: 0;
+}
+
+.search-autocomplete input {
+    width: 100%;
+}
+
+.search-sugerencias {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--control-radius);
+    box-shadow: var(--shadow-raised);
+    list-style: none;
+    margin: 0;
+    padding: 6px;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.search-sugerencias li {
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--gray-700);
+}
+
+.search-sugerencias li:hover {
+    background: var(--gray-100);
+    color: var(--primary-ink);
 }
 
 .search-box input:focus,
@@ -213,6 +263,34 @@
 /* ========== PROPIEDADES DESTACADAS (HOME) ========== */
 .propiedades-destacadas {
     padding: 60px 0;
+}
+
+/* Vistos recientemente: banda suave para diferenciarla del catálogo y
+   máximo 4 tarjetas por fila para que no se estiren cuando hay pocas. */
+.vistos-recientemente {
+    background: var(--gray-100);
+}
+
+.vistos-recientemente .propiedades-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1024px) {
+    .vistos-recientemente .propiedades-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .vistos-recientemente .propiedades-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .vistos-recientemente .propiedades-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .propiedades-grid {
@@ -927,4 +1005,95 @@
 
 [data-theme="dark"] .propiedad-badge.alquilada {
     color: #475569;
+}/* ========== HOME CARRUSEL ========== */
+.home-carrusel {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.home-carrusel-btn {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--border-subtle);
+    background: var(--surface);
+    color: var(--primary-ink);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.home-carrusel-btn:hover:not(:disabled) {
+    background: var(--primary-ink);
+    color: #fff;
+}
+
+.home-carrusel-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.home-carrusel-grid {
+    flex: 1;
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.home-carrusel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.home-carrusel-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: none;
+    background: var(--gray-300);
+    cursor: pointer;
+    padding: 0;
+    transition: var(--transition);
+}
+
+.home-carrusel-dot.active {
+    background: var(--primary-ink);
+    width: 24px;
+    border-radius: 999px;
+}
+/* ========== HOME CATEGORIAS ========== */
+.home-categorias {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.home-categoria-btn {
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border-subtle);
+    background: var(--gray-50);
+    color: var(--gray-700);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.home-categoria-btn:hover {
+    border-color: var(--primary-ink);
+    color: var(--primary-ink);
+}
+
+.home-categoria-btn.active {
+    background: var(--primary-ink);
+    border-color: var(--primary-ink);
+    color: #fff;
 }
