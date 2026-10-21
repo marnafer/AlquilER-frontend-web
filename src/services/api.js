@@ -152,6 +152,21 @@ export async function restablecerContrasena(data) {
     }
 }
 
+export async function confirmarCambioContrasena(data) {
+    try {
+        const response = await fetch(`${API_URL}/api/autenticador/confirmar-cambio`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        result.status = response.status;
+        return result;
+    } catch (error) {
+        return { success: false, error: errorDeConexion(error) };
+    }
+}
+
 // ============================================
 // CONTACTO
 // ============================================

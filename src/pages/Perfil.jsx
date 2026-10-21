@@ -139,7 +139,7 @@ function Perfil() {
                 setPassActual('');
                 setPassNueva('');
                 setPassRepetir('');
-                showToast('Contraseña cambiada correctamente');
+                showToast('Te enviamos un correo para confirmar el cambio de contraseña');
             } else {
                 if (result.validation_errors) setPassErrores(result.validation_errors);
                 showToast(result.message || result.error || 'No se pudo cambiar la contraseña', 'error');
@@ -507,9 +507,9 @@ function Perfil() {
                         </h3>
                     </div>
                     <p className="perfil-form-help">
-                        Para cambiar tu contraseña, primero ingresá tu contraseña actual y luego
-                        definí una nueva de al menos 8 caracteres. Se actualizará tu acceso en la
-                        sesión actual.
+                        Para cambiar tu contraseña, ingresá tu contraseña actual y la nueva.
+                        Te enviaremos un correo con un enlace para confirmar el cambio: la
+                        contraseña se actualizará recién cuando lo confirmes.
                     </p>
 
                     <form onSubmit={handleCambiarContrasena} className="perfil-form" noValidate>
