@@ -137,6 +137,16 @@ export async function recuperarContrasena(email) {
     }
 }
 
+export async function verificarEmail(token, email) {
+    try {
+        const params = new URLSearchParams({ token, email });
+        const response = await fetch(`${API_URL}/api/autenticador/verificar-email?${params.toString()}`);
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: errorDeConexion(error) };
+    }
+}
+
 export async function restablecerContrasena(data) {
     try {
         const response = await fetch(`${API_URL}/api/autenticador/restablecer`, {

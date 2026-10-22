@@ -75,7 +75,7 @@ function Register() {
             const result = await register(dataToSend);
 
             if (result.success) {
-                showToast('Usuario registrado correctamente');
+                showToast('Usuario registrado. Te enviamos un correo para verificar tu cuenta.');
                 setTimeout(() => navigate('/login'), 2000);
             } else {
                 showToast(primerErrorValidacion(result) || result.error || result.message || 'Error al registrarse', 'error');
