@@ -20,6 +20,7 @@ import {
     eliminarImagenPropiedad, 
     API_URL 
 } from '../services/api';
+import { contieneProfanidad } from '../utils/profanity';
 import Loader from '../components/Loader';
 
 // ============================================
@@ -334,10 +335,18 @@ const [loading, setLoading] = useState(true);
             nuevosErrores.titulo = 'El título es obligatorio';
         } else if (formData.titulo.length > 150) {
             nuevosErrores.titulo = 'Máximo 150 caracteres';
+        } else if (contieneProfanidad(formData.titulo)) {
+            nuevosErrores.titulo = 'El titulo contiene lenguaje inapropiado.';
         }
 
         if (!formData.direccion.trim()) {
-            nuevosErrores.direccion = 'La dirección es obligatoria';
+            nuevosErrores.direccion = 'La direcci�n es obligatoria';
+        } else if (contieneProfanidad(formData.direccion)) {
+            nuevosErrores.direccion = 'La direccion contiene lenguaje inapropiado.';
+        }
+
+        if (formData.descripcion.trim() && contieneProfanidad(formData.descripcion)) {
+            nuevosErrores.descripcion = 'La descripcion contiene lenguaje inapropiado.';
         }
 
         if (!formData.precio || Number(formData.precio) <= 0) {

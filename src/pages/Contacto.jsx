@@ -2,6 +2,7 @@ import Icon from '../components/Icon';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { enviarMensajeContacto } from '../services/api';
+import { contieneProfanidad } from '../utils/profanity';
 import { useSEO } from '../hooks/useSEO';
 
 const DATOS = [
@@ -39,9 +40,13 @@ function Contacto() {
         }
         if (!formData.asunto.trim()) {
             nuevosErrores.asunto = 'Contanos brevemente el motivo.';
+        } else if (contieneProfanidad(formData.asunto)) {
+            nuevosErrores.asunto = 'El asunto contiene lenguaje inapropiado.';
         }
         if (formData.mensaje.trim().length < 10) {
             nuevosErrores.mensaje = 'El mensaje debe tener al menos 10 caracteres.';
+        } else if (contieneProfanidad(formData.mensaje)) {
+            nuevosErrores.mensaje = 'El mensaje contiene lenguaje inapropiado.';
         }
         return nuevosErrores;
     };
