@@ -942,6 +942,22 @@ export async function crearUsuarioAdmin(data, token) {
     }
 }
 
+export async function getPerfilPublico(id, token) {
+    try {
+        const response = await fetch(
+            `${API_URL}/api/usuarios/${encodeURIComponent(id)}/perfil-publico`,
+            {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+        );
+        const result = await response.json();
+        result.status = response.status;
+        return result;
+    } catch (error) {
+        return { success: false, error: errorDeConexion(error), status: 0 };
+    }
+}
+
 export async function getUsuario(id, token) {
     try {
         const response = await fetch(`${API_URL}/api/usuarios/${id}`, {
@@ -1390,4 +1406,4 @@ export async function marcarTodasNotificacionesLeidas(token) {
     } catch (error) {
         return { success: false, error: errorDeConexion(error) };
     }
-}
+}

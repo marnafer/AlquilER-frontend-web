@@ -360,6 +360,24 @@ function MisConsultas() {
                                         <h3>
                                             {activa.propiedad?.titulo || activa.consulta.propiedad?.titulo || 'Propiedad'}
                                         </h3>
+                                        {(() => {
+                                            const consulta = activa.consulta;
+                                            const propietarioId = activa.propiedad?.usuario_id
+                                                || consulta.propiedad?.usuario_id;
+                                            const contactoId = String(usuario?.id) === String(consulta.usuario_id)
+                                                ? propietarioId
+                                                : String(usuario?.id) === String(propietarioId)
+                                                    ? consulta.usuario_id
+                                                    : null;
+                                            return contactoId ? (
+                                                <Link
+                                                    to={`/usuarios/${contactoId}`}
+                                                    className="misconsultas-ver-propiedad"
+                                                >
+                                                    Ver perfil del contacto
+                                                </Link>
+                                            ) : null;
+                                        })()}
                                         <Link
                                             to={`/propiedades/${activa.consulta.propiedad_id}`}
                                             className="misconsultas-ver-propiedad"
