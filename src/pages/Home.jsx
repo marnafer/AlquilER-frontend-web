@@ -1,7 +1,14 @@
 import Icon from '../components/Icon';
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getTodasLasPropiedades, getPropiedadesDestacadas, getCategorias, getServicios, getLocalidades } from '../services/api';
+import {
+    getPropiedades,
+    getPropiedad,
+    getPropiedadesDestacadas,
+    getCategorias,
+    getServicios,
+    getLocalidades
+} from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
 import { leerVistosRecientemente } from '../utils/vistosRecientemente';
 import PropiedadCardImage from '../components/PropiedadCardImage';
@@ -29,6 +36,7 @@ function Home() {
     const [paginaCarrusel, setPaginaCarrusel] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [vistosRecientes, setVistosRecientes] = useState([]);
 
     const [busqueda, setBusqueda] = useState('');
     const [categoriaBusqueda, setCategoriaBusqueda] = useState('');
@@ -55,17 +63,25 @@ function Home() {
     const cargarDatos = async () => {
         setLoading(true);
         setError('');
+
         try {
-            const [props, dest, cats, serv, localidadesRes] = await Promise.all([
-                getTodasLasPropiedades(),
+            const [dest, cats, serv, localidadesRes] = await Promise.all([
                 getPropiedadesDestacadas(),
                 getCategorias(),
                 getServicios(),
                 getLocalidades()
             ]);
 
-            setPropiedades(props);
-            setDestacadas(Array.isArray(dest) ? dest : []);
+            const destacadasCargadas = Array.isArray(dest) ? dest : [];
+            let propiedadesRecientes = [];
+
+            if (destacadasCargadas.length === 0) {
+                const respuesta = await getPropiedades({ page: 1, perPage: 10 });
+                propiedadesRecientes = respuesta.items;
+            }
+
+            setPropiedades(propiedadesRecientes);
+            setDestacadas(destacadasCargadas);
             setCategorias(cats);
             setServicios(Array.isArray(serv) ? serv : []);
             setLocalidades(Array.isArray(localidadesRes) ? localidadesRes : []);
@@ -153,14 +169,6 @@ function Home() {
         paginaSeguraCarrusel * porPaginaCarrusel,
         (paginaSeguraCarrusel + 1) * porPaginaCarrusel
     );
-
-    // "Vistos recientemente": resolvemos los IDs guardados contra las
-    // propiedades ya cargadas, así no hacemos ningún pedido extra. Solo
-    // mostramos las que siguen disponibles y sin repetir la actual.
-    const vistosRecientes = vistosIds
-        .map(id => disponibles.find(p => Number(p.id) === id))
-        .filter(Boolean)
-        .slice(0, 4);
 
     const ocultarHero = (e) => {
         const hero = e.currentTarget.closest('.hero-image');
