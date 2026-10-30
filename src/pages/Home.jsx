@@ -96,7 +96,15 @@ function Home() {
     const handleBuscar = (e) => {
         e.preventDefault();
         const query = new URLSearchParams();
-        if (busqueda.trim()) query.set('q', busqueda.trim());
+        const localidadBuscada = busqueda.trim().toLowerCase();
+        if (localidadBuscada) {
+            localidades
+                .filter(localidad =>
+                    (localidad.nombre || '').toLowerCase().includes(localidadBuscada)
+                )
+                .slice(0, 8)
+                .forEach(localidad => query.append('localidad_id', String(localidad.id)));
+        }
         if (categoriaBusqueda) query.set('categoria_id', categoriaBusqueda);
         navigate(query.toString() ? `/propiedades?${query.toString()}` : '/propiedades');
     };
@@ -191,7 +199,7 @@ function Home() {
                                         <input
                                             type="text"
                                             placeholder="Localidad"
-                                            aria-label="Buscar propiedad por dirección o título"
+                                            aria-label="Buscar por localidad"
                                             value={busqueda}
                                             onChange={(e) => { setBusqueda(e.target.value); setMostrarSugerencias(true); }}
                                             onFocus={() => setMostrarSugerencias(true)}

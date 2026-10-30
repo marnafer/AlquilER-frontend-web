@@ -1,7 +1,7 @@
 import Icon from '../components/Icon';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { getTodasLasPropiedades, getCategorias, getProvincias, getLocalidades, getFavoritos, getServicios } from '../services/api';
+import { getPropiedades, getCategorias, getProvincias, getLocalidades, getFavoritos, getServicios } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import { useSEO } from '../hooks/useSEO';
 import PropiedadCard from '../components/PropiedadCard';
@@ -26,6 +26,12 @@ const leerMultiples = (params, clave) => {
 const nombreProvinciaVisible = (provincia) =>
     String(provincia?.nombre || '').replace(/\s+New$/, '');
 
+const ORDENES_VALIDOS = ['antiguedad_desc', 'antiguedad_asc', 'precio_asc', 'precio_desc'];
+const leerOrden = (params) => {
+    const orden = params.get('orden');
+    return ORDENES_VALIDOS.includes(orden) ? orden : 'antiguedad_desc';
+};
+
 function Propiedades() {
     const { token } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -37,9 +43,12 @@ function Propiedades() {
     const [favoritoIds, setFavoritoIds] = useState(() => new Set());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [catalogosCargados, setCatalogosCargados] = useState(false);
+    const [total, setTotal] = useState(0);
+    const [totalPaginas, setTotalPaginas] = useState(1);
+    const [recarga, setRecarga] = useState(0);
 
     // Filtros
-    const [search, setSearch] = useState(searchParams.get('q') || '');
     const [categoriaIds, setCategoriaIds] = useState(() => leerMultiples(searchParams, 'categoria_id'));
     const [provinciaId, setProvinciaId] = useState(searchParams.get('provincia_id') || '');
     const [localidadIds, setLocalidadIds] = useState(() => leerMultiples(searchParams, 'localidad_id'));
@@ -52,11 +61,13 @@ function Propiedades() {
     const [capacidad, setCapacidad] = useState(searchParams.get('capacidad') || '');
     const [aceptaMascotas, setAceptaMascotas] = useState(searchParams.get('acepta_mascotas') || '');
     const [aceptaHijos, setAceptaHijos] = useState(searchParams.get('acepta_hijos') || '');
-    const [orden, setOrden] = useState(searchParams.get('orden') || 'recientes');
-    const [pagina, setPagina] = useState(Number(searchParams.get('pagina')) || 1);
+    const [orden, setOrden] = useState(() => leerOrden(searchParams));
+    const [pagina, setPagina] = useState(() => {
+        const paginaInicial = Number(searchParams.get('pagina'));
+        return Number.isInteger(paginaInicial) && paginaInicial > 0 ? paginaInicial : 1;
+    });
 
     const [aplicados, setAplicados] = useState(() => ({
-        search: searchParams.get('q') || '',
         categoriaIds: leerMultiples(searchParams, 'categoria_id'),
         provinciaId: searchParams.get('provincia_id') || '',
         localidadIds: leerMultiples(searchParams, 'localidad_id'),
@@ -69,28 +80,20 @@ function Propiedades() {
         capacidad: searchParams.get('capacidad') || '',
         aceptaMascotas: searchParams.get('acepta_mascotas') || '',
         aceptaHijos: searchParams.get('acepta_hijos') || '',
-        orden: searchParams.get('orden') || 'recientes'
+        orden: leerOrden(searchParams)
     }));
 
     const POR_PAGINA = 10;
 
-    // La description refleja la busqueda activa: si el visitante llego desde
-    // Google con "departamentos en Rosario", el snippet debe coincidir.
-    const descripcionSEO = aplicados.search.trim()
-        ? `Resultados para "${aplicados.search.trim()}" en alquiler. Filtrá por provincia, categoría, cantidad de ambientes y precio.`
-        : 'AlquilER: buscá propiedades en alquiler por provincia, categoría, ambientes y precio. Departamentos, casas y locales comerciales.';
-
-    useSEO('Propiedades en alquiler', descripcionSEO);
-
-    useEffect(() => {
-        cargarDatos();
-    }, []);
+    useSEO(
+        'Propiedades en alquiler',
+        'AlquilER: buscá propiedades en alquiler por provincia, categoría, ambientes y precio. Departamentos, casas y locales comerciales.'
+    );
 
     // Sincronizar filtros con la URL. Los filtros con varias opciones van como
     // arreglo para que React Router los escriba repetidos (categoria_id=1&...).
     useEffect(() => {
         const params = {};
-        if (aplicados.search) params.q = aplicados.search;
         if (aplicados.categoriaIds.length > 0) params.categoria_id = aplicados.categoriaIds.map(String);
         if (aplicados.provinciaId) params.provincia_id = aplicados.provinciaId;
         if (aplicados.localidadIds.length > 0) params.localidad_id = aplicados.localidadIds.map(String);
@@ -103,7 +106,7 @@ function Propiedades() {
         if (aplicados.capacidad) params.capacidad = aplicados.capacidad;
         if (aplicados.aceptaMascotas) params.acepta_mascotas = aplicados.aceptaMascotas;
         if (aplicados.aceptaHijos) params.acepta_hijos = aplicados.aceptaHijos;
-        if (aplicados.orden !== 'recientes') params.orden = aplicados.orden;
+        if (aplicados.orden !== 'antiguedad_desc') params.orden = aplicados.orden;
         if (pagina > 1) params.pagina = pagina;
         setSearchParams(params, { replace: true });
     }, [aplicados, pagina]);
@@ -112,24 +115,103 @@ function Propiedades() {
         setLoading(true);
         setError('');
         try {
-            const [props, cats, provs, locs, servs] = await Promise.all([
-                getTodasLasPropiedades(),
+            const [cats, provs, locs, servs] = await Promise.all([
                 getCategorias(),
                 getProvincias(),
                 getLocalidades(),
                 getServicios()
             ]);
-            setPropiedades(props);
             setCategorias(cats);
             setProvincias(provs);
             setLocalidades(locs);
             setServicios(servs);
+            setCatalogosCargados(true);
         } catch (error) {
             console.error('Error cargando propiedades:', error);
             setError(error.message || 'No pudimos cargar las propiedades. Probá de nuevo en unos momentos.');
         } finally {
             setLoading(false);
         }
+    };
+
+    useEffect(() => {
+        cargarDatos();
+    }, []);
+
+    useEffect(() => {
+        if (!catalogosCargados) return undefined;
+
+        let cancelado = false;
+        const cargarPagina = async () => {
+            setLoading(true);
+            setError('');
+
+            const localidadesProvincia = aplicados.provinciaId
+                ? localidades
+                    .filter(loc => String(loc.provincia_id) === String(aplicados.provinciaId))
+                    .map(loc => String(loc.id))
+                : null;
+            const localidadesSeleccionadas = aplicados.localidadIds.map(String);
+            const localidadIds = localidadesProvincia
+                ? localidadesSeleccionadas.length > 0
+                    ? localidadesSeleccionadas.filter(id => localidadesProvincia.includes(id))
+                    : localidadesProvincia
+                : localidadesSeleccionadas;
+
+            if (localidadesProvincia && localidadIds.length === 0) {
+                setPropiedades([]);
+                setTotal(0);
+                setTotalPaginas(1);
+                setPagina(1);
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const resultado = await getPropiedades({
+                    page: pagina,
+                    perPage: POR_PAGINA,
+                    categoriaIds: aplicados.categoriaIds,
+                    localidadIds,
+                    servicioIds: aplicados.servicioIds,
+                    precioMin: aplicados.precioMin,
+                    precioMax: aplicados.precioMax,
+                    ambientes: aplicados.ambientes,
+                    dormitorios: aplicados.dormitorios,
+                    banos: aplicados.banos,
+                    capacidad: aplicados.capacidad,
+                    aceptaMascotas: aplicados.aceptaMascotas,
+                    aceptaHijos: aplicados.aceptaHijos,
+                    orden: aplicados.orden
+                });
+
+                if (cancelado) return;
+                setPropiedades(resultado.items);
+                setTotal(resultado.total);
+                setTotalPaginas(resultado.pagination.last_page || 1);
+                setPagina(Math.min(resultado.pagination.current_page, resultado.pagination.last_page || 1));
+            } catch (error) {
+                if (cancelado) return;
+                console.error('Error cargando propiedades:', error);
+                setError(error.message || 'No pudimos cargar las propiedades. Probá de nuevo en unos momentos.');
+                setPropiedades([]);
+                setTotal(0);
+                setTotalPaginas(1);
+            } finally {
+                if (!cancelado) setLoading(false);
+            }
+        };
+
+        cargarPagina();
+        return () => { cancelado = true; };
+    }, [catalogosCargados, aplicados, pagina, localidades, recarga]);
+
+    const reintentar = () => {
+        if (!catalogosCargados) {
+            cargarDatos();
+            return;
+        }
+        setRecarga(valor => valor + 1);
     };
 
     // Cargar IDs favoritos del usuario autenticado
@@ -160,135 +242,13 @@ function Propiedades() {
         return map;
     }, [categorias]);
 
-    // Localidad -> provincia (para filtrar propiedades por provincia)
-    const localidadProvinciaMap = useMemo(() => {
-        const map = {};
-        localidades.forEach(loc => { map[String(loc.id)] = String(loc.provincia_id); });
-        return map;
-    }, [localidades]);
-
     // Localidades que dependen de la provincia elegida
     const localidadesDeProvincia = useMemo(() => {
         if (!provinciaId) return localidades;
         return localidades.filter(loc => String(loc.provincia_id) === String(provinciaId));
     }, [localidades, provinciaId]);
 
-    // Ids de los servicios de cada propiedad, para filtrar sin volver a pedirlo
-    const serviciosPorPropiedad = useMemo(() => {
-        const map = {};
-        propiedades.forEach(p => {
-            map[String(p.id)] = new Set(
-                (p.servicios || []).map(s => String(s.id))
-            );
-        });
-        return map;
-    }, [propiedades]);
-
-    // Filtrado y ordenamiento
-    const filtradas = useMemo(() => {
-        let resultado = [...propiedades];
-
-        // Excluir del catálogo público las propiedades marcadas como no disponibles
-        resultado = resultado.filter(p =>
-            p.disponible !== false && p.disponible !== 0 && p.disponible !== '0'
-        );
-
-        if (aplicados.search.trim()) {
-            const q = aplicados.search.toLowerCase();
-            resultado = resultado.filter(p =>
-                (p.titulo || '').toLowerCase().includes(q) ||
-                (p.direccion || '').toLowerCase().includes(q) ||
-                (p.descripcion || '').toLowerCase().includes(q)
-            );
-        }
-
-        // Categorías y localidades: con que coincida con alguna alcanza (whereIn)
-        if (aplicados.categoriaIds.length > 0) {
-            const elegidas = aplicados.categoriaIds.map(String);
-            resultado = resultado.filter(p => elegidas.includes(String(p.categoria_id)));
-        }
-
-        if (aplicados.provinciaId) {
-            resultado = resultado.filter(p =>
-                localidadProvinciaMap[String(p.localidad_id)] === String(aplicados.provinciaId)
-            );
-        }
-
-        if (aplicados.localidadIds.length > 0) {
-            const elegidas = aplicados.localidadIds.map(String);
-            resultado = resultado.filter(p => elegidas.includes(String(p.localidad_id)));
-        }
-
-        // Servicios: tiene que tener TODOS los elegidos, no al menos uno
-        if (aplicados.servicioIds.length > 0) {
-            const exigidos = aplicados.servicioIds.map(String);
-            resultado = resultado.filter(p => {
-                const deLaPropiedad = serviciosPorPropiedad[String(p.id)];
-                return deLaPropiedad
-                    && exigidos.every(id => deLaPropiedad.has(id));
-            });
-        }
-
-        // Los filtros numéricos son "al menos", igual que los >= del backend
-        if (aplicados.aceptaMascotas === '1') {
-            resultado = resultado.filter(p => p.acepta_mascotas === true || p.acepta_mascotas === 1 || p.acepta_mascotas === '1');
-        }
-
-        if (aplicados.aceptaHijos === '1') {
-            resultado = resultado.filter(p => p.acepta_hijos === true || p.acepta_hijos === 1 || p.acepta_hijos === '1');
-        }
-
-        if (aplicados.precioMin) {
-            resultado = resultado.filter(p => Number(p.precio) >= Number(aplicados.precioMin));
-        }
-
-        if (aplicados.precioMax) {
-            resultado = resultado.filter(p => Number(p.precio) <= Number(aplicados.precioMax));
-        }
-
-        if (aplicados.ambientes) {
-            resultado = resultado.filter(p => Number(p.cantidad_ambientes) >= Number(aplicados.ambientes));
-        }
-
-        if (aplicados.dormitorios) {
-            resultado = resultado.filter(p => Number(p.cantidad_dormitorios) >= Number(aplicados.dormitorios));
-        }
-
-        if (aplicados.banos) {
-            resultado = resultado.filter(p => Number(p.cantidad_banos) >= Number(aplicados.banos));
-        }
-
-        if (aplicados.capacidad) {
-            resultado = resultado.filter(p => Number(p.capacidad) >= Number(aplicados.capacidad));
-        }
-
-        switch (aplicados.orden) {
-            case 'precio_asc':
-                resultado.sort((a, b) => Number(a.precio) - Number(b.precio));
-                break;
-            case 'precio_desc':
-                resultado.sort((a, b) => Number(b.precio) - Number(a.precio));
-                break;
-            case 'titulo':
-                resultado.sort((a, b) => (a.titulo || '').localeCompare(b.titulo || ''));
-                break;
-            default:
-                resultado.sort((a, b) => Number(b.id) - Number(a.id));
-        }
-
-        return resultado;
-    }, [propiedades, aplicados, localidadProvinciaMap, serviciosPorPropiedad]);
-
-    // Paginación
-    const totalPaginas = Math.max(1, Math.ceil(filtradas.length / POR_PAGINA));
-    const paginaActual = Math.min(pagina, totalPaginas);
-    const paginadas = filtradas.slice(
-        (paginaActual - 1) * POR_PAGINA,
-        paginaActual * POR_PAGINA
-    );
-
     const limpiarFiltros = () => {
-        setSearch('');
         setCategoriaIds([]);
         setProvinciaId('');
         setLocalidadIds([]);
@@ -301,9 +261,8 @@ function Propiedades() {
         setCapacidad('');
         setAceptaMascotas('');
         setAceptaHijos('');
-        setOrden('recientes');
+        setOrden('antiguedad_desc');
         setAplicados({
-            search: '',
             categoriaIds: [],
             provinciaId: '',
             localidadIds: [],
@@ -316,14 +275,13 @@ function Propiedades() {
             capacidad: '',
             aceptaMascotas: '',
             aceptaHijos: '',
-            orden: 'recientes'
+            orden: 'antiguedad_desc'
         });
         setPagina(1);
     };
 
     const buscar = () => {
         setAplicados({
-            search,
             categoriaIds,
             provinciaId,
             localidadIds,
@@ -353,8 +311,7 @@ function Propiedades() {
         });
     };
 
-    const hayFiltros = aplicados.search
-        || aplicados.categoriaIds.length > 0
+    const hayFiltros = aplicados.categoriaIds.length > 0
         || aplicados.provinciaId
         || aplicados.localidadIds.length > 0
         || aplicados.servicioIds.length > 0
@@ -366,24 +323,13 @@ function Propiedades() {
         || aplicados.capacidad
         || aplicados.aceptaMascotas
         || aplicados.aceptaHijos
-        || aplicados.orden !== 'recientes';
+        || aplicados.orden !== 'antiguedad_desc';
 
     return (
         <div className="props-page">
             <div className="container props-body">
                 {/* BUSCADOR + FILTROS */}
                 <div className="props-filtros">
-                    <div className="filtro-group">
-                        <label htmlFor="filtro-buscar"><Icon name="fas fa-search" /> Buscar</label>
-                        <input
-                            id="filtro-buscar"
-                            type="text"
-                            placeholder="Título o dirección..."
-                            value={search}
-                            onChange={(e) => { setSearch(e.target.value); }}
-                        />
-                    </div>
-
                     <MultiSelect
                         label="Categoría"
                         icon="fa-tag"
@@ -516,10 +462,10 @@ function Propiedades() {
                             value={orden}
                             onChange={(e) => { setOrden(e.target.value); }}
                         >
-                            <option value="recientes">Más recientes</option>
+                            <option value="antiguedad_desc">Más recientes</option>
+                            <option value="antiguedad_asc">Más antiguas</option>
                             <option value="precio_asc">Menor precio</option>
                             <option value="precio_desc">Mayor precio</option>
-                            <option value="titulo">Título (A-Z)</option>
                         </select>
                     </div>
 
@@ -537,19 +483,19 @@ function Propiedades() {
                 {/* RESULTADOS */}
                 <div className="props-results">
                     <p className="props-results-count">
-                        <strong>{filtradas.length}</strong>{' '}
-                        {filtradas.length === 1 ? 'propiedad encontrada' : 'propiedades encontradas'}
+                        <strong>{total}</strong>{' '}
+                        {total === 1 ? 'propiedad encontrada' : 'propiedades encontradas'}
                     </p>
                     {totalPaginas > 1 && (
                         <p className="props-results-count">
-                            Página <strong>{paginaActual}</strong> de {totalPaginas}
+                            Página <strong>{pagina}</strong> de {totalPaginas}
                         </p>
                     )}
                 </div>
 
                 {/* GRID */}
                 {error ? (
-                    <ErrorState mensaje={error} onReintentar={cargarDatos} />
+                    <ErrorState mensaje={error} onReintentar={reintentar} />
                 ) : loading ? (
                     <div className="skeleton-grid propiedades-grid">
                         {Array.from({ length: 6 }).map((_, i) => (
@@ -563,10 +509,10 @@ function Propiedades() {
                             </div>
                         ))}
                     </div>
-                ) : paginadas.length > 0 ? (
+                ) : propiedades.length > 0 ? (
                     <>
                         <div className="propiedades-grid">
-                            {paginadas.map(prop => (
+                            {propiedades.map(prop => (
                                 <PropiedadCard
                                     key={prop.id}
                                     propiedad={prop}
@@ -582,8 +528,8 @@ function Propiedades() {
                             <div className="props-paginacion">
                                 <button
                                     className="pag-btn"
-                                    disabled={paginaActual === 1}
-                                    onClick={() => setPagina(paginaActual - 1)}
+                                    disabled={pagina === 1 || loading}
+                                    onClick={() => setPagina(pagina - 1)}
                                 >
                                     <Icon name="fas fa-chevron-left" />
                                 </button>
@@ -593,12 +539,12 @@ function Propiedades() {
                                     if (
                                         num === 1 ||
                                         num === totalPaginas ||
-                                        Math.abs(num - paginaActual) <= 1
+                                        Math.abs(num - pagina) <= 1
                                     ) {
                                         return (
                                             <button
                                                 key={num}
-                                                className={`pag-btn ${num === paginaActual ? 'active' : ''}`}
+                                                className={`pag-btn ${num === pagina ? 'active' : ''}`}
                                                 onClick={() => setPagina(num)}
                                             >
                                                 {num}
@@ -613,8 +559,8 @@ function Propiedades() {
 
                                 <button
                                     className="pag-btn"
-                                    disabled={paginaActual === totalPaginas}
-                                    onClick={() => setPagina(paginaActual + 1)}
+                                    disabled={pagina === totalPaginas || loading}
+                                    onClick={() => setPagina(pagina + 1)}
                                 >
                                     <Icon name="fas fa-chevron-right" />
                                 </button>
@@ -625,7 +571,7 @@ function Propiedades() {
                     <EmptyState
                         icono="fa-search"
                         titulo="No encontramos resultados"
-                        descripcion="Probá con otro término de búsqueda o ajustá los filtros."
+                        descripcion="Probá ajustar los filtros para encontrar propiedades."
                         action={
                             hayFiltros ? (
                                 <button className="btn-ver-todas" onClick={limpiarFiltros} style={{ marginTop: '20px' }}>

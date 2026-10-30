@@ -198,39 +198,67 @@ export async function enviarMensajeContacto(data) {
 // PROPIEDADES
 // ============================================
 
-export async function getPropiedades({ page = 1, perPage = 10 } = {}) {
-    try {
-        const params = new URLSearchParams();
-        params.set('page', String(page));
-        params.set('per_page', String(perPage));
-        const response = await fetch(`${API_URL}/api/propiedades?${params.toString()}`);
-        const result = await response.json();
-        if (result.success && result.data && result.data.items) {
-            return result.data;
+export async function getPropiedades({
+    page = 1,
+    perPage = 10,
+    categoriaIds = [],
+    localidadIds = [],
+    servicioIds = [],
+    precioMin,
+    precioMax,
+    ambientes,
+    dormitorios,
+    banos,
+    capacidad,
+    aceptaMascotas,
+    aceptaHijos,
+    orden = 'antiguedad_desc'
+} = {}) {
+    const params = new URLSearchParams();
+    params.set('page', String(page));
+    params.set('per_page', String(perPage));
+    params.set('orden', orden);
+
+    [
+        ['categoria_id', categoriaIds],
+        ['localidad_id', localidadIds],
+        ['servicio_id', servicioIds]
+    ].forEach(([key, ids]) => {
+        ids.forEach(id => params.append(`${key}[]`, String(id)));
+    });
+
+    [
+        ['precio_min', precioMin],
+        ['precio_max', precioMax],
+        ['cantidad_ambientes', ambientes],
+        ['cantidad_dormitorios', dormitorios],
+        ['cantidad_banos', banos],
+        ['capacidad', capacidad],
+        ['acepta_mascotas', aceptaMascotas],
+        ['acepta_hijos', aceptaHijos]
+    ].forEach(([key, value]) => {
+        if (value !== undefined && value !== '') {
+            params.set(key, String(value));
         }
-        return { items: [], total: 0, pagination: null };
+    });
+
+    let response;
+    try {
+        response = await fetch(`${API_URL}/api/propiedades?${params.toString()}`);
     } catch (error) {
         throw new ErrorRed('No pudimos conectar con el servidor para cargar las propiedades. Probá de nuevo en unos momentos.');
     }
-}
 
-// El catálogo filtra y pagina en el cliente, así que necesita todas las
-// propiedades. Recorre las páginas del backend (per_page máximo 50) y las une.
-export async function getTodasLasPropiedades() {
-    try {
-        const primera = await getPropiedades({ page: 1, perPage: 50 });
-        const items = [...primera.items];
-        const totalPaginas = primera.pagination?.last_page || 1;
-
-        for (let page = 2; page <= totalPaginas; page++) {
-            const siguiente = await getPropiedades({ page, perPage: 50 });
-            items.push(...siguiente.items);
-        }
-
-        return items;
-    } catch (error) {
-        throw new ErrorRed('No pudimos conectar con el servidor para cargar las propiedades. Probá de nuevo en unos momentos.');
+    const result = await response.json();
+    if (!response.ok || !result.success) {
+        throw new Error(result.message || result.error || 'No se pudieron cargar las propiedades.');
     }
+
+    if (!result.data || !Array.isArray(result.data.items) || !result.data.pagination) {
+        throw new Error('La respuesta del servidor para las propiedades no es válida.');
+    }
+
+    return result.data;
 }
 
 export async function getPropiedadesDestacadas() {
