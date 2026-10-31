@@ -328,6 +328,20 @@ function MisReservas() {
                                                         : `usuario #${reserva.usuario_id}`}</strong></>
                                                     : 'Solicitud propia'}
                                             </p>
+                                            {(() => {
+                                                const otraPersonaId = reserva.origen === 'recibida'
+                                                    ? reserva.usuario?.id || reserva.usuario_id
+                                                    : prop?.usuario_id;
+                                                if (!otraPersonaId) return null;
+                                                return (
+                                                    <Link
+                                                        to={`/usuarios/${otraPersonaId}`}
+                                                        className="misreservas-item-ver"
+                                                    >
+                                                        Ver perfil del {reserva.origen === 'recibida' ? 'inquilino' : 'propietario'}
+                                                    </Link>
+                                                );
+                                            })()}
                                             {reserva.origen === 'recibida' && reserva.usuario && (
                                                 <div className="misreservas-item-contacto">
                                                     <span>

@@ -17,7 +17,9 @@ const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const RecuperarContrasena = lazy(() => import('./pages/RecuperarContrasena'));
 const RestablecerContrasena = lazy(() => import('./pages/RestablecerContrasena'));
+const VerificarEmail = lazy(() => import('./pages/VerificarEmail'));
 const Perfil = lazy(() => import('./pages/Perfil'));
+const PerfilPublico = lazy(() => import('./pages/PerfilPublico'));
 const Propiedades = lazy(() => import('./pages/Propiedades'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Favoritos = lazy(() => import('./pages/Favoritos'));
@@ -183,6 +185,14 @@ function AppRouter() {
                         }
                     />
                     <Route
+                        path="/verificar-email"
+                        element={
+                            <GuestRoute>
+                                <VerificarEmail />
+                            </GuestRoute>
+                        }
+                    />
+                    <Route
                         path="/register"
                         element={
                             <GuestRoute>
@@ -195,6 +205,14 @@ function AppRouter() {
                         RUTAS PROTEGIDAS (requieren autenticación)
                        ============================================ */}
 
+                    <Route
+                        path="/usuarios/:id"
+                        element={
+                            <PrivateRoute>
+                                <PerfilPublico />
+                            </PrivateRoute>
+                        }
+                    />
                     <Route
                         path="/perfil"
                         element={

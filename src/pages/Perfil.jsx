@@ -49,6 +49,7 @@ function Perfil() {
     const [guardando, setGuardando] = useState(false);
     const { showToast } = useUI();
 
+    const [passActual, setPassActual] = useState('');
     const [passNueva, setPassNueva] = useState('');
     const [passRepetir, setPassRepetir] = useState('');
     const [passErrores, setPassErrores] = useState({});
@@ -110,6 +111,10 @@ function Perfil() {
         e.preventDefault();
         const errores = {};
 
+        if (!passActual) {
+            errores.actual = 'Ingresá tu contraseña actual.';
+        }
+
         if (!passNueva) {
             errores.nueva = 'Ingresá la nueva contraseña.';
         } else if (passNueva.length < 8) {
@@ -125,12 +130,16 @@ function Perfil() {
 
         setGuardandoPass(true);
         try {
-            const result = await updatePerfil(usuario.id, { contrasena: passNueva }, token);
+            const result = await updatePerfil(usuario.id, {
+                contrasena_actual: passActual,
+                contrasena: passNueva
+            }, token);
 
             if (result.success) {
+                setPassActual('');
                 setPassNueva('');
                 setPassRepetir('');
-                showToast('Contraseña cambiada correctamente');
+                showToast('Te enviamos un correo para confirmar el cambio de contraseña');
             } else {
                 if (result.validation_errors) setPassErrores(result.validation_errors);
                 showToast(result.message || result.error || 'No se pudo cambiar la contraseña', 'error');
@@ -498,11 +507,29 @@ function Perfil() {
                         </h3>
                     </div>
                     <p className="perfil-form-help">
-                        Definí una nueva contraseña de al menos 8 caracteres. Se actualizará tu acceso
-                        en la sesión actual.
+                        Para cambiar tu contraseña, ingresá tu contraseña actual y la nueva.
+                        Te enviaremos un correo con un enlace para confirmar el cambio: la
+                        contraseña se actualizará recién cuando lo confirmes.
                     </p>
 
                     <form onSubmit={handleCambiarContrasena} className="perfil-form" noValidate>
+                        <div className="form-row">
+                            <div className="perfil-form-group">
+                                <label htmlFor="pass-actual">Contraseña actual</label>
+                                <input
+                                    type="password"
+                                    id="pass-actual"
+                                    name="passActual"
+                                    value={passActual}
+                                    onChange={(e) => setPassActual(e.target.value)}
+                                    placeholder="Tu contraseña actual"
+                                    autoComplete="current-password"
+                                    className={passErrores.actual ? 'input-error' : ''}
+                                />
+                                {passErrores.actual && <span className="form-error">{passErrores.actual}</span>}
+                            </div>
+                        </div>
+
                         <div className="form-row">
                             <div className="perfil-form-group">
                                 <label htmlFor="pass-nueva">Nueva contraseña</label>
@@ -513,6 +540,7 @@ function Perfil() {
                                     value={passNueva}
                                     onChange={(e) => setPassNueva(e.target.value)}
                                     placeholder="Mínimo 8 caracteres"
+                                    autoComplete="new-password"
                                     className={passErrores.nueva ? 'input-error' : ''}
                                 />
                                 {passErrores.nueva && <span className="form-error">{passErrores.nueva}</span>}
@@ -526,6 +554,7 @@ function Perfil() {
                                     value={passRepetir}
                                     onChange={(e) => setPassRepetir(e.target.value)}
                                     placeholder="Repetí la nueva contraseña"
+                                    autoComplete="new-password"
                                     className={passErrores.repetir ? 'input-error' : ''}
                                 />
                                 {passErrores.repetir && <span className="form-error">{passErrores.repetir}</span>}

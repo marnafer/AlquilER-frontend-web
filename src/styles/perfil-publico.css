@@ -1,0 +1,218 @@
+.perfil-publico-page {
+    min-height: calc(100vh - 72px);
+    padding: 40px 0 64px;
+    background: var(--primary-bg);
+}
+
+.perfil-publico-encabezado {
+    margin-bottom: 24px;
+}
+
+.perfil-publico-etiqueta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    color: var(--primary-ink);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.perfil-publico-encabezado h1 {
+    margin: 0 0 8px;
+    color: var(--heading);
+    font-size: clamp(26px, 3vw, 36px);
+    font-weight: 800;
+}
+
+.perfil-publico-encabezado p {
+    margin: 0;
+    color: var(--gray-600);
+}
+
+.perfil-publico-card {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 28px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 18px;
+    background: var(--surface);
+    box-shadow: var(--shadow-soft);
+}
+
+.perfil-publico-identidad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.perfil-publico-avatar {
+    display: grid;
+    width: 76px;
+    height: 76px;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    font-size: 32px;
+    font-weight: 800;
+}
+
+.perfil-publico-identidad h2 {
+    margin: 0;
+    color: var(--heading);
+    font-size: 24px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.perfil-publico-separador {
+    height: 1px;
+    margin: 24px 0;
+    background: var(--border-subtle);
+}
+
+.perfil-publico-titulo-seccion {
+    margin: 0 0 12px;
+    color: var(--heading);
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.perfil-publico-seccion + .perfil-publico-seccion {
+    margin-top: 10px;
+}
+
+.perfil-publico-acordeon {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    background: var(--primary-bg);
+    color: var(--heading);
+    text-align: left;
+    cursor: pointer;
+}
+
+.perfil-publico-acordeon > span {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.perfil-publico-acordeon strong {
+    font-size: 15px;
+}
+
+.perfil-publico-acordeon small {
+    color: var(--gray-600);
+    font-size: 12px;
+}
+
+.perfil-publico-acordeon > .ph-icon {
+    color: var(--primary-ink);
+    flex-shrink: 0;
+}
+
+.perfil-publico-contenido {
+    padding: 8px 8px 14px;
+}
+
+.perfil-publico-promedio {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 14px 8px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.perfil-publico-promedio span {
+    color: var(--gray-600);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.perfil-publico-promedio strong,
+.perfil-publico-resena-nota {
+    color: var(--primary-ink);
+    font-weight: 800;
+}
+
+.perfil-publico-resena {
+    margin-top: 12px;
+    padding: 14px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    background: var(--surface);
+}
+
+.perfil-publico-resena-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.perfil-publico-resena-header > div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.perfil-publico-resena-header strong {
+    color: var(--heading);
+    font-size: 14px;
+}
+
+.perfil-publico-resena-header time {
+    color: var(--gray-500);
+    font-size: 12px;
+}
+
+.perfil-publico-resena-nota {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.perfil-publico-resena p {
+    margin: 10px 0 0;
+    color: var(--gray-700);
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.perfil-publico-resena p.sin-comentario,
+.perfil-publico-vacio {
+    color: var(--gray-500);
+    font-style: italic;
+}
+
+.perfil-publico-vacio {
+    margin: 0;
+    padding: 16px 8px 8px;
+    font-size: 14px;
+}
+
+@media (max-width: 576px) {
+    .perfil-publico-page {
+        padding: 28px 0 48px;
+    }
+
+    .perfil-publico-card {
+        padding: 20px 16px;
+    }
+
+    .perfil-publico-acordeon {
+        padding: 13px;
+    }
+}

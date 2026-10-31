@@ -1,7 +1,14 @@
 import Icon from '../components/Icon';
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getTodasLasPropiedades, getPropiedadesDestacadas, getCategorias, getServicios, getLocalidades } from '../services/api';
+import {
+    getPropiedades,
+    getPropiedad,
+    getPropiedadesDestacadas,
+    getCategorias,
+    getServicios,
+    getLocalidades
+} from '../services/api';
 import { rutaImagenPropiedad } from '../utils/imagenes';
 import { leerVistosRecientemente } from '../utils/vistosRecientemente';
 import PropiedadCardImage from '../components/PropiedadCardImage';
@@ -29,6 +36,7 @@ function Home() {
     const [paginaCarrusel, setPaginaCarrusel] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [vistosRecientes, setVistosRecientes] = useState([]);
 
     const [busqueda, setBusqueda] = useState('');
     const [categoriaBusqueda, setCategoriaBusqueda] = useState('');
@@ -55,17 +63,25 @@ function Home() {
     const cargarDatos = async () => {
         setLoading(true);
         setError('');
+
         try {
-            const [props, dest, cats, serv, localidadesRes] = await Promise.all([
-                getTodasLasPropiedades(),
+            const [dest, cats, serv, localidadesRes] = await Promise.all([
                 getPropiedadesDestacadas(),
                 getCategorias(),
                 getServicios(),
                 getLocalidades()
             ]);
 
-            setPropiedades(props);
-            setDestacadas(Array.isArray(dest) ? dest : []);
+            const destacadasCargadas = Array.isArray(dest) ? dest : [];
+            let propiedadesRecientes = [];
+
+            if (destacadasCargadas.length === 0) {
+                const respuesta = await getPropiedades({ page: 1, perPage: 10 });
+                propiedadesRecientes = respuesta.items;
+            }
+
+            setPropiedades(propiedadesRecientes);
+            setDestacadas(destacadasCargadas);
             setCategorias(cats);
             setServicios(Array.isArray(serv) ? serv : []);
             setLocalidades(Array.isArray(localidadesRes) ? localidadesRes : []);
@@ -80,7 +96,15 @@ function Home() {
     const handleBuscar = (e) => {
         e.preventDefault();
         const query = new URLSearchParams();
-        if (busqueda.trim()) query.set('q', busqueda.trim());
+        const localidadBuscada = busqueda.trim().toLowerCase();
+        if (localidadBuscada) {
+            localidades
+                .filter(localidad =>
+                    (localidad.nombre || '').toLowerCase().includes(localidadBuscada)
+                )
+                .slice(0, 8)
+                .forEach(localidad => query.append('localidad_id', String(localidad.id)));
+        }
         if (categoriaBusqueda) query.set('categoria_id', categoriaBusqueda);
         navigate(query.toString() ? `/propiedades?${query.toString()}` : '/propiedades');
     };
@@ -154,14 +178,6 @@ function Home() {
         (paginaSeguraCarrusel + 1) * porPaginaCarrusel
     );
 
-    // "Vistos recientemente": resolvemos los IDs guardados contra las
-    // propiedades ya cargadas, así no hacemos ningún pedido extra. Solo
-    // mostramos las que siguen disponibles y sin repetir la actual.
-    const vistosRecientes = vistosIds
-        .map(id => disponibles.find(p => Number(p.id) === id))
-        .filter(Boolean)
-        .slice(0, 4);
-
     const ocultarHero = (e) => {
         const hero = e.currentTarget.closest('.hero-image');
         if (hero) hero.style.display = 'none';
@@ -183,7 +199,7 @@ function Home() {
                                         <input
                                             type="text"
                                             placeholder="Localidad"
-                                            aria-label="Buscar propiedad por dirección o título"
+                                            aria-label="Buscar por localidad"
                                             value={busqueda}
                                             onChange={(e) => { setBusqueda(e.target.value); setMostrarSugerencias(true); }}
                                             onFocus={() => setMostrarSugerencias(true)}

@@ -23,6 +23,7 @@ import ServicioIcono from './ServicioIcono';
 import { useAuth } from '../hooks/useAuth';
 import { useUI } from '../context/UIContext';
 import { useSEO } from '../hooks/useSEO';
+import { contieneProfanidad, MENSAJE_PROFANIDAD } from '../utils/profanity';
 import Loader from './Loader';
 import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
@@ -270,6 +271,11 @@ function PropiedadDetalle() {
         const valor = Number(calificacion);
         if (!valor || valor < 1 || valor > 5) {
             setErrorResena('Seleccioná una calificación de 1 a 5 estrellas.');
+            return;
+        }
+
+        if (contieneProfanidad(comentario)) {
+            setErrorResena(MENSAJE_PROFANIDAD);
             return;
         }
 
