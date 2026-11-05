@@ -69,11 +69,24 @@ test('usuario: consulta y reserva desde el detalle', async ({ page }) => {
     await expect(page.getByText(/Reserva solicitada correctamente/i)).toBeVisible();
 });
 
-test('usuario: la sesión sobrevive a un access token inválido (refresh automático)', async ({ page }) => {
+test('usuario: la sesión sobrevive a un access cookie inválido (refresh automático)', async ({ page }) => {
     await login(page);
 
-    // Simular expiración: corromper el access token dejando intacto el refresh_token
-    await page.evaluate(() => localStorage.setItem('token', 'token.falsificado.xyz'));
+    const origen = new URL(page.url()).origin;
+    const cookies = await page.context().cookies();
+    const cookieRefresh = cookies.find(cookie => cookie.name === 'refresh_token');
+    expect(cookieRefresh?.httpOnly).toBe(true);
+
+    // Simular expiración sin tocar la cookie HttpOnly de refresh.
+    await page.context().addCookies([{
+        name: 'access_token',
+        value: 'token.falsificado.xyz',
+        url: origen,
+        path: '/',
+        httpOnly: true,
+        secure: origen.startsWith('https:'),
+        sameSite: 'Lax'
+    }]);
 
     // El interceptor renueva el token y reintenta la petición (200 en vez de 401)
     const sondeo = await page.evaluate(async () => {
@@ -82,10 +95,11 @@ test('usuario: la sesión sobrevive a un access token inválido (refresh automá
     });
     expect(sondeo.status).toBe(200);
 
-    // El nuevo token queda guardado (JWT válido) y la sesión sigue activa
-    await expect.poll(async () => page.evaluate(() => localStorage.getItem('token'))).not.toBe('token.falsificado.xyz');
-    const tokenNuevo = await page.evaluate(() => localStorage.getItem('token'));
-    expect(tokenNuevo.split('.')).toHaveLength(3);
+    // El nuevo access token sigue siendo HttpOnly y no se guarda en localStorage.
+    const cookieAccess = (await page.context().cookies()).find(cookie => cookie.name === 'access_token');
+    expect(cookieAccess?.httpOnly).toBe(true);
+    expect(cookieAccess?.value).not.toBe('token.falsificado.xyz');
+    expect(await page.evaluate(() => localStorage.getItem('token'))).toBeNull();
 
     await page.goto('/propiedades');
     await expect(page.locator('#basic-nav-dropdown')).toBeVisible({ timeout: 15000 });

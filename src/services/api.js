@@ -33,16 +33,7 @@ export async function login(email, password) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, contrasena: password })
         });
-        const result = await response.json();
-        // Compatibilidad: garantizar que result.data.token y result.token existan
-        if (result.success && result.data) {
-            result.token = result.data.access_token || result.data.token;
-            if (!result.data.token) {
-                result.data.token = result.token;
-            }
-            result.refresh_token = result.data.refresh_token;
-        }
-        return result;
+        return await response.json();
     } catch (error) {
         return { success: false, error: errorDeConexion(error) };
     }
