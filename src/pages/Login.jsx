@@ -24,9 +24,9 @@ function Login() {
         try {
             const result = await login(email, password);
 
-            // El backend devuelve { success: true, data: { token: ... } }
-            if (result.success && result.data && result.data.token) {
-                authLogin(result.data.token, result.data.refresh_token);
+            // El backend establece las cookies HttpOnly al iniciar sesión.
+            if (result.success) {
+                authLogin();
                 navigate('/dashboard');
             } else {
                 setError(result.error || result.message || 'Error al iniciar sesión');
