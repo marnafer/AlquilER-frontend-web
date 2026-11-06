@@ -92,6 +92,28 @@
     }
 }
 
+/* Filtros del catalogo: mas columnas en pantallas intermedias y menos en
+   movil. El span del buscador se ajusta para que ocupe toda la fila. */
+@media (max-width: 1200px) {
+    .props-filtros {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .filtro-search {
+        grid-column: span 4;
+    }
+}
+
+@media (max-width: 992px) {
+    .props-filtros {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .filtro-search {
+        grid-column: span 3;
+    }
+}
+
 @media (max-width: 768px) {
     body {
         padding-top: 60px;
@@ -146,6 +168,29 @@
         padding: 12px;
     }
 
+    /* Evita el zoom automatico de iOS al enfocar controles en movil. */
+    .filtro-group select,
+    .filtro-group input,
+    .search-box input,
+    .search-box select,
+    .auth-container input,
+    .auth-container select,
+    .propform-card input,
+    .propform-card select,
+    .propform-card textarea {
+        font-size: 16px;
+    }
+
+    /* Objetivos tactiles mas comodos en movil. */
+    .pag-btn {
+        min-width: 42px;
+        height: 42px;
+    }
+
+    .navbar-dark .navbar-nav .nav-link {
+        padding: 10px 0 !important;
+    }
+
     .wave-divider {
         display: none;
     }
@@ -161,8 +206,17 @@
     }
 
     .categorias-grid {
-        flex-direction: column;
-        align-items: center;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        flex-direction: initial;
+        align-items: stretch;
+        flex-wrap: initial;
+    }
+
+    .categoria-card {
+        flex: initial;
+        max-width: none;
     }
 
     .servicios-grid {
@@ -453,12 +507,13 @@
 
     /* Grids */
     .categorias-grid {
-        flex-direction: column;
-        align-items: center;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
     }
     .categoria-card {
-        flex: 0 1 100%;
-        max-width: 220px;
+        flex: initial;
+        max-width: none;
     }
 
     .servicios-grid {
@@ -479,7 +534,7 @@
     }
 
     .stats-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
     }
 
     /* Hero */
@@ -857,6 +912,33 @@
 .misreservas-item-acciones .btn-detalle {
     padding: 8px 14px;
     font-size: 12.5px;
+}
+
+/* ========== SEGURIDAD RESPONSIVE (GLOBAL) ========== */
+/* Evita que texto largo rompa el layout en tarjetas y filtros. */
+.propiedad-info,
+.servicio-card,
+.filtro-group,
+.misreservas-item-info {
+    min-width: 0;
+}
+
+.propiedad-info h3 {
+    overflow-wrap: anywhere;
+}
+
+.propiedad-features span {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+/* Titulares con escala fluida para no desbordar en tablet. */
+.hero-content h1 {
+    font-size: clamp(26px, 4.6vw + 10px, 48px);
+}
+
+.section-header h2 {
+    font-size: clamp(22px, 3.2vw + 10px, 32px);
 }
 
 @media (max-width: 720px) {
