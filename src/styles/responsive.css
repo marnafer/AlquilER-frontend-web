@@ -231,6 +231,11 @@
         grid-template-columns: 1fr;
     }
 
+    /* Vistos recientemente: 2 por fila en tablet. */
+    .vistos-recientemente .propiedades-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     /* Catálogo: 2 por fila */
     .props-body .propiedades-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -533,6 +538,10 @@
 @media (max-width: 480px) {
     /* Catálogo: 1 por fila */
     .props-body .propiedades-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .vistos-recientemente .propiedades-grid {
         grid-template-columns: 1fr;
     }
 
