@@ -741,6 +741,11 @@
         font-size: 22px;
     }
 
+    .admin-hero-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
     .admin-hero-actions .btn-detalle {
         width: 100%;
         justify-content: center;
