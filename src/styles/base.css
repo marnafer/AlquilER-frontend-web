@@ -162,7 +162,14 @@ button:not(:disabled):active {
     color-scheme: dark;
 }
 
-[data-theme="dark"] body {
+/* Bootstrap queda despues de estos estilos en el bundle de produccion y su
+   regla `body` vuelve a pintar el fondo claro. Subimos la especificidad para
+   que en oscuro el fondo de pagina sea el oscuro tambien en el build: si no,
+   las secciones del Home sin fondo propio (destacadas, servicios, etc.) se ven
+   blancas porque dejan ver el body. */
+:root[data-theme="dark"] body {
+    background: var(--primary-bg);
+    color: var(--gray-800);
     color-scheme: dark;
 }
 
