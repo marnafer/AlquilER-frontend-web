@@ -112,6 +112,33 @@
     .filtro-search {
         grid-column: span 3;
     }
+
+    /* El hero pasa a una columna para que la caja de busqueda tenga todo el
+       ancho disponible y no quede apretada junto a la imagen. */
+    .hero-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+        text-align: center;
+    }
+
+    .hero-image {
+        max-width: 420px;
+    }
+
+    .hero-content p {
+        max-width: 100%;
+    }
+
+    /* La barra de busqueda se apila: input arriba, boton abajo a ancho
+       completo. Evita que el boton se coma todo el ancho y el input quede
+       reducido a unos pocos pixeles. */
+    .search-box-row {
+        flex-direction: column;
+    }
+
+    .search-box .btn-search {
+        width: 100%;
+    }
 }
 
 @media (max-width: 768px) {
@@ -151,6 +178,10 @@
         padding: 12px;
         background: var(--surface);
         gap: 10px;
+    }
+
+    .search-box-row {
+        flex-direction: column;
     }
 
     .search-box input,
