@@ -92,6 +92,55 @@
     }
 }
 
+/* Filtros del catalogo: mas columnas en pantallas intermedias y menos en
+   movil. El span del buscador se ajusta para que ocupe toda la fila. */
+@media (max-width: 1200px) {
+    .props-filtros {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .filtro-search {
+        grid-column: span 4;
+    }
+}
+
+@media (max-width: 992px) {
+    .props-filtros {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .filtro-search {
+        grid-column: span 3;
+    }
+
+    /* El hero pasa a una columna para que la caja de busqueda tenga todo el
+       ancho disponible y no quede apretada junto a la imagen. */
+    .hero-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+        text-align: center;
+    }
+
+    .hero-image {
+        max-width: 420px;
+    }
+
+    .hero-content p {
+        max-width: 100%;
+    }
+
+    /* La barra de busqueda se apila: input arriba, boton abajo a ancho
+       completo. Evita que el boton se coma todo el ancho y el input quede
+       reducido a unos pocos pixeles. */
+    .search-box-row {
+        flex-direction: column;
+    }
+
+    .search-box .btn-search {
+        width: 100%;
+    }
+}
+
 @media (max-width: 768px) {
     body {
         padding-top: 60px;
@@ -131,6 +180,10 @@
         gap: 10px;
     }
 
+    .search-box-row {
+        flex-direction: column;
+    }
+
     .search-box input,
     .search-box select {
         border-radius: var(--control-radius);
@@ -146,6 +199,29 @@
         padding: 12px;
     }
 
+    /* Evita el zoom automatico de iOS al enfocar controles en movil. */
+    .filtro-group select,
+    .filtro-group input,
+    .search-box input,
+    .search-box select,
+    .auth-container input,
+    .auth-container select,
+    .propform-card input,
+    .propform-card select,
+    .propform-card textarea {
+        font-size: 16px;
+    }
+
+    /* Objetivos tactiles mas comodos en movil. */
+    .pag-btn {
+        min-width: 42px;
+        height: 42px;
+    }
+
+    .navbar-dark .navbar-nav .nav-link {
+        padding: 10px 0 !important;
+    }
+
     .wave-divider {
         display: none;
     }
@@ -155,14 +231,28 @@
         grid-template-columns: 1fr;
     }
 
+    /* Vistos recientemente: 2 por fila en tablet. */
+    .vistos-recientemente .propiedades-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     /* Catálogo: 2 por fila */
     .props-body .propiedades-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .categorias-grid {
-        flex-direction: column;
-        align-items: center;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        flex-direction: initial;
+        align-items: stretch;
+        flex-wrap: initial;
+    }
+
+    .categoria-card {
+        flex: initial;
+        max-width: none;
     }
 
     .servicios-grid {
@@ -451,14 +541,19 @@
         grid-template-columns: 1fr;
     }
 
+    .vistos-recientemente .propiedades-grid {
+        grid-template-columns: 1fr;
+    }
+
     /* Grids */
     .categorias-grid {
-        flex-direction: column;
-        align-items: center;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
     }
     .categoria-card {
-        flex: 0 1 100%;
-        max-width: 220px;
+        flex: initial;
+        max-width: none;
     }
 
     .servicios-grid {
@@ -479,7 +574,7 @@
     }
 
     .stats-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
     }
 
     /* Hero */
@@ -857,6 +952,60 @@
 .misreservas-item-acciones .btn-detalle {
     padding: 8px 14px;
     font-size: 12.5px;
+}
+
+/* ========== SEGURIDAD RESPONSIVE (GLOBAL) ========== */
+/* Evita que texto largo rompa el layout en tarjetas y filtros. */
+.propiedad-info,
+.servicio-card,
+.filtro-group,
+.misreservas-item-info {
+    min-width: 0;
+}
+
+.propiedad-info h3 {
+    overflow-wrap: anywhere;
+}
+
+.propiedad-features span {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+/* Titulares con escala fluida para no desbordar en tablet. */
+.hero-content h1 {
+    font-size: clamp(26px, 4.6vw + 10px, 48px);
+}
+
+.section-header h2 {
+    font-size: clamp(22px, 3.2vw + 10px, 32px);
+}
+
+/* ========== MEJORAS ADICIONALES (GLOBAL) ========== */
+/* Carrusel de destacadas: 2 por fila en tablet, 1 en movil. */
+@media (max-width: 768px) {
+    .home-carrusel-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .home-carrusel-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Objetivos tactiles mas comodos en movil. */
+    .home-categoria-btn,
+    .servicios-ver-todos {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .navbar-brand-logo {
+        height: 40px;
+    }
 }
 
 @media (max-width: 720px) {

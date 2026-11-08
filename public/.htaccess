@@ -1,0 +1,13 @@
+# Fallback para la SPA: React Router resuelve las rutas en el cliente.
+# Sin esto, entrar directo a /propiedades, /login, etc. devuelve 404.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Los archivos y carpetas reales se sirven tal cual (assets, imagenes...).
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Cualquier otra ruta se sirve con index.html.
+    RewriteRule ^ index.html [L]
+</IfModule>

@@ -48,7 +48,9 @@
 /* ========== FILTROS DEL CATÁLOGO ========== */
 .props-filtros {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    /* minmax(0, 1fr) evita que el texto de las opciones del select fuerce un
+       ancho minimo y desborde el contenedor entre 769px y 1200px. */
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 8px;
     background: var(--surface);
     padding: 8px;
@@ -57,6 +59,17 @@
     box-shadow: var(--shadow-soft);
     margin-bottom: 24px;
     align-items: end;
+}
+
+/* Cada filtro puede encogerse y su control ocupa todo el ancho disponible. */
+.filtro-group {
+    min-width: 0;
+}
+
+.filtro-group select,
+.filtro-group input {
+    width: 100%;
+    min-width: 0;
 }
 
 .filtro-group {

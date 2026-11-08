@@ -1,5 +1,118 @@
 export const API_URL = import.meta.env.VITE_API_URL || '';
 
+const TTL_CACHE_CATALOGOS = 5 * 60 * 1000;
+const cacheCatalogos = new Map();
+const solicitudesCatalogos = new Map();
+const generacionesCatalogos = new Map();
+const PREFIJO_CACHE_CATALOGOS = 'alquiler:catalogos:v1:';
+
+function claveCacheCatalogo(nombre, soloEliminados) {
+    return `${PREFIJO_CACHE_CATALOGOS}${encodeURIComponent(API_URL)}:${nombre}:${soloEliminados ? 'eliminados' : 'activos'}`;
+}
+
+function eliminarCacheCatalogo(clave) {
+    cacheCatalogos.delete(clave);
+    try {
+        window.localStorage.removeItem(clave);
+    } catch (error) {
+        console.warn('No se pudo borrar el catálogo de la caché local:', error);
+    }
+}
+
+function leerCacheCatalogo(clave) {
+    const ahora = Date.now();
+    const enMemoria = cacheCatalogos.get(clave);
+
+    if (enMemoria?.expiresAt > ahora) {
+        return enMemoria.value;
+    }
+    if (enMemoria) {
+        cacheCatalogos.delete(clave);
+    }
+
+    try {
+        const serializado = window.localStorage.getItem(clave);
+        if (!serializado) return null;
+
+        const entrada = JSON.parse(serializado);
+        if (
+            !Array.isArray(entrada?.value)
+            || typeof entrada.expiresAt !== 'number'
+            || entrada.expiresAt <= ahora
+        ) {
+            eliminarCacheCatalogo(clave);
+            return null;
+        }
+
+        cacheCatalogos.set(clave, entrada);
+        return entrada.value;
+    } catch (error) {
+        console.warn('No se pudo leer el catálogo de la caché local:', error);
+        return null;
+    }
+}
+
+function guardarCacheCatalogo(clave, valor) {
+    if (!Array.isArray(valor)) return;
+
+    const entrada = {
+        expiresAt: Date.now() + TTL_CACHE_CATALOGOS,
+        value: valor
+    };
+    cacheCatalogos.set(clave, entrada);
+
+    try {
+        window.localStorage.setItem(clave, JSON.stringify(entrada));
+    } catch (error) {
+        console.warn('No se pudo guardar el catálogo en la caché local:', error);
+    }
+}
+
+function invalidarCacheCatalogo(nombre) {
+    generacionesCatalogos.set(
+        nombre,
+        (generacionesCatalogos.get(nombre) || 0) + 1
+    );
+    [false, true].forEach(soloEliminados => {
+        const clave = claveCacheCatalogo(nombre, soloEliminados);
+        eliminarCacheCatalogo(clave);
+        solicitudesCatalogos.delete(clave);
+    });
+}
+
+function cachearCatalogo(nombre, soloEliminados, cargar) {
+    if (soloEliminados) return cargar();
+
+    const clave = claveCacheCatalogo(nombre, soloEliminados);
+    const cacheado = leerCacheCatalogo(clave);
+    if (cacheado) return Promise.resolve(cacheado);
+
+    const solicitudExistente = solicitudesCatalogos.get(clave);
+    if (solicitudExistente) return solicitudExistente;
+
+    const generacion = generacionesCatalogos.get(nombre) || 0;
+    let solicitud;
+    solicitud = cargar()
+        .then(valor => {
+            if ((generacionesCatalogos.get(nombre) || 0) === generacion) {
+                guardarCacheCatalogo(clave, valor);
+            }
+            return valor;
+        })
+        .finally(() => {
+            if (solicitudesCatalogos.get(clave) === solicitud) {
+                solicitudesCatalogos.delete(clave);
+            }
+        });
+    solicitudesCatalogos.set(clave, solicitud);
+    return solicitud;
+}
+
+function invalidarSiExitoso(resultado, nombre) {
+    if (resultado?.success) invalidarCacheCatalogo(nombre);
+    return resultado;
+}
+
 // Cuando la API esta caida, el navegador lanza errores como "Failed to fetch"
 // o errores de parseo de JSON. Eso es informacion tecnica, no un mensaje
 // para el usuario final: se muestra un mensaje generico y el error original
@@ -397,59 +510,67 @@ export async function eliminarImagenPropiedad(id, token) {
 // ============================================
 
 export async function getCategorias(soloEliminados = false) {
-    try {
-        const query = soloEliminados ? '?solo_eliminados=true' : '';
-        const response = await fetch(`${API_URL}/api/categorias${query}`);
-        const result = await response.json();
-        if (result.success && result.data && result.data.items) {
-            return result.data.items;
+    return cachearCatalogo('categorias', soloEliminados, async () => {
+        try {
+            const query = soloEliminados ? '?solo_eliminados=true' : '';
+            const response = await fetch(`${API_URL}/api/categorias${query}`);
+            const result = await response.json();
+            if (result.success && result.data && result.data.items) {
+                return result.data.items;
+            }
+            return result.data || [];
+        } catch (error) {
+            throw new ErrorRed('No pudimos conectar con el servidor para cargar las categorías.');
         }
-        return result.data || [];
-    } catch (error) {
-        throw new ErrorRed('No pudimos conectar con el servidor para cargar las categorías.');
-    }
+    });
 }
 
 export async function getProvincias(soloEliminados = false) {
-    try {
-        const query = soloEliminados ? '?solo_eliminados=true' : '';
-        const response = await fetch(`${API_URL}/api/provincias${query}`);
-        const result = await response.json();
-        if (result.success && result.data && result.data.items) {
-            return result.data.items;
+    return cachearCatalogo('provincias', soloEliminados, async () => {
+        try {
+            const query = soloEliminados ? '?solo_eliminados=true' : '';
+            const response = await fetch(`${API_URL}/api/provincias${query}`);
+            const result = await response.json();
+            if (result.success && result.data && result.data.items) {
+                return result.data.items;
+            }
+            return result.data || [];
+        } catch (error) {
+            throw new ErrorRed('No pudimos conectar con el servidor para cargar las provincias.');
         }
-        return result.data || [];
-    } catch (error) {
-        throw new ErrorRed('No pudimos conectar con el servidor para cargar las provincias.');
-    }
+    });
 }
 
 export async function getLocalidades(soloEliminados = false) {
-    try {
-        const query = soloEliminados ? '?solo_eliminados=true' : '';
-        const response = await fetch(`${API_URL}/api/localidades${query}`);
-        const result = await response.json();
-        if (result.success && result.data && result.data.items) {
-            return result.data.items;
+    return cachearCatalogo('localidades', soloEliminados, async () => {
+        try {
+            const query = soloEliminados ? '?solo_eliminados=true' : '';
+            const response = await fetch(`${API_URL}/api/localidades${query}`);
+            const result = await response.json();
+            if (result.success && result.data && result.data.items) {
+                return result.data.items;
+            }
+            return result.data || [];
+        } catch (error) {
+            throw new ErrorRed('No pudimos conectar con el servidor para cargar las localidades.');
         }
-        return result.data || [];
-    } catch (error) {
-        throw new ErrorRed('No pudimos conectar con el servidor para cargar las localidades.');
-    }
+    });
 }
 
 export async function getServicios(soloEliminados = false) {
-    try {
-        const query = soloEliminados ? '?solo_eliminados=true' : '';
-        const response = await fetch(`${API_URL}/api/servicios${query}`);
-        const result = await response.json();
-        if (result.success && result.data && result.data.items) {
-            return result.data.items;
+    return cachearCatalogo('servicios', soloEliminados, async () => {
+        try {
+            const query = soloEliminados ? '?solo_eliminados=true' : '';
+            const response = await fetch(`${API_URL}/api/servicios${query}`);
+            const result = await response.json();
+            if (result.success && result.data && result.data.items) {
+                return result.data.items;
+            }
+            return result.data || [];
+        } catch (error) {
+            throw new ErrorRed('No pudimos conectar con el servidor para cargar los servicios.');
         }
-        return result.data || [];
-    } catch (error) {
-        throw new ErrorRed('No pudimos conectar con el servidor para cargar los servicios.');
-    }
+    });
 }
 
 export async function getRoles(soloEliminados = false) {
@@ -1038,7 +1159,7 @@ export async function createCategoria(data, token) {
             },
             body: JSON.stringify(data)
         });
-        return await response.json();
+        return invalidarSiExitoso(await response.json(), 'categorias');
     } catch (error) {
         return { success: false, error: errorDeConexion(error) };
     }
@@ -1054,7 +1175,7 @@ export async function updateCategoria(id, data, token) {
             },
             body: JSON.stringify(data)
         });
-        return await response.json();
+        return invalidarSiExitoso(await response.json(), 'categorias');
     } catch (error) {
         return { success: false, error: errorDeConexion(error) };
     }
@@ -1066,7 +1187,7 @@ export async function deleteCategoria(id, token) {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        return await response.json();
+        return invalidarSiExitoso(await response.json(), 'categorias');
     } catch (error) {
         return { success: false, error: errorDeConexion(error) };
     }
@@ -1086,7 +1207,7 @@ export async function createProvincia(data, token) {
             },
             body: JSON.stringify(data)
         });
-        return await response.json();
+        return invalidarSiExitoso(await response.json(), 'provincias');
     } catch (error) {
         return { success: false, error: errorDeConexion(error) };
     }
@@ -1102,7 +1223,7 @@ export async function updateProvincia(id, data, token) {
             },
             body: JSON.stringify(data)
         });
-        return await response.json();
+        return invalidarSiExitoso(await response.json(), 'provincias');
     } catch (error) {
         return { success: false, error: errorDeConexion(error) };
     }
@@ -1114,7 +1235,7 @@ export async function deleteProvincia(id, token) {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        return await response.json();
+        return invalidarSiExitoso(await response.json(), 'provincias');
     } catch (error) {
         return { success: false, error: errorDeConexion(error) };
     }
@@ -1134,7 +1255,7 @@ export async function createLocalidad(data, token) {
             },
             body: JSON.stringify(data)
         });
-        return await response.json();
+        return invalidarSiExitoso(await response.json(), 'localidades');
     } catch (error) {
         return { success: false, error: errorDeConexion(error) };
     }
@@ -1150,7 +1271,7 @@ export async function updateLocalidad(id, data, token) {
             },
             body: JSON.stringify(data)
         });
-        return await response.json();
+        return invalidarSiExitoso(await response.json(), 'localidades');
     } catch (error) {
         return { success: false, error: errorDeConexion(error) };
     }
@@ -1162,7 +1283,7 @@ export async function deleteLocalidad(id, token) {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        return await response.json();
+        return invalidarSiExitoso(await response.json(), 'localidades');
     } catch (error) {
         return { success: false, error: errorDeConexion(error) };
     }
@@ -1230,7 +1351,7 @@ export async function createServicio(data, token) {
             },
             body: JSON.stringify(data)
         });
-        return await response.json();
+        return invalidarSiExitoso(await response.json(), 'servicios');
     } catch (error) {
         return { success: false, error: errorDeConexion(error) };
     }
@@ -1246,7 +1367,7 @@ export async function updateServicio(id, data, token) {
             },
             body: JSON.stringify(data)
         });
-        return await response.json();
+        return invalidarSiExitoso(await response.json(), 'servicios');
     } catch (error) {
         return { success: false, error: errorDeConexion(error) };
     }
@@ -1258,7 +1379,7 @@ export async function deleteServicio(id, token) {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        return await response.json();
+        return invalidarSiExitoso(await response.json(), 'servicios');
     } catch (error) {
         return { success: false, error: errorDeConexion(error) };
     }
@@ -1337,24 +1458,27 @@ export async function deleteResena(id, token) {
 // ADMIN - RESTAURAR (PAPELERA)
 // ============================================
 
-const restore = (endpoint) => async (id, token) => {
+const restore = (endpoint, catalogo = null) => async (id, token) => {
     try {
         const response = await fetch(`${API_URL}${endpoint}/${id}/restaurar`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        return await response.json();
+        const resultado = await response.json();
+        return catalogo
+            ? invalidarSiExitoso(resultado, catalogo)
+            : resultado;
     } catch (error) {
         return { success: false, error: errorDeConexion(error) };
     }
 };
 
 export const restoreUsuario = restore('/api/usuarios');
-export const restoreCategoria = restore('/api/categorias');
-export const restoreProvincia = restore('/api/provincias');
-export const restoreLocalidad = restore('/api/localidades');
+export const restoreCategoria = restore('/api/categorias', 'categorias');
+export const restoreProvincia = restore('/api/provincias', 'provincias');
+export const restoreLocalidad = restore('/api/localidades', 'localidades');
 export const restoreRol = restore('/api/roles');
-export const restoreServicio = restore('/api/servicios');
+export const restoreServicio = restore('/api/servicios', 'servicios');
 export const restoreResena = restore('/api/resenas');
 export const restoreReserva = restore('/api/reservas');
 export const restoreConsulta = restore('/api/consultas');
