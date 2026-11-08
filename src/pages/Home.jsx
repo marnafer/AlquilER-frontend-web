@@ -34,6 +34,7 @@ function Home() {
     const [localidades, setLocalidades] = useState([]);
     const [vistosIds, setVistosIds] = useState(() => leerVistosRecientemente());
     const [paginaCarrusel, setPaginaCarrusel] = useState(0);
+    const [paginaCarruselVistos, setPaginaCarruselVistos] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [vistosRecientes, setVistosRecientes] = useState([]);
@@ -47,6 +48,30 @@ function Home() {
     useEffect(() => {
         cargarDatos();
     }, []);
+
+    useEffect(() => {
+        let cancelado = false;
+
+        if (vistosIds.length === 0) {
+            setVistosRecientes([]);
+            return undefined;
+        }
+
+        Promise.all(vistosIds.map(id => getPropiedad(id)))
+            .then(propiedadesVistas => {
+                if (!cancelado) {
+                    setVistosRecientes(propiedadesVistas.filter(Boolean));
+                }
+            })
+            .catch(error => {
+                console.error('Error cargando propiedades vistas recientemente:', error);
+                if (!cancelado) setVistosRecientes([]);
+            });
+
+        return () => {
+            cancelado = true;
+        };
+    }, [vistosIds]);
 
     useEffect(() => {
         if (busqueda.trim().length < 2) {
@@ -176,6 +201,12 @@ function Home() {
     const propiedadesAMostrar = propiedadesCarrusel.slice(
         paginaSeguraCarrusel * porPaginaCarrusel,
         (paginaSeguraCarrusel + 1) * porPaginaCarrusel
+    );
+    const totalPaginasVistos = Math.max(1, Math.ceil(vistosRecientes.length / porPaginaCarrusel));
+    const paginaSeguraVistos = Math.min(paginaCarruselVistos, totalPaginasVistos - 1);
+    const vistosAMostrar = vistosRecientes.slice(
+        paginaSeguraVistos * porPaginaCarrusel,
+        (paginaSeguraVistos + 1) * porPaginaCarrusel
     );
 
     const ocultarHero = (e) => {
@@ -369,39 +400,75 @@ function Home() {
                             <p>Seguí donde lo dejaste</p>
                         </div>
 
-                        <div className="propiedades-grid">
-                            {vistosRecientes.map((prop, i) => (
-                                <div
-                                    className="propiedad-card reveal"
-                                    key={prop.id}
-                                    style={{ transitionDelay: `${i * 80}ms` }}
-                                >
-                                    <div className="propiedad-image">
-                                        <PropiedadCardImage
-                                            src={rutaImagenPropiedad(prop)}
-                                            alt={prop.titulo || 'Propiedad'}
-                                        />
-                                    </div>
-                                    <div className="propiedad-info">
-                                        <h3>{prop.titulo}</h3>
-                                        <p className="propiedad-direccion">
-                                            <Icon name="fas fa-map-marker-alt" /> {prop.direccion}
-                                        </p>
-                                        <p className="propiedad-precio">
-                                            ${Number(prop.precio || 0).toLocaleString()}<span>/mes</span>
-                                        </p>
-                                        <div className="propiedad-features">
-                                            <span><Icon name="fas fa-bed" /> {prop.cantidad_dormitorios || 0} dorm.</span>
-                                            <span><Icon name="fas fa-bath" /> {prop.cantidad_banos || 0} {Number(prop.cantidad_banos) === 1 ? 'baño' : 'baños'}</span>
-                                            <span><Icon name="fas fa-arrows-alt" /> {prop.cantidad_ambientes || 0} amb.</span>
+                        <div className="home-carrusel">
+                            <button
+                                type="button"
+                                className="home-carrusel-btn"
+                                onClick={() => setPaginaCarruselVistos(p => Math.max(0, p - 1))}
+                                disabled={paginaSeguraVistos === 0}
+                                aria-label="Ver propiedades vistas anteriores"
+                            >
+                                <Icon name="fas fa-chevron-left" />
+                            </button>
+
+                            <div className="propiedades-grid home-carrusel-grid">
+                                {vistosAMostrar.map((prop, i) => (
+                                    <div
+                                        className="propiedad-card reveal"
+                                        key={prop.id}
+                                        style={{ transitionDelay: `${i * 80}ms` }}
+                                    >
+                                        <div className="propiedad-image">
+                                            <PropiedadCardImage
+                                                src={rutaImagenPropiedad(prop)}
+                                                alt={prop.titulo || 'Propiedad'}
+                                            />
                                         </div>
-                                        <Link to={`/propiedades/${prop.id}`} className="btn-ver">
-                                            <Icon name="fas fa-eye" /> Ver más
-                                        </Link>
+                                        <div className="propiedad-info">
+                                            <h3>{prop.titulo}</h3>
+                                            <p className="propiedad-direccion">
+                                                <Icon name="fas fa-map-marker-alt" /> {prop.direccion}
+                                            </p>
+                                            <p className="propiedad-precio">
+                                                ${Number(prop.precio || 0).toLocaleString()}<span>/mes</span>
+                                            </p>
+                                            <div className="propiedad-features">
+                                                <span><Icon name="fas fa-bed" /> {prop.cantidad_dormitorios || 0} dorm.</span>
+                                                <span><Icon name="fas fa-bath" /> {prop.cantidad_banos || 0} {Number(prop.cantidad_banos) === 1 ? 'baño' : 'baños'}</span>
+                                                <span><Icon name="fas fa-arrows-alt" /> {prop.cantidad_ambientes || 0} amb.</span>
+                                            </div>
+                                            <Link to={`/propiedades/${prop.id}`} className="btn-ver">
+                                                <Icon name="fas fa-eye" /> Ver más
+                                            </Link>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
+
+                            <button
+                                type="button"
+                                className="home-carrusel-btn"
+                                onClick={() => setPaginaCarruselVistos(p => Math.min(totalPaginasVistos - 1, p + 1))}
+                                disabled={paginaSeguraVistos >= totalPaginasVistos - 1}
+                                aria-label="Ver propiedades vistas siguientes"
+                            >
+                                <Icon name="fas fa-chevron-right" />
+                            </button>
                         </div>
+
+                        {totalPaginasVistos > 1 && (
+                            <div className="home-carrusel-dots">
+                                {Array.from({ length: totalPaginasVistos }).map((_, i) => (
+                                    <button
+                                        key={i}
+                                        type="button"
+                                        className={`home-carrusel-dot ${i === paginaSeguraVistos ? 'active' : ''}`}
+                                        onClick={() => setPaginaCarruselVistos(i)}
+                                        aria-label={`Página ${i + 1} de propiedades vistas`}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </section>
             )}
