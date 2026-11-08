@@ -231,8 +231,8 @@
         grid-template-columns: 1fr;
     }
 
-    /* Vistos recientemente: 2 por fila en tablet. */
-    .vistos-recientemente .propiedades-grid {
+    /* Vistos recientes conservan las columnas del carrusel principal. */
+    .vistos-recientemente .home-carrusel-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
@@ -541,7 +541,7 @@
         grid-template-columns: 1fr;
     }
 
-    .vistos-recientemente .propiedades-grid {
+    .vistos-recientemente .home-carrusel-grid {
         grid-template-columns: 1fr;
     }
 

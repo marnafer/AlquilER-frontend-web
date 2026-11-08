@@ -5,27 +5,56 @@
 
 const CLAVE = 'alquiler_vistos_recientemente';
 const MAX = 8;
+const MAX_ANTIGUEDAD_MS = 7 * 24 * 60 * 60 * 1000;
 
-export function leerVistosRecientemente() {
+function leerEntradasVigentes() {
     try {
         const crudo = localStorage.getItem(CLAVE);
         if (!crudo) return [];
-        const ids = JSON.parse(crudo);
-        return Array.isArray(ids)
-            ? ids.map(Number).filter(id => Number.isInteger(id) && id > 0)
-            : [];
+
+        const datos = JSON.parse(crudo);
+        if (!Array.isArray(datos)) return [];
+
+        const ahora = Date.now();
+        const entradas = datos.map(entrada => {
+            if (typeof entrada === 'number' || typeof entrada === 'string') {
+                return { id: Number(entrada), vistoEn: ahora };
+            }
+            return {
+                id: Number(entrada?.id),
+                vistoEn: Number(entrada?.vistoEn)
+            };
+        }).filter(({ id, vistoEn }) => (
+            Number.isInteger(id)
+            && id > 0
+            && Number.isFinite(vistoEn)
+            && vistoEn <= ahora
+            && ahora - vistoEn < MAX_ANTIGUEDAD_MS
+        )).slice(0, MAX);
+
+        localStorage.setItem(CLAVE, JSON.stringify(entradas));
+        return entradas;
     } catch {
         return [];
     }
+}
+
+export function leerVistosRecientemente() {
+    return leerEntradasVigentes()
+        .slice(0, MAX)
+        .map(({ id }) => id);
 }
 
 export function registrarVisto(id) {
     const numero = Number(id);
     if (!Number.isInteger(numero) || numero <= 0) return;
 
-    const actuales = leerVistosRecientemente();
-    const sinDuplicado = actuales.filter(x => x !== numero);
-    const siguiente = [numero, ...sinDuplicado].slice(0, MAX);
+    const actuales = leerEntradasVigentes();
+    const sinDuplicado = actuales.filter(entrada => entrada.id !== numero);
+    const siguiente = [
+        { id: numero, vistoEn: Date.now() },
+        ...sinDuplicado
+    ].slice(0, MAX);
 
     try {
         localStorage.setItem(CLAVE, JSON.stringify(siguiente));
