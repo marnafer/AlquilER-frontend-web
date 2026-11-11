@@ -1,3 +1,6 @@
+# Forzar UTF-8 en todas las respuestas para evitar mojibake en acentos y ñ.
+AddDefaultCharset utf-8
+
 # Fallback para la SPA: React Router resuelve las rutas en el cliente.
 # Sin esto, entrar directo a /propiedades, /login, etc. devuelve 404.
 <IfModule mod_rewrite.c>
