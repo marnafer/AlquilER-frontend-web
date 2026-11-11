@@ -1,5 +1,16 @@
 # Forzar UTF-8 en todas las respuestas para evitar mojibake en acentos y ñ.
 AddDefaultCharset utf-8
+AddCharset utf-8 .html .js .css .json .txt .xml
+
+# Fallback con mod_headers por si AddCharset no se aplica al MIME type.
+<IfModule mod_headers.c>
+    <FilesMatch "\.js$">
+        Header set Content-Type "text/javascript; charset=utf-8"
+    </FilesMatch>
+    <FilesMatch "\.css$">
+        Header set Content-Type "text/css; charset=utf-8"
+    </FilesMatch>
+</IfModule>
 
 # Fallback para la SPA: React Router resuelve las rutas en el cliente.
 # Sin esto, entrar directo a /propiedades, /login, etc. devuelve 404.
