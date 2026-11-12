@@ -13,7 +13,8 @@ function Register() {
         password: '',
         password_confirm: '',
         telefono: '',
-        domicilio: ''
+        domicilio: '',
+        acepta_privacidad: false
     });
     const [loading, setLoading] = useState(false);
     const { showToast } = useUI();
@@ -57,6 +58,12 @@ function Register() {
         }
         if ((formData.domicilio || '').trim().length < 5) {
             showToast('El domicilio debe tener al menos 5 caracteres', 'error');
+            setLoading(false);
+            return;
+        }
+
+        if (!formData.acepta_privacidad) {
+            showToast('Debés aceptar la política de privacidad para registrarte', 'error');
             setLoading(false);
             return;
         }
@@ -140,11 +147,11 @@ function Register() {
                         type="password"
                         id="password"
                         name="password"
-                        placeholder="Mínimo 6 caracteres"
+                        placeholder="Mínimo 8 caracteres, 1 mayúscula y 1 número"
                         value={formData.password}
                         onChange={handleChange}
                         required
-                        minLength="6"
+                        minLength="8"
                     />
                 </div>
 
@@ -185,6 +192,21 @@ function Register() {
                         onChange={handleChange}
                         required
                     />
+                </div>
+
+                <div className="form-group" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '16px' }}>
+                    <input
+                        type="checkbox"
+                        id="acepta_privacidad"
+                        name="acepta_privacidad"
+                        checked={formData.acepta_privacidad}
+                        onChange={(e) => setFormData({ ...formData, acepta_privacidad: e.target.checked })}
+                        required
+                        style={{ marginTop: '4px' }}
+                    />
+                    <label htmlFor="acepta_privacidad" style={{ fontSize: '14px', lineHeight: '1.4' }}>
+                        Acepto la <Link to="/privacidad" target="_blank" rel="noopener noreferrer">política de privacidad</Link> y el tratamiento de mis datos personales.
+                    </label>
                 </div>
 
                 <button type="submit" className="btn-primary" style={{ width: '100%' }} disabled={loading}>
