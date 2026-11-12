@@ -16,6 +16,7 @@ import Loader from '../../components/Loader';
 import EmptyState from '../../components/EmptyState';
 
 function ConsultasAdmin() {
+    useSEO('Administración de consultas', 'Gestionar consultas de interesados.', { noindex: true });
     const { token, usuario } = useAuth();
     const { confirm, showToast } = useUI();
 

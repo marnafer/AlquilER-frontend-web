@@ -24,6 +24,7 @@ const estrellas = (valor) => (
 );
 
 function ResenasAdmin() {
+    useSEO('Administración de reseñas', 'Gestionar reseñas.', { noindex: true });
     const { token } = useAuth();
 
     const config = useMemo(() => ({

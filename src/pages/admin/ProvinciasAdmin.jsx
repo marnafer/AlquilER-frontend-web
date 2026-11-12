@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSEO } from '../../hooks/useSEO';
 import PanelCrud from '../../components/admin/PanelCrud';
 import {
     getProvincias,
@@ -41,6 +42,7 @@ const config = {
 };
 
 function ProvinciasAdmin() {
+    useSEO('Administración de provincias', 'Gestionar provincias.', { noindex: true });
     return <PanelCrud config={config} />;
 }
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSEO } from '../../hooks/useSEO';
 import PanelCrud from '../../components/admin/PanelCrud';
 import { getLogsActividad } from '../../services/api';
 
@@ -34,6 +35,7 @@ const config = {
 };
 
 function LogsAdmin() {
+    useSEO('Logs de actividad', 'Registros de actividad del sistema.', { noindex: true });
     return <PanelCrud config={config} />;
 }
 

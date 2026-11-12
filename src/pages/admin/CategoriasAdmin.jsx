@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSEO } from '../../hooks/useSEO';
 import PanelCrud from '../../components/admin/PanelCrud';
 import {
     getCategorias,
@@ -41,6 +42,7 @@ const config = {
 };
 
 function CategoriasAdmin() {
+    useSEO('Administración de categorías', 'Gestionar categorías de propiedades.', { noindex: true });
     return <PanelCrud config={config} />;
 }
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSEO } from '../../hooks/useSEO';
 import PanelCrud from '../../components/admin/PanelCrud';
 import {
     getRoles,
@@ -41,6 +42,7 @@ const config = {
 };
 
 function RolesAdmin() {
+    useSEO('Administración de roles', 'Gestionar roles del sistema.', { noindex: true });
     return <PanelCrud config={config} />;
 }
 

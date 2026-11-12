@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSEO } from '../../hooks/useSEO';
 import PanelCrud from '../../components/admin/PanelCrud';
 import {
     getPropiedadesAdmin,
@@ -125,6 +126,7 @@ const config = {
 };
 
 function PropiedadesAdmin() {
+    useSEO('Administración de propiedades', 'Gestionar todas las propiedades.', { noindex: true });
     return <PanelCrud config={config} />;
 }
 
