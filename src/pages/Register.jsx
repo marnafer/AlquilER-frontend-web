@@ -4,6 +4,25 @@ import { register } from '../services/api';
 import { useUI } from '../context/UIContext';
 import { useSEO } from '../hooks/useSEO';
 
+// Calcula la fuerza de una contraseña (0..4) según longitud,
+// mayúsculas, números y caracteres especiales.
+function fuerzaPassword(password) {
+    if (!password) return null;
+    let puntaje = 0;
+    if (password.length >= 8) puntaje++;
+    if (/[A-ZÁÉÍÓÚÑ]/.test(password)) puntaje++;
+    if (/[0-9]/.test(password)) puntaje++;
+    if (/[^A-Za-zÁÉÍÓÚÑáéíóúñ0-9]/.test(password)) puntaje++;
+    const niveles = [
+        { etiqueta: 'Muy débil', color: '#ef4444' },
+        { etiqueta: 'Débil', color: '#f97316' },
+        { etiqueta: 'Media', color: '#eab308' },
+        { etiqueta: 'Fuerte', color: '#22c55e' },
+        { etiqueta: 'Muy fuerte', color: '#16a34a' }
+    ];
+    return { puntaje, ...niveles[puntaje] };
+}
+
 function Register() {
     useSEO('Crear cuenta', 'Registrate gratis en AlquilER para publicar propiedades o reservar tu próxima vivienda.', { noindex: true });
     const [formData, setFormData] = useState({
@@ -153,6 +172,18 @@ function Register() {
                         required
                         minLength="8"
                     />
+                    {(() => {
+                        const fuerza = fuerzaPassword(formData.password);
+                        if (!fuerza) return null;
+                        return (
+                            <div style={{ marginTop: '6px' }} aria-live="polite">
+                                <div style={{ height: '6px', borderRadius: '3px', background: '#e5e7eb', overflow: 'hidden' }}>
+                                    <div style={{ width: `${fuerza.puntaje * 25}%`, height: '100%', background: fuerza.color, transition: 'width .2s ease' }} />
+                                </div>
+                                <small style={{ color: fuerza.color, fontSize: '12px', fontWeight: 600 }}>{fuerza.etiqueta}</small>
+                            </div>
+                        );
+                    })()}
                 </div>
 
                 <div className="form-group">
