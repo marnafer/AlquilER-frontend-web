@@ -16,16 +16,31 @@ for (const id of IDS) {
     const errores = [];
     page.on('pageerror', (e) => errores.push(String(e)));
 
-    await page.goto(`/propiedades/${id}`, { waitUntil: 'networkidle' });
+    await page.goto(`/propiedades/${id}`);
 
-    // Si la propiedad no existe, la pagina cae en NotFound: no hay nada que medir.
-    const chips = page.locator('.detalle-chips .propiedad-categoria');
-    const total = await chips.count();
-    if (total === 0) {
-      test.skip(true, `la propiedad ${id} no existe o no tiene categoria`);
+    // La ruta es lazy: hay un Suspense con .ruta-carga que se muestra mientras
+    // se descarga el chunk. Esperamos a un estado final (detalle cargado o
+    // propiedad inexistente) antes de medir, si no medimos el placeholder.
+    const detalle = page.locator('.propiedad-detalle');
+    const vacio = page.locator('.estado-vacio');
+    await expect(detalle.or(vacio)).toBeVisible({ timeout: 30000 });
+
+    if (!(await detalle.isVisible())) {
+      const texto = (await vacio.innerText()).trim();
+      // Solo es valido saltear cuando la propiedad no existe: un error de
+      // carga no debe pasar desapercibido.
+      expect(texto).toContain('no encontrada');
+      test.skip(true, `la propiedad ${id} no existe`);
     }
 
-    await page.waitForSelector('.detalle-chips .propiedad-categoria', { timeout: 15000 });
+    // La categoria es opcional (depende de los datos): puede no estar.
+    const categoria = page.locator('.detalle-chips .propiedad-categoria');
+    const badge = page.locator('.detalle-chips .propiedad-badge');
+    await badge.waitFor({ state: 'visible', timeout: 15000 });
+
+    if ((await categoria.count()) === 0) {
+      test.skip(true, `la propiedad ${id} no tiene categoria`);
+    }
 
     const m = await page.evaluate(() => {
       const cat = document.querySelector('.detalle-chips .propiedad-categoria');
@@ -65,8 +80,14 @@ for (const id of IDS) {
 }
 
 test('el chip de estado aparece en todas las tarjetas del listado', async ({ page }) => {
-  await page.goto('/propiedades', { waitUntil: 'networkidle' });
-  await page.waitForSelector('.propiedad-card');
+  await page.goto('/propiedades');
+
+  // Mientras carga, el listado renderiza esqueletos con la clase
+  // .propiedad-card pero sin badges. Esperamos a que aparezca la primera
+  // tarjeta real y a que desaparezca el grid de esqueletos.
+  const primeraBadge = page.locator('.propiedades-grid .propiedad-card .propiedad-badge').first();
+  await expect(primeraBadge).toBeVisible({ timeout: 30000 });
+  await expect(page.locator('.skeleton-grid')).toHaveCount(0);
 
   const r = await page.evaluate(() => {
     const cards = [...document.querySelectorAll('.propiedad-card')];

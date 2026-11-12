@@ -1,19 +1,9 @@
 import fs from 'node:fs';
 import { test, expect } from '@playwright/test';
-
-const ADMIN = { email: 'e2e.admin@test.com', contrasena: 'E2e123456' };
-const INQUILINO = { email: 'e2e.inquilino@test.com', contrasena: 'E2e123456' };
-
-async function login(page, { email, contrasena }) {
-    await page.goto('/login');
-    await page.locator('#email').fill(email);
-    await page.locator('#password').fill(contrasena);
-    await page.getByRole('button', { name: 'Iniciar sesión' }).click();
-    await expect(page.locator('#basic-nav-dropdown')).toBeVisible();
-}
+import { INQUILINO, login, loginAdmin } from './helpers';
 
 test('admin: login valido, menu de administracion y acceso al panel', async ({ page }) => {
-    await login(page, ADMIN);
+    await loginAdmin(page);
 
     const adminDropdown = page.locator('#admin-nav-dropdown');
     await expect(adminDropdown).toBeVisible();
@@ -31,7 +21,7 @@ test('admin: un usuario comun no puede entrar a /admin', async ({ page }) => {
 });
 
 test('admin: panel de propiedades carga, filtra, exporta CSV y usa papelera', async ({ page }) => {
-    await login(page, ADMIN);
+    await loginAdmin(page);
     await page.goto('/admin/propiedades');
 
     const tabla = page.locator('table.admin-tabla');
