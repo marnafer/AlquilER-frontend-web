@@ -10,9 +10,9 @@ function fuerzaPassword(password) {
     if (!password) return null;
     let puntaje = 0;
     if (password.length >= 8) puntaje++;
-    if (/[A-ZÁÉÍÓÚÑ]/.test(password)) puntaje++;
+    if (/\p{Lu}/u.test(password)) puntaje++;
     if (/[0-9]/.test(password)) puntaje++;
-    if (/[^A-Za-zÁÉÍÓÚÑáéíóúñ0-9]/.test(password)) puntaje++;
+    if (/[^\p{L}\p{N}]/u.test(password)) puntaje++;
     const niveles = [
         { etiqueta: 'Muy débil', color: '#ef4444' },
         { etiqueta: 'Débil', color: '#f97316' },
