@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { verificarEmail } from '../services/api';
+import { Link, useSearchParams } from 'react-router-dom';
+import { verificarEmail, reenviarVerificacion } from '../services/api';
 import { useSEO } from '../hooks/useSEO';
 
 function VerificarEmail() {
-    useSEO('Verificar correo', 'Verific? tu correo electr?nico para activar tu cuenta de AlquilER.', { noindex: true });
+    useSEO('Verificar correo', 'Verificá tu correo electrónico para activar tu cuenta de AlquilER.', { noindex: true });
     const [searchParams] = useSearchParams();
-    const navigate = useNavigate();
 
     const token = searchParams.get('token') || '';
     const email = searchParams.get('email') || '';
 
     const [estado, setEstado] = useState('cargando');
     const [mensaje, setMensaje] = useState('');
+    const [reenviando, setReenviando] = useState(false);
+    const [mensajeReenvio, setMensajeReenvio] = useState('');
 
     useEffect(() => {
         let activo = true;
@@ -21,7 +22,7 @@ function VerificarEmail() {
             if (!token || !email) {
                 if (!activo) return;
                 setEstado('error');
-                setMensaje('El enlace de verificaci?n es inv?lido. Solicit? uno nuevo.');
+                setMensaje('El enlace de verificación es inválido. Faltan datos.');
                 return;
             }
 
@@ -32,7 +33,7 @@ function VerificarEmail() {
 
                 if (result.success) {
                     setEstado('exito');
-                    setMensaje(result.message || 'Tu correo se verific? correctamente.');
+                    setMensaje(result.message || 'Tu correo se verificó correctamente.');
                 } else {
                     setEstado('error');
                     setMensaje(result.error || result.message || 'No se pudo verificar el correo.');
@@ -40,22 +41,42 @@ function VerificarEmail() {
             } catch (err) {
                 if (!activo) return;
                 setEstado('error');
-                setMensaje('Error de conexi?n');
+                setMensaje('Error de conexión');
             }
         })();
 
         return () => { activo = false; };
     }, [token, email]);
 
+    const handleReenviar = async () => {
+        if (!email || reenviando) return;
+
+        setReenviando(true);
+        setMensajeReenvio('');
+
+        try {
+            const result = await reenviarVerificacion(email);
+            if (result.success) {
+                setMensajeReenvio('Te enviamos un nuevo enlace. Revisá tu correo (y spam).');
+            } else {
+                setMensajeReenvio(result.error || result.message || 'No se pudo reenviar el correo.');
+            }
+        } catch {
+            setMensajeReenvio('Error de conexión al reenviar.');
+        } finally {
+            setReenviando(false);
+        }
+    };
+
     return (
         <div className="auth-container" style={{ maxWidth: '440px', margin: '40px auto', padding: '40px' }}>
             <h1 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '8px' }}>
-                Verificaci?n de correo
+                Verificación de correo
             </h1>
 
             {estado === 'cargando' && (
                 <p style={{ textAlign: 'center', color: 'var(--gray-500)', marginTop: '24px' }}>
-                    Verificando tu correo electr?nico...
+                    Verificando tu correo electrónico...
                 </p>
             )}
 
@@ -69,7 +90,7 @@ function VerificarEmail() {
                         className="btn-primary"
                         style={{ display: 'block', textAlign: 'center', marginTop: '16px' }}
                     >
-                        Ir a iniciar sesi?n
+                        Ir a iniciar sesión
                     </Link>
                 </>
             )}
@@ -79,6 +100,25 @@ function VerificarEmail() {
                     <div className="alert alert-error" style={{ marginTop: '24px' }}>
                         {mensaje}
                     </div>
+
+                    {email && (
+                        <button
+                            type="button"
+                            className="btn-primary"
+                            onClick={handleReenviar}
+                            disabled={reenviando}
+                            style={{ display: 'block', width: '100%', textAlign: 'center', marginTop: '16px' }}
+                        >
+                            {reenviando ? 'Reenviando...' : 'Reenviar correo de verificación'}
+                        </button>
+                    )}
+
+                    {mensajeReenvio && (
+                        <p style={{ textAlign: 'center', marginTop: '12px', fontSize: '14px', color: 'var(--gray-500)' }}>
+                            {mensajeReenvio}
+                        </p>
+                    )}
+
                     <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: 'var(--gray-500)' }}>
                         <Link to="/register" style={{ color: 'var(--primary-ink)', fontWeight: '600' }}>
                             Volver a registrarse

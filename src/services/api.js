@@ -253,6 +253,19 @@ export async function verificarEmail(token, email) {
     }
 }
 
+export async function reenviarVerificacion(email) {
+    try {
+        const response = await fetch(`${API_URL}/api/autenticador/reenviar-verificacion`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        return await response.json();
+    } catch (error) {
+        return { success: false, error: errorDeConexion(error) };
+    }
+}
+
 export async function restablecerContrasena(data) {
     try {
         const response = await fetch(`${API_URL}/api/autenticador/restablecer`, {
