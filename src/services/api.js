@@ -143,9 +143,11 @@ export async function login(email, password) {
     try {
         const response = await fetch(`${API_URL}/api/autenticador/login`, {
             method: 'POST',
+            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, contrasena: password })
         });
+
         return await response.json();
     } catch (error) {
         return { success: false, error: errorDeConexion(error) };

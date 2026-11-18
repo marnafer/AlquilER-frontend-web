@@ -38,6 +38,17 @@
     background: #FEE2E2;
     color: #b91c1c;
     border: 1px solid #FECACA;
+    font-weight: 600;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.alert-error::before {
+    content: '⚠';
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
 }
 
 .alert-success {

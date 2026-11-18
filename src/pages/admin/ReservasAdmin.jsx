@@ -51,6 +51,7 @@ const estadoBadge = (estado) => (
 );
 
 function ReservasAdmin() {
+    useSEO('Administración de reservas', 'Gestionar reservas.', { noindex: true });
     const { token } = useAuth();
 
     const esArrays = (res, campo) =>

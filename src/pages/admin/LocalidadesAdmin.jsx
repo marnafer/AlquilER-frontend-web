@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSEO } from '../../hooks/useSEO';
 import PanelCrud from '../../components/admin/PanelCrud';
 import {
     getLocalidades,
@@ -69,6 +70,7 @@ const config = {
 };
 
 function LocalidadesAdmin() {
+    useSEO('Administración de localidades', 'Gestionar localidades.', { noindex: true });
     return <PanelCrud config={config} />;
 }
 

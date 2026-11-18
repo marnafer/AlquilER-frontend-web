@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSEO } from '../../hooks/useSEO';
 import PanelCrud from '../../components/admin/PanelCrud';
 import {
     getUsuarios,
@@ -91,6 +92,7 @@ const config = {
 };
 
 function UsuariosAdmin() {
+    useSEO('Administración de usuarios', 'Gestionar usuarios.', { noindex: true });
     return <PanelCrud config={config} />;
 }
 

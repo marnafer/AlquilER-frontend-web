@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSEO } from '../../hooks/useSEO';
 import PanelCrud from '../../components/admin/PanelCrud';
 import {
     getServicios,
@@ -41,6 +42,7 @@ const config = {
 };
 
 function ServiciosAdmin() {
+    useSEO('Administración de servicios', 'Gestionar servicios.', { noindex: true });
     return <PanelCrud config={config} />;
 }
 

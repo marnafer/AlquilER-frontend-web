@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useSEO } from '../hooks/useSEO';
@@ -15,6 +15,15 @@ function Login() {
     const location = useLocation();
 
     const aviso = location.state?.mensaje || '';
+    const errorRef = useRef(null);
+
+    // Cuando aparece un error, se hace scroll para que sea visible
+    // (en movil el formulario puede empujarlo fuera de la pantalla).
+    useEffect(() => {
+        if (error && errorRef.current) {
+            errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, [error]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -26,14 +35,20 @@ function Login() {
 
             // El backend establece las cookies HttpOnly al iniciar sesión.
             if (result.success) {
-                authLogin();
+                authLogin(result.data?.access_token);
                 navigate('/dashboard');
             } else {
-                setError(result.error || result.message || 'Error al iniciar sesión');
+                const mensaje = result.error || result.message || 'Error al iniciar sesión';
+                // Mensaje mas claro y accionable para el caso de email no verificado.
+                if (/verific/i.test(mensaje)) {
+                    setError('Tu email aun no esta verificado. Revisa tu bandeja de entrada (y la carpeta de spam) para el enlace de verificacion y vuelve a intentar.');
+                } else {
+                    setError(mensaje);
+                }
             }
         } catch (error) {
             console.error('Error en login:', error);
-            setError('Error de conexión');
+            setError('Error de conexión. Probá de nuevo en unos momentos.');
         } finally {
             setLoading(false);
         }
@@ -45,7 +60,7 @@ function Login() {
             <p style={{ textAlign: 'center', color: 'var(--gray-500)', marginBottom: '32px' }}>Ingresá tus credenciales para continuar</p>
 
             {error && (
-                <div className="alert alert-error">
+                <div className="alert alert-error" ref={errorRef} role="alert">
                     {error}
                 </div>
             )}

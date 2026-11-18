@@ -1,5 +1,6 @@
 import Icon from '../../components/Icon';
 import React from 'react';
+import { useSEO } from '../../hooks/useSEO';
 import { Link } from 'react-router-dom';
 
 const modulos = [
@@ -17,6 +18,7 @@ const modulos = [
 ];
 
 function AdminHome() {
+    useSEO('Panel de administración', 'Panel principal de administración de AlquilER.', { noindex: true });
     return (
         <div className="admin-page">
             <div className="container">
