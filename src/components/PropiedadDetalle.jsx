@@ -24,7 +24,6 @@ import { useAuth } from '../hooks/useAuth';
 import { useUI } from '../context/UIContext';
 import { useSEO } from '../hooks/useSEO';
 import { contieneProfanidad, MENSAJE_PROFANIDAD } from '../utils/profanity';
-import Loader from './Loader';
 import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
 
@@ -436,7 +435,20 @@ function PropiedadDetalle() {
 
     useSEO(tituloSEO, descripcionSEO, { imagen: imagenSEO });
 
-    if (loading) return <Loader />;
+    if (loading) {
+        return (
+            <div className="container propiedades-page">
+                <div className="propiedad-detalle-skeleton" aria-busy="true" aria-live="polite">
+                    <div className="skeleton skeleton-img" style={{ aspectRatio: '3 / 2', borderRadius: 8, marginBottom: 16 }} />
+                    <div className="skeleton skeleton-line" style={{ width: '60%', height: 28, marginBottom: 12 }} />
+                    <div className="skeleton skeleton-line" style={{ width: '40%', marginBottom: 16 }} />
+                    <div className="skeleton skeleton-line" style={{ width: '100%', height: 60, marginBottom: 12 }} />
+                    <div className="skeleton skeleton-line" style={{ width: '80%' }} />
+                    <div className="skeleton skeleton-line" style={{ width: '70%' }} />
+                </div>
+            </div>
+        );
+    }
 
     if (error) {
         return (
